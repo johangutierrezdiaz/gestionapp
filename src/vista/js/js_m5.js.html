@@ -1,0 +1,2458 @@
+<script>
+	//################################################################################################################################################################################################################
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//SECCION 10 - FORMULARIO PSAP
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//################################################################################################################################################################################################################
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//listener de eventos del DOOM
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	$("#m0_div_panel_principal").on("keypress", "#m5_1_txt_base_psap_documento", function (e) {
+		if (e.which === 13) {
+			m5_10_js_cargar_info_ciudadano(this.value);
+			m5_10_js_cargar_gestion_ciudadano(this.value);
+		}
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_principal").on("change", "#m5_1_txt_base_psap_documento", function (e) {
+		m5_10_js_cargar_info_ciudadano(this.value);
+		m5_10_js_cargar_gestion_ciudadano(this.value);
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_principal").on("click", "#m5_1_btn_base_psap_nuevo_acercamiento", function () {
+		m5_1_js_mostrar_formulario_gestion();
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_secundario").on("submit", "#m5_1_frm_psap_nueva_gestion", function () {
+		m5_1_js_guardar_nueva_gestion(this);
+	});
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//funciones javascript
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	/**
+	 * funcion para cargar los objetos de una seccion especifica
+	 *
+	 * @return  {null}  
+	 */
+	function m5_js_inicializar_pestaña_m5_1() {
+		try {
+
+			m0_js_log_sesion({
+				id_sesion: ID_SESION,
+				log: "M5 - Registrar gestión PSAP",
+				tipo_log: "ACCESO A SECCION"
+			});
+
+			var u = USUARIO;
+			var pos;
+			for (var mod = 0; mod < u.modulos.length; mod++) {
+				if (5 == u.modulos[mod].id_modulo) {
+					pos = mod;
+				}
+			}
+			var param_modulos = {
+				icono: u.modulos[pos].icono,
+				id_modulo: 5,
+				texto_1: u.modulos[pos].modulo,
+				texto_2: "Registrar gestión PSAP"
+			};
+			m0_js_menu_arbol(param_modulos);
+			$("#m5_1_div_accordion").accordion({
+				heightStyle: "content"
+			});
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m5_js_inicializar_pestaña_m5_1",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Carga la informacion basica del ciudadano PSAP
+	 *
+	 * @param   {number}  param  documento del ciudadano
+	 * 
+	 * @return  {null}          
+	 */
+	function m5_1_js_cargar_info_ciudadano(documento) {
+		try {
+
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página")
+				})
+				.withSuccessHandler(function (contenido) {
+					$("#m5_div_base_psap_nuevo_acercamiento").show();
+					router({
+						tipo_fuente: "VARIABLE",
+						contenido: contenido,
+						contenedor: "m5_1_div_base_psap_info_ciudadano",
+						id_privilegio: "5_1"
+					});
+				})
+				.m5_1_gs_cargar_info_ciudadano(documento);
+			$("#m5_1_div_base_psap_info_ciudadano").html('<div class="mdl-spinner mdl-spinner--single-color mdl-js-spinner is-active carga_spinner"></div>');
+			componentHandler.upgradeDom();
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m5_1_js_cargar_info_ciudadano",
+				error: e,
+				parametros: {
+					"documento": documento
+				}
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * [Carga la informacion de la gestion realizada con el ciudadano]
+	 *
+	 * @param   {number}  param  documento del ciudadano
+	 *
+	 * @return  {null}          
+	 */
+	function m5_1_js_cargar_gestion_ciudadano(documento) {
+		try {
+
+			var param_tabla = {
+				contenedor: "m5_1_div_base_psap_gestion_ciudadano",
+				criterio: {
+					documento: documento
+				}
+			};
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página")
+				})
+				.withSuccessHandler(m0_js_crear_tabla)
+				.m5_1_gs_cargar_gestion_ciudadano(param_tabla);
+			$("#m5_1_div_base_psap_gestion_ciudadano").html('<div class="mdl-spinner mdl-spinner--single-color mdl-js-spinner is-active carga_spinner"></div>');
+			componentHandler.upgradeDom();
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m5_1_js_cargar_gestion_ciudadano",
+				error: e,
+				parametros: {
+					"documento": documento
+				}
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Muestra el formulario para guardar una nueva gestion
+	 *
+	 * @return  {null}          
+	 */
+	function m5_1_js_mostrar_formulario_gestion() {
+		try {
+
+			var contenido = '<div class="div_panel mdl-shadow--3dp">';
+			contenido += "<h4>GUARDAR NUEVA GESTIÓN</h4>";
+			var param_formulario = {
+				formulario: "m5_1_frm_psap_nueva_gestion",
+				campos: [{
+					id_campo: "m5_1_hid_psap_documento",
+					tipo_campo: "hidden"
+				}, {
+					id_campo: "m5_1_sel_psap_gestion",
+					nombre_campo: "Seleccione un categoría...",
+					required: "required",
+					tipo_campo: "select",
+				}, {
+					id_campo: "m5_1_txt_psap_detalle_gestion",
+					nombre_campo: "Detalle gestión...",
+					tipo_campo: "textarea",
+				}]
+			};
+			contenido += m0_js_crear_formulario(param_formulario);
+			contenido += '</div>';
+			router({
+				tipo_fuente: "VARIABLE",
+				contenido: contenido,
+				contenedor: "m5_1_div_base_psap_formulario",
+				id_privilegio: "5_1"
+			});
+			$("#m5_1_hid_psap_documento").val($("#m5_1_hid_base_psap_info_ciudadano_documento").val());
+			m0_js_poblar_menu({
+				campo: "Seleccione un categoría...",
+				criterio: "",
+				select: "m5_1_sel_psap_gestion",
+				datos: [{
+					texto: "",
+					valor: "",
+					selected: "selected"
+				}, {
+					texto: "NO VIABLE",
+					valor: "NO VIABLE",
+					selected: ""
+				}, {
+					texto: "CONTACTO NO EXITOSO",
+					valor: "CONTACTO NO EXITOSO",
+					selected: ""
+				}, {
+					texto: "CITADO",
+					valor: "CITADO",
+					selected: ""
+				}, {
+					texto: "TRASLADO FF REALIZADO",
+					valor: "TRASLADO FF REALIZADO",
+					selected: ""
+				}, {
+					texto: "NO ASISTIÓ A CITACIÓN",
+					valor: "NO ASISTIÓ A CITACIÓN",
+					selected: ""
+				}]
+			});
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m5_1_js_mostrar_formulario_gestion",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Funcion para guardar la informacion de la gestion
+	 *
+	 * @param   {frm}  frm  formulario nueva gestion
+	 *
+	 * @return  {null}          
+	 */
+	function m5_1_js_guardar_nueva_gestion(frm) {
+		try {
+
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página")
+				})
+				.withSuccessHandler(function (r) {
+					m0_js_aviso("aviso_modal_box", r.mensaje);
+					if (r.exito) {
+						m5_1_js_cargar_info_ciudadano($("#m5_1_hid_base_psap_info_ciudadano_documento").val());
+						m5_1_js_cargar_gestion_ciudadano($("#m5_1_hid_base_psap_info_ciudadano_documento").val());
+						$("#m5_1_div_base_psap_formulario").html('');
+					}
+				})
+				.m5_1_gs_guardar_nueva_gestion(frm);
+			m0_js_aviso("modal_box", "Por favor espere mientras se almacenan los datos");
+			event.preventDefault();
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m5_1_js_guardar_nueva_gestion",
+				error: e,
+				parametros: frm
+			});
+		}
+	}
+
+
+
+	//################################################################################################################################################################################################################
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//SECCION 2 - GESTION ISPV - BEPS
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//################################################################################################################################################################################################################
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//listener de eventos del DOOM
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_principal").on("submit", "#m5_2_frm_registro_ispv", function () {
+		try {
+
+			var sw = true;
+			if ($("#m5_2_sel_registro_ispv_tramite").val() === "Traslado") {
+				if ($("#m5_2_sel_registro_ispv_gestion_realizada").val() === "") {
+					sw = false;
+					$("#m5_2_sel_registro_ispv_gestion_realizada").parent().addClass('is-invalid');
+					m0_js_aviso("snackbar", "Si selecciono <<Traslado>> en el campo <<Trámite>>, es necesario que se registre la información adicional solicitada en la sección <<Información Exclusiva - Trámite Traslado ISPV>>")
+				} else {
+					if ($("#m5_2_sel_registro_ispv_gestion_realizada").val() === "NO") {
+						if ($("#m5_2_sel_registro_ispv_informacion_gestion").val() === "") {
+							sw = false;
+							$("#m5_2_sel_registro_ispv_informacion_gestion").parent().addClass('is-invalid');
+							m0_js_aviso("snackbar", "Si selecciono <<NO se logro un traslado de fondos de una indemnización>>, es necesario que seleccione alguna de las categorias del campo <<Información adicional de la gestión...>>")
+						} else {
+							if ($("#m5_2_sel_registro_ispv_informacion_gestion").val() === "Otro..." && $("#m5_2_txt_registro_ispv_observaciones").val() === "") {
+								sw = false;
+								$("#m5_2_sel_registro_ispv_informacion_gestion").parent().addClass('is-invalid');
+								m0_js_aviso("snackbar", "Si selecciono la categoría <<Otro>>, es necesario que amplíe la información en el campo de <<Observaciones>>")
+							}
+						}
+					}
+				}
+			}
+
+
+			if (sw) {
+				google.script.run
+					.withFailureHandler(function (e) {
+						m0_js_registrar_error({
+							gs: "m9_1_gs_registro_ispv",
+							funcion: "submit / m5_2_frm_registro_ispv",
+							error: { message: e.name + " : " + e.message, name: "AJAX" },
+							parametros: {}
+						});
+					})
+					.withSuccessHandler(function (r) {
+						if (m0_js_resultado_operacion(r)) {
+							m5_js_inicializar_pestaña_m5_2()
+						}
+					})
+					.m5_2_gs_registro_ispv(this);
+				m0_js_aviso("modal_box", "Por favor espere mientras guardan los datos");
+			}
+
+			event.preventDefault();
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "submit / m5_2_frm_registro_ispv",
+				error: e,
+				parametros: {}
+			});
+		}
+	});
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//funciones javascript
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	/**
+	 * funcion para cargar los objetos de una seccion especifica
+	 *
+	 * @return  {null}  
+	 */
+	function m5_js_inicializar_pestaña_m5_2() {
+		try {
+
+			m0_js_log_sesion({
+				id_sesion: ID_SESION,
+				log: "M5 - Modulo para el registro rapido de la gestión con los traslados ISPV - BEPS",
+				tipo_log: "ACCESO A SECCION"
+			});
+
+			var u = USUARIO;
+			var pos;
+			for (var mod = 0; mod < u.modulos.length; mod++) {
+				if (5 == u.modulos[mod].id_modulo) {
+					pos = mod;
+				}
+			}
+			var param_modulos = {
+				icono: u.modulos[pos].icono,
+				id_modulo: 5,
+				texto_1: u.modulos[pos].modulo,
+				texto_2: "Registrar gestión ISPV-BEPS"
+			};
+			m0_js_menu_arbol(param_modulos);
+
+			var param_formulario = {
+				formulario: "m5_2_frm_registro_ispv",
+				campos: [{
+					id_campo: "m5_2_txt_registro_ispv_bizagi",
+					nombre_campo: "Radicado Trámite ISPV...",
+					pattern: "",
+					error: "",
+					required: "required",
+					tipo_campo: "text",
+				}, {
+					id_campo: "m5_2_sel_registro_ispv_tramite",
+					nombre_campo: "Trámite...",
+					required: "required",
+					tipo_campo: "select",
+				}, {
+					tipo_campo: "fieldset_inicio",
+					legend: "Información Exclusiva - Trámite Traslado ISPV"
+				}, {
+					id_campo: "m5_2_sel_registro_ispv_gestion_realizada",
+					nombre_campo: "Gestión realizada...",
+					required: "",
+					tipo_campo: "select",
+				}, {
+					id_campo: "m5_2_sel_registro_ispv_psap_terceros",
+					nombre_campo: "PSAP terceros...",
+					required: "",
+					tipo_campo: "select",
+				}, {
+					id_campo: "m5_2_sel_registro_ispv_informacion_gestion",
+					nombre_campo: "Información adicional de la gestión...",
+					required: "",
+					tipo_campo: "select",
+				}, {
+					id_campo: "m5_2_sel_registro_ispv_numero_semanas",
+					nombre_campo: "Numero de semanas registradas en sistema...",
+					pattern: "",
+					error: "Valor no valid",
+					required: "required",
+					value: 0,
+					tipo_campo: "number",
+				}, {
+					tipo_campo: "fieldset_fin",
+				}, {
+					tipo_campo: "textarea",
+					id_campo: "m5_2_txt_registro_ispv_observaciones",
+					nombre_campo: "Observaciones...",
+					required: "",
+					value: ""
+				}]
+			};
+
+			router({
+				tipo_fuente: "VARIABLE",
+				contenido: m0_js_crear_formulario(param_formulario),
+				contenedor: "m5_2_div_registro_ispv",
+				id_privilegio: "5_2"
+			});
+
+			m0_js_poblar_menu({
+				select: "m5_2_sel_registro_ispv_tramite",
+				datos: [{
+					texto: "",
+					valor: "",
+					selected: "selected"
+				}, {
+					texto: "Nueva vinculación",
+					valor: "Nueva vinculación",
+					selected: ""
+				}, {
+					texto: "Anualidad",
+					valor: "Anualidad",
+					selected: ""
+				}, {
+					texto: "Traslado",
+					valor: "Traslado",
+					selected: ""
+				}]
+			})
+
+			m0_js_poblar_menu({
+				select: "m5_2_sel_registro_ispv_gestion_realizada",
+				datos: [{
+					texto: "",
+					valor: "",
+					selected: "selected"
+				}, {
+					texto: "Se logro un traslado de fondos de una indemnización.",
+					valor: "SI",
+					selected: ""
+				}, {
+					texto: "NO se logro un traslado de fondos de una indemnización.",
+					valor: "NO",
+					selected: ""
+				}]
+			})
+
+			m0_js_poblar_menu({
+				select: "m5_2_sel_registro_ispv_psap_terceros",
+				datos: [{
+					texto: "SI",
+					valor: "SI",
+					selected: ""
+				}, {
+					texto: "NO",
+					valor: "NO",
+					selected: ""
+				}, {
+					texto: "No aplica",
+					valor: "No aplica",
+					selected: ""
+				}]
+			})
+
+			m0_js_poblar_menu({
+				select: "m5_2_sel_registro_ispv_informacion_gestion",
+				datos: [{
+					texto: "",
+					valor: "",
+					selected: "selected"
+				}, {
+					texto: "No interesado en el programa",
+					valor: "No interesado en el programa",
+					selected: ""
+				}, {
+					texto: "No viable para vinculación",
+					valor: "No viable para vinculación",
+					selected: ""
+				}, {
+					texto: "No se presento a turno",
+					valor: "No se presento a turno",
+					selected: ""
+				}, {
+					texto: "Trámite bizagi radicado por un tercero",
+					valor: "Trámite bizagi radicado por un tercero",
+					selected: ""
+				}, {
+					texto: "Bizagi genera rechazo o error",
+					valor: "Bizagi genera rechazo o error",
+					selected: ""
+				}, {
+					texto: "Desea consultar antes con terceros",
+					valor: "Desea consultar antes con terceros",
+					selected: ""
+				}, {
+					texto: "No tiene capacidad de ahorro",
+					valor: "No tiene capacidad de ahorro",
+					selected: ""
+				}, {
+					texto: "Pensionado o Indemnizado",
+					valor: "Pensionado o Indemnizado",
+					selected: ""
+				}, {
+					texto: "Prefiere el dinero",
+					valor: "Prefiere el dinero",
+					selected: ""
+				}, {
+					texto: "Otro...",
+					valor: "Otro...",
+					selected: ""
+				}]
+			})
+
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m5_js_inicializar_pestaña_m5_2",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+	//################################################################################################################################################################################################################
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//SECCION 3 - Registrar cantadas gestores BEPS
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//################################################################################################################################################################################################################
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//listener de eventos del DOOM
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+
+	$("#m0_div_panel_principal").on("submit", "#m5_3_frm_beps_cantadas_consulta", function () {
+		m5_3_js_beps_cantadas_consulta();
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_principal").on("click", "#m5_3_btn_beps_cantadas_enviar_plantilla", function () {
+		m5_3_js_beps_cantadas_enviar_plantilla();
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_principal").on("click", "#m5_3_btn_beps_cantadas_cargar_plantilla", function () {
+		m5_3_js_beps_cantadas_cargar_plantilla();
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_principal").on("click", "#m5_3_btn_beps_cantadas_guardar_plantilla", function () {
+		m5_3_js_beps_cantadas_guardar_plantilla_confirmacion();
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_aviso_modal_box").on("submit", "#m5_3_frm_beps_cantadas_envio_plantilla", function () {
+		m5_3_js_beps_cantadas_envio_plantilla();
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_aviso_modal_box").on("submit", "#m5_3_frm_beps_cantadas_guardar_plantilla", function () {
+		m5_3_js_beps_cantadas_guardar_plantilla();
+	});
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//funciones javascript
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	/**
+	 * funcion para cargar los objetos de una seccion especifica
+	 *
+	 * @return  {null}  
+	 */
+	function m5_js_inicializar_pestaña_m5_3() {
+		try {
+
+			m0_js_log_sesion({
+				id_sesion: ID_SESION,
+				log: "M5 - Registrar cantadas gestores BEPS",
+				tipo_log: "ACCESO A SECCION"
+			});
+
+			var u = USUARIO;
+			var pos;
+			for (var mod = 0; mod < u.modulos.length; mod++) {
+				if (5 == u.modulos[mod].id_modulo) {
+					pos = mod;
+				}
+			}
+			var param_modulos = {
+				icono: u.modulos[pos].icono,
+				id_modulo: 5,
+				texto_1: u.modulos[pos].modulo,
+				texto_2: "Registrar cantadas gestores BEPS"
+			};
+			m0_js_menu_arbol(param_modulos);
+			var param_formulario = {
+				formulario: "m5_3_frm_beps_cantadas_consulta",
+				campos: [{
+					id_campo: "m5_3_txt_beps_cantadas_fecha",
+					nombre_campo: "Fecha operación",
+					pattern: "",
+					error: "",
+					required: "required",
+					tipo_campo: "date",
+				}, {
+					id_campo: "m5_3_sel_beps_cantadas_regional",
+					nombre_campo: "Seleccione una regional...",
+					required: "required",
+					tipo_campo: "select",
+				}]
+			};
+			router({
+				tipo_fuente: "VARIABLE",
+				contenido: m0_js_crear_formulario(param_formulario),
+				contenedor: "m5_3_div_formulario_beps_cantadas_fecha",
+				id_privilegio: "5_3"
+			});
+			$("#m5_3_txt_beps_cantadas_fecha").parent().addClass('is-dirty');
+			m0_js_poblar_menu({
+				campo: "Seleccione una regional...",
+				criterio: "",
+				select: "m5_3_sel_beps_cantadas_regional",
+				datos: [{
+					texto: "",
+					valor: "",
+					selected: "selected"
+				}, {
+					texto: "BEPS / CARIBE NORTE",
+					valor: "1",
+					selected: ""
+				}, {
+					texto: "BEPS / CARIBE SUR",
+					valor: "2",
+					selected: ""
+				}]
+			});
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m5_js_inicializar_pestaña_m5_3",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Envia los criterios de busquedad al server para iniciar la busquedad 	
+	 *
+	 * @param   {object}  frm  objecto con los criterios de busquedad
+	 *
+	 * @return  {object}	    objecto con la tabla de resultados de la busqueda          
+	 */
+	function m5_3_js_beps_cantadas_consulta() {
+		try {
+
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página")
+				})
+				.withSuccessHandler(m0_js_resultado_operacion)
+				.m5_3_gs_beps_cantadas_consulta($("#m5_3_txt_beps_cantadas_fecha").val(), $("#m5_3_sel_beps_cantadas_regional").val(), $("#m5_3_sel_beps_cantadas_regional option:selected").text());
+			m0_js_aviso("modal_box", "Por favor espere mientras se carga la información");
+			event.preventDefault();
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m3_1_js_solicitud_consulta",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Envia la plantilla BEPS por correo electronico
+	 *
+	 *
+	 * @return  {null}          
+	 */
+	function m5_3_js_beps_cantadas_enviar_plantilla() {
+		try {
+
+			var contenido = '<div class="div_panel mdl-shadow--3dp">';
+			contenido += '<h4 style="text-align: center;">ENVIAR PLANTILLA BEPS CANTADAS</h4>';
+			contenido += '<p>Por favor digite el correo hacia donde se enviara la plantilla para el registro de las BEPS cantadas</p>';
+			contenido += m0_js_crear_formulario({
+				formulario: "m5_3_frm_beps_cantadas_envio_plantilla",
+				campos: [{
+					id_campo: "m5_3_beps_cantadas_envio_plantilla_correo",
+					nombre_campo: "Digite un Correo electronico valido...",
+					required: "required",
+					pattern: "",
+					error: "",
+					tipo_campo: "email",
+				}]
+			});
+			contenido += '</div>';
+			m0_js_aviso("modal_box", contenido);
+			$("#m5_3_beps_cantadas_envio_plantilla_correo").parent().addClass('is-dirty');
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m5_3_js_beps_cantadas_enviar_plantilla",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * envia el correo con la plantilla para su respectivo diligenciamiento
+	 *
+	 * @param   {string}  param  correo a quien se en enviara la plantilla beps cantadas
+	 *
+	 * @return  {null}          
+	 */
+	function m5_3_js_beps_cantadas_envio_plantilla() {
+		try {
+
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página")
+				})
+				.withSuccessHandler(m0_js_resultado_operacion)
+				.m5_3_gs_beps_cantadas_envio_plantilla($("#m5_3_beps_cantadas_envio_plantilla_correo").val());
+			m0_js_aviso("modal_box", "Por favor espere mientras se envia el correo");
+			event.preventDefault();
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m5_3_js_beps_cantadas_envio_plantilla",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Carga desde el correo las cantadas y lo coloca en la plantilla
+	 *
+	 *
+	 * @return  {null}          
+	 */
+	function m5_3_js_beps_cantadas_cargar_plantilla() {
+		try {
+
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página")
+				})
+				.withSuccessHandler(m0_js_resultado_operacion)
+				.m5_3_gs_beps_cantadas_cargar_plantilla();
+			m0_js_aviso("modal_box", "Por favor espere mientras revisa el correo y se carga la información");
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m5_3_js_beps_cantadas_cargar_plantilla",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Pide una confirmacion expresa para el guardado de la plantilla beps cantadas
+	 *
+	 *
+	 * @return  {null}          
+	 */
+	function m5_3_js_beps_cantadas_guardar_plantilla_confirmacion() {
+		try {
+
+			var contenido = '<div class="div_panel mdl-shadow--3dp">';
+			contenido += '<h4 style="text-align: center;">GUARDAR PLANTILLA BEPS CANTADAS</h4>';
+			contenido += '<p>IMPORTANTE: tenga en cuenta que una vez se envie la plantilla si se encuentran datos en base BEPS que correspondan a los mismos registrados en esta plantilla, estos se sobreescribiran </br>Esta seguro de guardar los datos ?</p>';
+			contenido += m0_js_crear_formulario({
+				formulario: "m5_3_frm_beps_cantadas_guardar_plantilla",
+				campos: [{
+					id_campo: "m5_3_sel_beps_cantadas_guardar_plantilla",
+					nombre_campo: "Por favor confirme el registro de la plantilla...",
+					required: "required",
+					pattern: "",
+					error: "",
+					tipo_campo: "select",
+				}]
+			});
+			contenido += '</div>';
+			m0_js_aviso("modal_box", contenido);
+			m0_js_poblar_menu({
+				campo: "Por favor confirme el registro de la plantilla...",
+				criterio: "",
+				select: "m5_3_sel_beps_cantadas_guardar_plantilla",
+				datos: [{
+					texto: "",
+					valor: "",
+					selected: "selected"
+				}, {
+					texto: "SI",
+					valor: "SI",
+					selected: ""
+				}, {
+					texto: "NO",
+					valor: "NO",
+					selected: ""
+				}]
+			});
+			$("#m5_3_sel_beps_cantadas_guardar_plantilla").parent().addClass('is-dirty');
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m5_3_js_beps_cantadas_guardar_plantilla_confirmacion",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Carga desde el correo las cantadas y lo coloca en la plantilla
+	 *
+	 *
+	 * @return  {null}          
+	 */
+	function m5_3_js_beps_cantadas_guardar_plantilla() {
+		try {
+
+			if ($("#m5_3_sel_beps_cantadas_guardar_plantilla").val() === "SI") {
+				google.script.run
+					.withFailureHandler(function () { m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página") })
+					.withSuccessHandler(m0_js_resultado_operacion)
+					.m5_3_gs_beps_cantadas_guardar_plantilla();
+				m0_js_aviso("modal_box", "Por favor espere mientras se guarda la información");
+			} else {
+				m0_js_aviso("cierre_modal_box", "");
+			}
+			event.preventDefault();
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m5_3_js_beps_cantadas_guardar_plantilla",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+
+	//################################################################################################################################################################################################################
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//SECCION 4 - REGISTRO INFORMACION GESTORES CULTURALES
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//################################################################################################################################################################################################################
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//listener de eventos del DOOM
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//funciones javascript
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	/**
+	 * funcion para cargar los objetos de una seccion especifica
+	 *
+	 * @return  {null}  
+	 */
+	function m5_js_inicializar_pestaña_m5_4() {
+		try {
+
+			m0_js_log_sesion({
+				id_sesion: ID_SESION,
+				log: "M5 - Registrar gestión gestores culturales",
+				tipo_log: "ACCESO A SECCION"
+			});
+
+			var u = USUARIO;
+			var pos;
+			for (var mod = 0; mod < u.modulos.length; mod++) {
+				if (5 == u.modulos[mod].id_modulo) {
+					pos = mod;
+				}
+			}
+			var param_modulos = {
+				icono: u.modulos[pos].icono,
+				id_modulo: 5,
+				texto_1: u.modulos[pos].modulo,
+				texto_2: "Registrar gestión gestores culturales"
+			};
+			m0_js_menu_arbol(param_modulos);
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m5_js_inicializar_pestaña_m5_4",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+
+	//################################################################################################################################################################################################################
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//SECCION 5 - CUADRO DE CONTROL BEPS
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//################################################################################################################################################################################################################
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//listener de eventos del DOOM
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//funciones javascript
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	/**
+	 * funcion para cargar los objetos de una seccion especifica
+	 *
+	 * @return  {null}  
+	 */
+	function m5_js_inicializar_pestaña_m5_5() {
+		try {
+
+			m0_js_log_sesion({
+				id_sesion: ID_SESION,
+				log: "M5 - CUADRO DE CONTROL BEPS",
+				tipo_log: "ACCESO A SECCION"
+			});
+
+			var u = USUARIO;
+			var pos;
+			for (var mod = 0; mod < u.modulos.length; mod++) {
+				if (5 == u.modulos[mod].id_modulo) {
+					pos = mod;
+				}
+			}
+			var param_modulos = {
+				icono: u.modulos[pos].icono,
+				id_modulo: 5,
+				texto_1: u.modulos[pos].modulo,
+				texto_2: "CUADRO DE CONTROL BEPS"
+			};
+			m0_js_menu_arbol(param_modulos);
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m5_js_inicializar_pestaña_m5_5",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+
+
+	//################################################################################################################################################################################################################
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//SECCION 6 - ADMINISTRACION PARAMETROS BEPS
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//################################################################################################################################################################################################################
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//listener de eventos del DOOM
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+
+	$("#m0_div_panel_principal").on("click", "#m5_6_btn_parametro_nuevo", function () {
+		m5_6_js_parametro_manipular(-1, "INSERTAR");
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_principal").on("click", "#m5_6_btn_editar_parametro", function () {
+		m5_6_js_parametro_manipular($(this).attr("data-id_parametro"), "EDITAR");
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_secundario").on("submit", "#m5_6_frm_manipular_parametros", function () {
+		m5_6_js_parametro_manipular_guardar(this);
+	});
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//funciones javascript
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	/**
+	 * funcion para cargar los objetos de una seccion especifica
+	 *
+	 * @return  {null}  
+	 */
+	function m5_js_inicializar_pestaña_m5_6() {
+		try {
+
+			m0_js_log_sesion({
+				id_sesion: ID_SESION,
+				log: "M5 - Admon de los parámetros BEPS",
+				tipo_log: "ACCESO A SECCION"
+			});
+
+			var u = USUARIO;
+			var pos;
+			for (var mod = 0; mod < u.modulos.length; mod++) {
+				if (5 == u.modulos[mod].id_modulo) {
+					pos = mod;
+				}
+			}
+			var param_modulos = {
+				icono: u.modulos[pos].icono,
+				id_modulo: 5,
+				texto_1: u.modulos[pos].modulo,
+				texto_2: "Admon de los parámetros BEPS"
+			};
+			m0_js_menu_arbol(param_modulos);
+
+			$("#m5_6_div_consolidado_parametros").html('<div class="mdl-spinner mdl-spinner--single-color mdl-js-spinner is-active carga_spinner"></div>');
+			componentHandler.upgradeDom();
+			var param_tabla = {
+				contenedor: "m5_6_div_consolidado_parametros"
+			}
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página")
+				})
+				.withSuccessHandler(m0_js_crear_tabla)
+				.m5_6_gs_cargar_parametros(param_tabla);
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m5_js_inicializar_pestaña_m5_6",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+	/**
+	 * [descripcion funcion]
+	 *
+	 * @param   {number}  id_parametro	id del parametro a modificar
+	 * @param   {string}  operacion			tipo de modificacion a realizar
+	 *
+	 * @return  {object}	r							objecto con el resultado de la operacion de modificacion en el servidor          
+	 */
+	function m5_6_js_parametro_manipular(id_parametro, operacion) {
+		try {
+
+			var contenido = '<div class="div_panel mdl-shadow--3dp">';
+			if (operacion === "INSERTAR") {
+				contenido += "<h4>INSERTAR PARAMETRO</h4>";
+				contenido += "<p>Ingresar información para el nuevo parametro</p>";
+			} else {
+				contenido += "<h4>EDITAR PARAMETRO</h4>";
+				contenido += "<p>Editar información del parametro</p>";
+			}
+			var param_formulario = {
+				formulario: "m5_6_frm_manipular_parametros",
+				campos: [{
+					id_campo: "m5_6_hid_id_parametro",
+					tipo_campo: "hidden"
+				}, {
+					id_campo: "m5_6_hid_operacion",
+					tipo_campo: "hidden"
+				}, {
+					id_campo: "m5_6_txt_parametro",
+					nombre_campo: "Parametro...",
+					pattern: "",
+					error: "",
+					required: "required",
+					tipo_campo: "text",
+				}, {
+					id_campo: "m5_6_txt_parametro_descripcion",
+					nombre_campo: "Descripción...",
+					pattern: "",
+					error: "",
+					required: "required",
+					tipo_campo: "textarea",
+				}, {
+					id_campo: "m5_6_sel_parametro_ambito",
+					nombre_campo: "Ambito...",
+					required: "required",
+					tipo_campo: "select",
+				}, {
+					id_campo: "m5_6_chk_parametro_activo",
+					nombre_campo: "Activar o inactivar parametro",
+					tipo_campo: "checkbox",
+					checked: "checked"
+				}]
+			};
+			contenido += m0_js_crear_formulario(param_formulario);
+			contenido += '</div>';
+
+			router({
+				tipo_fuente: "VARIABLE",
+				contenido: contenido,
+				contenedor: "m0_div_panel_secundario",
+				id_privilegio: "5_6"
+			});
+
+			$("#m5_6_hid_operacion").val("INSERTAR");
+
+			m0_js_poblar_menu({
+				campo: "Ambito...",
+				criterio: "",
+				select: "m5_6_sel_parametro_ambito",
+				datos: [{
+					texto: "",
+					valor: "",
+					selected: "selected"
+				}, {
+					texto: "CANTADAS",
+					valor: "CANTADAS",
+					selected: ""
+				}, {
+					texto: "PROSPECTIVA",
+					valor: "PROSPECTIVA",
+					selected: ""
+				}]
+			});
+			$("#m5_6_chk_parametro_activo").val("si");
+			if (operacion === "EDITAR") {
+				google.script.run
+					.withFailureHandler(function () {
+						m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página")
+					})
+					.withSuccessHandler(m5_6_js_poblar_formulario_parametros)
+					.m5_6_gs_poblar_formulario_parametros(id_parametro);
+			}
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m5_6_js_parametro_manipular",
+				error: e,
+				parametros: {
+					"id_parametro": id_parametro,
+					"operacion": operacion
+				}
+			});
+		}
+	}
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * [poblamos el formulario de manipulacion de parametros con la informacion del parametro seleccionado en la lista de arriba]
+	 *
+	 * @param   {number}  id_parametro  	id del parametro del cual se traera la información
+	 *
+	 * @return  {Object} 								  objecto con la informacion del parametro para mostrar en el formulario      
+	 */
+	function m5_6_js_poblar_formulario_parametros(info_servidor) {
+		try {
+
+			$("#m5_6_hid_id_parametro").val(info_servidor.id_parametro);
+			$("#m5_6_hid_operacion").val(info_servidor.operacion);
+			$("#m5_6_txt_parametro").val(info_servidor.parametro).parent().addClass('is-dirty');
+			$("#m5_6_txt_parametro_descripcion").val(info_servidor.parametro_descripcion).parent().addClass('is-dirty');
+			$("#m5_6_sel_parametro_ambito").val(info_servidor.ambito);
+			if (info_servidor.activo == 1) {
+				$("#m5_6_chk_parametro_activo").prop('checked', true).parent().addClass('is-checked');
+			} else {
+				$("#m5_6_chk_parametro_activo").prop('checked', false).parent().removeClass('is-checked');
+			}
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m5_6_js_poblar_formulario_parametros",
+				error: e,
+				parametros: {
+					"info_servidor": info_servidor
+				}
+			});
+		}
+	}
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * [Guardamos los datos del formulario en el servidor]
+	 *
+	 * @param   {object}  frm  	formulario
+	 *
+	 * @return  {object}	r			onjecto con el resultado de la operacion en el servidor         
+	 */
+	function m5_6_js_parametro_manipular_guardar(frm) {
+		try {
+
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página")
+				})
+				.withSuccessHandler(function (r) {
+					if (m0_js_resultado_operacion(r)) {
+						$("#m5_6_hid_id_parametro").val("");
+						$("#m5_6_hid_operacion").val("INSERTAR");
+						$("#m5_6_txt_parametro").val("").parent().addClass('is-dirty');
+						$("#m5_6_txt_parametro_descripcion").val("").parent().addClass('is-dirty');
+						$("#m5_6_sel_parametro_ambito").val("");
+						$("#m5_6_chk_parametro_activo").prop('checked', false).parent().removeClass('is-checked');
+						$("#m5_6_div_consolidado_parametros").html('<div class="mdl-spinner mdl-spinner--single-color mdl-js-spinner is-active carga_spinner"></div>');
+						componentHandler.upgradeDom();
+						var param_tabla = {
+							contenedor: "m5_6_div_consolidado_parametros"
+						}
+						google.script.run
+							.withFailureHandler(function () {
+								m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página")
+							})
+							.withSuccessHandler(m0_js_crear_tabla)
+							.m5_6_gs_cargar_parametros(param_tabla);
+					}
+				})
+				.m5_6_gs_parametro_manipular_guardar(frm);
+			m0_js_aviso("modal_box", "Por favor espere mientras se almacenan los datos");
+			event.preventDefault();
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m5_6_js_parametro_manipular_guardar",
+				error: e,
+				parametros: frm
+			});
+		}
+	}
+
+
+
+	//################################################################################################################################################################################################################
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//SECCION 7 - PROSPECTIVA BEPS
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//################################################################################################################################################################################################################
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//listener de eventos del DOOM
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	$("#m0_div_panel_principal").on("submit", "#m5_7_frm_beps_prospectiva_consulta", function () {
+		m5_7_js_beps_prospectiva_consulta();
+	});
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_principal").on("click", "#m5_7_btn_beps_prospectiva_guardar_plantilla", function () {
+		m5_7_js_beps_prospectiva_guardar_plantilla_confirmacion();
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+	$("#m0_div_panel_aviso_modal_box").on("submit", "#m5_7_frm_beps_prospectiva_guardar_plantilla", function () {
+		m5_7_js_beps_prospectiva_guardar_plantilla();
+	});
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//funciones javascript
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	/**
+	 * funcion para cargar los objetos de una seccion especifica
+	 *
+	 * @return  {null}  
+	 */
+	function m5_js_inicializar_pestaña_m5_7() {
+		try {
+
+			m0_js_log_sesion({
+				id_sesion: ID_SESION,
+				log: "M5 - Registro prospectiva BEPS",
+				tipo_log: "ACCESO A SECCION"
+			});
+
+			var u = USUARIO;
+			var pos;
+			for (var mod = 0; mod < u.modulos.length; mod++) {
+				if (5 == u.modulos[mod].id_modulo) {
+					pos = mod;
+				}
+			}
+			var param_modulos = {
+				icono: u.modulos[pos].icono,
+				id_modulo: 5,
+				texto_1: u.modulos[pos].modulo,
+				texto_2: "Registro prospectiva BEPS"
+			};
+			m0_js_menu_arbol(param_modulos);
+			var param_formulario = {
+				formulario: "m5_7_frm_beps_prospectiva_consulta",
+				campos: [{
+					id_campo: "m5_7_txt_beps_prospectiva_fecha",
+					nombre_campo: "Fecha operación",
+					pattern: "",
+					error: "",
+					required: "required",
+					tipo_campo: "date",
+				}]
+			};
+			router({
+				tipo_fuente: "VARIABLE",
+				contenido: m0_js_crear_formulario(param_formulario),
+				contenedor: "m5_7_div_formulario_beps_prospectiva_fecha",
+				id_privilegio: "5_7"
+			});
+			$("#m5_7_txt_beps_prospectiva_fecha").parent().addClass('is-dirty');
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m5_js_inicializar_pestaña_m5_7",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * [Funcion para cargar la plantilla de registro de los parametros beps de prospectiva]
+	 *
+	 * @return  {null}          
+	 */
+	function m5_7_js_beps_prospectiva_consulta() {
+		try {
+
+			google.script.run
+				.withFailureHandler(function () { m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página") })
+				.withSuccessHandler(m0_js_resultado_operacion)
+				.m5_7_gs_beps_prospectiva_consulta($("#m5_7_txt_beps_prospectiva_fecha").val());
+
+			m0_js_aviso("modal_box", "Por favor espere mientras se carga la información");
+			event.preventDefault();
+
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m5_7_js_beps_prospectiva_consulta",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Pide una confirmacion expresa para el guardado de la plantilla beps prospectiva
+	 *
+	 *
+	 * @return  {null}          
+	 */
+	function m5_7_js_beps_prospectiva_guardar_plantilla_confirmacion() {
+		try {
+
+			var contenido = '<div class="div_panel mdl-shadow--3dp">';
+			contenido += '<h4 style="text-align: center;">GUARDAR PLANTILLA BEPS PROSPECTIVA</h4>';
+			contenido += '<p>IMPORTANTE: tenga en cuenta que una vez se envie la plantilla si se encuentran datos en base BEPS que correspondan a los mismos registrados en esta plantilla, estos se sobreescribiran </br>Esta seguro de guardar los datos ?</p>';
+			contenido += m0_js_crear_formulario({
+				formulario: "m5_7_frm_beps_prospectiva_guardar_plantilla",
+				campos: [{
+					id_campo: "m5_7_sel_beps_prospectiva_guardar_plantilla",
+					nombre_campo: "Por favor confirme el registro de la plantilla...",
+					required: "required",
+					pattern: "",
+					error: "",
+					tipo_campo: "select",
+				}]
+			});
+			contenido += '</div>';
+			m0_js_aviso("modal_box", contenido);
+			m0_js_poblar_menu({
+				campo: "Por favor confirme el registro de la plantilla...",
+				criterio: "",
+				select: "m5_7_sel_beps_prospectiva_guardar_plantilla",
+				datos: [{
+					texto: "",
+					valor: "",
+					selected: "selected"
+				}, {
+					texto: "SI",
+					valor: "SI",
+					selected: ""
+				}, {
+					texto: "NO",
+					valor: "NO",
+					selected: ""
+				}]
+			});
+			//$("#m5_3_sel_beps_cantadas_guardar_plantilla").parent().addClass('is-dirty');
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m5_7_js_beps_prospectiva_guardar_plantilla_confirmacion",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Carga desde el correo las cantadas y lo coloca en la plantilla
+	 *
+	 *
+	 * @return  {null}          
+	 */
+	function m5_7_js_beps_prospectiva_guardar_plantilla() {
+		try {
+
+			if ($("#m5_7_sel_beps_prospectiva_guardar_plantilla").val() === "SI") {
+				google.script.run
+					.withFailureHandler(function () { m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página") })
+					.withSuccessHandler(m0_js_resultado_operacion)
+					.m5_7_gs_beps_prospectiva_guardar_plantilla();
+				m0_js_aviso("modal_box", "Por favor espere mientras se guarda la información");
+			} else {
+				m0_js_aviso("cierre_modal_box", "");
+			}
+			event.preventDefault();
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m5_7_js_beps_prospectiva_guardar_plantilla",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+
+	//################################################################################################################################################################################################################
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//SECCION 8  - REPORTES BEPS PROSPECTIVA / CANTADAS
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//################################################################################################################################################################################################################
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//listener de eventos del DOOM
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//funciones javascript
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	/**
+	 * funcion para cargar los objetos de una seccion especifica
+	 *
+	 * @return  {null}  
+	 */
+	function m5_js_inicializar_pestaña_m5_8() {
+		try {
+
+			m0_js_log_sesion({
+				id_sesion: ID_SESION,
+				log: "M5 - Reportes del Modulo BEPS",
+				tipo_log: "ACCESO A SECCION"
+			});
+
+			var u = USUARIO;
+			var pos;
+			for (var mod = 0; mod < u.modulos.length; mod++) {
+				if (5 == u.modulos[mod].id_modulo) {
+					pos = mod;
+				}
+			}
+			var param_modulos = {
+				icono: u.modulos[pos].icono,
+				id_modulo: 5,
+				texto_1: u.modulos[pos].modulo,
+				texto_2: "Reportes del Modulo BEPS"
+			};
+			m0_js_menu_arbol(param_modulos);
+
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página");
+				})
+				.withSuccessHandler(function (r) {
+					m0_js_aviso("snackbar", r.mensaje);
+					if (r.exito) {
+						$("#m5_8_div_reporte_consolidado_ispv_beps").html(r.contenido_ispv_beps)
+						$("#m5_8_div_reporte_consolidado_referidos_beps").html(r.contenido_referidos_beps)
+						$("#m5_8_div_reporte_consolidado_anualidades_beps").html(r.contenido_anualidades_beps)
+						componentHandler.upgradeDom();
+					} else {
+						$("#m5_8_div_reporte_consolidado_ispv_beps").html("");
+						$("#m5_8_div_reporte_consolidado_referidos_beps").html("");
+						$("#m5_8_div_reporte_consolidado_anualidades_beps").html("");
+						m0_js_aviso("banner", r.mensaje);
+					}
+				})
+				.m5_8_gs_cargar_reportes(u.id_regional);
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m5_js_inicializar_pestaña_m5_8",
+				error: e,
+				parametros: {}
+			});
+		}
+		componentHandler.upgradeDom();
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Ejecuta la actualizacion del reporte
+	 *
+	 *
+	 * @return  {null}          
+	 */
+	function m5_8_js_actualizar_reporte_ispv_beps() {
+		try {
+
+			google.script.run
+				.withFailureHandler(function (e) {
+					m0_js_registrar_error({
+						gs: "m5_8_gs_actualizar_reporte_ispv_beps_paso_1",
+						funcion: "m5_8_js_actualizar_reporte_ispv_beps",
+						error: { message: e.name + " : " + e.message, name: "AJAX" },
+						parametros: {}
+					});
+				})
+				.withSuccessHandler(function (param) {
+
+					if (param.exito) {
+
+						var data = [];
+						for (var j = 0; j < param.ispv.registros; j++) {
+							var fila = []
+							fila.push(param.ispv.datos[j].id_gestion)
+							fila.push(param.ispv.datos[j].fecha)
+
+							var nombre_usuario = ""
+							for (var i = 0; i < param.usuario.registros; i++) {
+								if (param.usuario.datos[i].id_usuario == param.ispv.datos[j].id_usuario) {
+									nombre_usuario = param.usuario.datos[i].nombre
+								}
+							}
+
+							fila.push(nombre_usuario)
+
+							var oficina = ""
+							for (i = 0; i < param.oficina.registros; i++) {
+								if (param.oficina.datos[i].id_oficina === param.ispv.datos[j].id_pac) {
+									var oficina = param.oficina.datos[i].oficina
+								}
+							}
+							fila.push(oficina)
+
+							fila.push(param.ispv.datos[j].radicado)
+							fila.push(param.ispv.datos[j].tramite_beps)
+							fila.push(param.ispv.datos[j].semanas)
+
+							if (param.ispv.datos[j].gestion !== "") {
+								if (param.ispv.datos[j].gestion === "SI") {
+									fila.push("RESULTADOS POSITIVOS")
+								} else {
+									fila.push("RESULTADOS NEGATIVOS")
+								}
+							} else {
+								fila.push("")
+							}
+
+							fila.push(param.ispv.datos[j].psap_terceros)
+							fila.push(param.ispv.datos[j].informacion_adicional_gestion)
+							fila.push(param.ispv.datos[j].observacion)
+
+							/*
+							var bzg_validado = "NO"
+							var bzg_fecha = ""
+							var bzg_oficina = ""
+							var bzg_tramite = ""
+							var bzg_sub_tramite = ""
+							var bzg_rotonda = ""
+							var bzg_servicio = ""
+							for (var i = 0; i < param.tramites_bizagi.registros; i++) {
+								if (param.tramites_bizagi.datos[i].numero_radicacion === param.ispv.datos[j].radicado) {
+									bzg_validado = "SI"
+									bzg_fecha = param.tramites_bizagi.datos[i].fecha
+									bzg_oficina = param.tramites_bizagi.datos[i].oficina
+									bzg_tramite = param.tramites_bizagi.datos[i].tramite
+									bzg_sub_tramite = param.tramites_bizagi.datos[i].subtipo_tramite
+									bzg_rotonda = param.tramites_bizagi.datos[i].agente_rotonda
+									bzg_servicio = param.tramites_bizagi.datos[i].agente_servicio
+								}
+							}
+							*/
+							fila.push("")
+							fila.push("")
+							fila.push("")
+							fila.push("")
+							fila.push("")
+							fila.push("")
+							fila.push("")
+							data.push(fila)
+
+							m0_js_loading({
+								tipo: "COMPUESTO_ACTUALIZACION",
+								texto: "",
+								valor: ((j / param.ispv.registros) * 100)
+							})
+						}
+						google.script.run
+							.withFailureHandler(function (e) {
+								m0_js_registrar_error({
+									gs: "m5_8_gs_actualizar_reporte_ispv_beps_paso_2",
+									funcion: "m5_8_js_actualizar_reporte_ispv_beps",
+									error: { message: e.name + " : " + e.message, name: "AJAX" },
+									parametros: data
+								});
+							})
+							.withSuccessHandler(m0_js_resultado_operacion)
+							.m5_8_gs_actualizar_reporte_ispv_beps_paso_2(data);
+						m0_js_loading({
+							tipo: "COMPUESTO_ACTUALIZACION",
+							texto: "Por favor espere mientras se sube al servidor la base de datos actualizada",
+							valor: false
+						})
+
+					}
+				})
+				.m5_8_gs_actualizar_reporte_ispv_beps_paso_1();
+
+			m0_js_loading({
+				tipo: "COMPUESTO_CREACION",
+				titulo: "ACTUALIZACIÓN REPORTE GESTION ISPV BEPS",
+				texto: "Por favor espere mientras se descargan los datos del servidor",
+				valor: false
+			})
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m5_8_js_actualizar_reporte_ispv_beps",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Ejecuta la actualizacion del reporte
+	 *
+	 * @return  {null}          
+	 */
+	function m5_8_js_actualizar_reporte_referidos_beps() {
+		try {
+
+			google.script.run
+				.withFailureHandler(function (e) {
+					m0_js_registrar_error({
+						gs: "m5_8_gs_actualizar_reporte_referidos_beps_paso_1",
+						funcion: "m5_8_js_actualizar_reporte_referidos_beps",
+						error: { message: e.name + " : " + e.message, name: "AJAX" },
+						parametros: {}
+					});
+				})
+				.withSuccessHandler(function (param) {
+
+					if (param.exito) {
+
+						var data = [];
+						for (var j = 0; j < param.referidos.registros; j++) {
+
+							var fila = []
+							fila.push(param.referidos.datos[j].id_gestion)
+							var usuario = "";
+							for (var i = 0; i < param.usuario.registros; i++) {
+								if (param.referidos.datos[j].id_usuario === param.usuario.datos[i].id_usuario) {
+									usuario = param.usuario.datos[i].nombre
+								}
+							}
+							fila.push(usuario)
+							fila.push(param.referidos.datos[j].fecha)
+							var oficina = ""
+							for (i = 0; i < param.oficina.registros; i++) {
+								if (param.referidos.datos[j].id_oficina === param.oficina.datos[i].id_oficina) {
+									oficina = param.oficina.datos[i].oficina
+								}
+							}
+							fila.push(oficina)
+							fila.push(param.referidos.datos[j].referido)
+							fila.push(param.referidos.datos[j].telefono)
+							var usuario_refiere = "";
+							for (i = 0; i < param.usuario.registros; i++) {
+								if (param.referidos.datos[j].id_usuario_refiere === param.usuario.datos[i].id_usuario) {
+									usuario_refiere = param.usuario.datos[i].nombre
+								}
+							}
+							fila.push(usuario_refiere)
+							var municipio = ""
+							var departamento = ""
+							for (i = 0; i < param.municipio.registros; i++) {
+								if (param.referidos.datos[j].id_municipio === param.municipio.datos[i].id_municipio) {
+									municipio = param.municipio.datos[i].municipio
+									departamento = param.municipio.datos[i].departamento
+								}
+							}
+							fila.push(municipio)
+							fila.push(departamento)
+							fila.push(param.referidos.datos[j].observacion)
+							data.push(fila)
+
+							m0_js_loading({
+								tipo: "COMPUESTO_ACTUALIZACION",
+								texto: "",
+								valor: ((j / param.referidos.registros) * 100)
+							})
+						}
+						google.script.run
+							.withFailureHandler(function (e) {
+								m0_js_registrar_error({
+									gs: "m5_8_gs_actualizar_reporte_referidos_beps_paso_2",
+									funcion: "m5_8_js_actualizar_reporte_referidos_beps",
+									error: { message: e.name + " : " + e.message, name: "AJAX" },
+									parametros: data
+								});
+							})
+							.withSuccessHandler(m0_js_resultado_operacion)
+							.m5_8_gs_actualizar_reporte_referidos_beps_paso_2(data);
+						m0_js_loading({
+							tipo: "COMPUESTO_ACTUALIZACION",
+							texto: "Por favor espere mientras se sube al servidor la base de datos actualizada",
+							valor: false
+						})
+
+					}
+				})
+				.m5_8_gs_actualizar_reporte_referidos_beps_paso_1();
+
+			m0_js_loading({
+				tipo: "COMPUESTO_CREACION",
+				titulo: "ACTUALIZACIÓN REPORTE GESTION REFERIDOS BEPS",
+				texto: "Por favor espere mientras se descargan los datos del servidor",
+				valor: false
+			})
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m5_8_js_actualizar_reporte_referidos_beps",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Ejecuta la actualizacion del reporte
+	 *
+	 * @return  {null}          
+	 */
+	function m5_8_js_actualizar_reporte_anualidades_beps() {
+		try {
+
+			google.script.run
+				.withFailureHandler(function (e) {
+					m0_js_registrar_error({
+						gs: "m5_8_gs_actualizar_reporte_anualidades_beps_paso_1",
+						funcion: "m5_8_js_actualizar_reporte_anualidades_beps",
+						error: { message: e.name + " : " + e.message, name: "AJAX" },
+						parametros: {}
+					});
+				})
+				.withSuccessHandler(function (param) {
+
+					if (param.exito) {
+						var data = [];
+						for (var j = 0; j < param.anualidades.registros; j++) {
+							var fila = []
+							fila.push(param.anualidades.datos[j].id_gestion)
+							fila.push(param.anualidades.datos[j].fecha)
+							fila.push(param.anualidades.datos[j].documento)
+							var usuario = "";
+							for (var i = 0; i < param.usuario.registros; i++) {
+								if (param.anualidades.datos[j].id_usuario.toString() === param.usuario.datos[i].id_usuario) {
+									usuario = param.usuario.datos[i].nombre
+								}
+							}
+							fila.push(usuario)
+							var oficina = ""
+							for (i = 0; i < param.oficina.registros; i++) {
+								if (param.anualidades.datos[j].id_pac === param.oficina.datos[i].id_oficina) {
+									oficina = param.oficina.datos[i].oficina
+								}
+							}
+
+							fila.push(oficina)
+							fila.push(param.anualidades.datos[j].detalle_gestion)
+							data.push(fila)
+							m0_js_loading({
+								tipo: "COMPUESTO_ACTUALIZACION",
+								texto: "",
+								valor: ((j / param.anualidades.registros) * 100)
+							})
+
+						}
+						google.script.run
+							.withFailureHandler(function (e) {
+								m0_js_registrar_error({
+									gs: "m5_8_gs_actualizar_reporte_anualidades_beps_paso_2",
+									funcion: "m5_8_js_actualizar_reporte_anualidades_beps",
+									error: { message: e.name + " : " + e.message, name: "AJAX" },
+									parametros: data
+								});
+							})
+							.withSuccessHandler(m0_js_resultado_operacion)
+							.m5_8_gs_actualizar_reporte_referidos_beps_paso_2(data);
+						m0_js_loading({
+							tipo: "COMPUESTO_ACTUALIZACION",
+							texto: "Por favor espere mientras se sube al servidor la base de datos actualizada",
+							valor: false
+						})
+
+					}
+				})
+				.m5_8_gs_actualizar_reporte_anualidades_beps_paso_1();
+
+			m0_js_loading({
+				tipo: "COMPUESTO_CREACION",
+				titulo: "ACTUALIZACIÓN REPORTE GESTION ANUALIDADES BEPS",
+				texto: "Por favor espere mientras se descargan los datos del servidor",
+				valor: false
+			})
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m5_8_js_actualizar_reporte_anualidades_beps",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+
+	//################################################################################################################################################################################################################
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//SECCION 9 - REFERIDOS BEPS
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//################################################################################################################################################################################################################
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//listener de eventos del DOOM
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_principal").on("submit", "#m5_9_frm_referidos_beps", function () {
+		try {
+
+			google.script.run
+				.withFailureHandler(function (e) {
+					m0_js_registrar_error({
+						gs: "m5_9_gs_registro_referido",
+						funcion: "submit / m5_9_frm_referidos_beps",
+						error: { message: e.name + " : " + e.message, name: "AJAX" },
+						parametros: {}
+					});
+				})
+				.withSuccessHandler(function (r) {
+					if (m0_js_resultado_operacion(r)) {
+						m5_js_inicializar_pestaña_m5_9()
+					}
+				})
+				.m5_9_gs_registro_referido(this);
+			m0_js_aviso("modal_box", "Por favor espere mientras guardan los datos");
+
+
+			event.preventDefault();
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "submit / m5_9_frm_referidos_beps",
+				error: e,
+				parametros: {}
+			});
+		}
+	});
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//funciones javascript
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	/**
+	 * funcion para cargar los objetos de una seccion especifica
+	 *
+	 * @return  {null}  
+	 */
+	function m5_js_inicializar_pestaña_m5_9() {
+		try {
+
+			m0_js_log_sesion({
+				id_sesion: ID_SESION,
+				log: "M5 - Modulo para el registro de referidos BEPS",
+				tipo_log: "ACCESO A SECCION"
+			});
+
+			var u = USUARIO;
+			var pos;
+			for (var mod = 0; mod < u.modulos.length; mod++) {
+				if (5 == u.modulos[mod].id_modulo) {
+					pos = mod;
+				}
+			}
+			var param_modulos = {
+				icono: u.modulos[pos].icono,
+				id_modulo: 5,
+				texto_1: u.modulos[pos].modulo,
+				texto_2: "registro referidos BEPS"
+			};
+			m0_js_menu_arbol(param_modulos);
+
+			var param_formulario = {
+				formulario: "m5_9_frm_referidos_beps",
+				campos: [{
+					id_campo: "m5_9_hid_referidos_beps_oficina",
+					value: u.id_oficina,
+					tipo_campo: "hidden"
+				}, {
+					id_campo: "m5_9_txt_referido_beps_nombre_referido",
+					nombre_campo: "Nombre del referido",
+					pattern: "",
+					error: "",
+					required: "required",
+					tipo_campo: "text"
+				}, {
+					id_campo: "m5_9_txt_referido_beps_telefono_referido",
+					nombre_campo: "Telefono del referido",
+					pattern: "",
+					error: "",
+					required: "required",
+					tipo_campo: "number"
+				}, {
+					id_campo: "m5_9_txt_referido_beps_funcionario",
+					nombre_campo: "Funcionario quien refiere",
+					required: "required",
+					tipo_campo: "select"
+				}, {
+					id_campo: "m5_9_txt_referido_beps_municipio",
+					nombre_campo: "Municipio",
+					required: "required",
+					tipo_campo: "select"
+				}, {
+					id_campo: "m5_9_txt_referido_beps_observaciones",
+					nombre_campo: "Observaciones",
+					required: "",
+					tipo_campo: "textarea",
+					value: ""
+				}]
+			};
+			var contenido = m0_js_crear_formulario(param_formulario);
+
+			router({
+				tipo_fuente: "VARIABLE",
+				contenido: contenido,
+				contenedor: "m5_9_div_referidos_beps",
+				id_privilegio: "5_9"
+			});
+
+			google.script.run
+				.withFailureHandler(function (e) {
+					m0_js_registrar_error({
+						gs: "m5_9_gs_referidos_beps_poblar_menus",
+						funcion: "m5_js_inicializar_pestaña_m5_9",
+						error: { message: e.name + " : " + e.message, name: "AJAX" },
+						parametros: param
+					});
+				})
+				.withSuccessHandler(function (r) {
+
+					if (m0_js_resultado_operacion(r)) {
+
+						var datos_select_funcionario = [{
+							texto: "",
+							valor: "",
+							selected: "selected"
+						}]
+						for (var j = 0; j < r.funcionario.registros; j++) {
+							datos_select_funcionario.push({
+								texto: r.funcionario.datos[j].nombre,
+								valor: r.funcionario.datos[j].id_usuario,
+								selected: ""
+							})
+						}
+
+						var datos_select_municipio = [{
+							texto: "",
+							valor: "",
+							selected: "selected"
+						}]
+						for (var j = 0; j < r.municipio.registros; j++) {
+							datos_select_municipio.push({
+								texto: r.municipio.datos[j].departamento + " / " + r.municipio.datos[j].municipio,
+								valor: r.municipio.datos[j].id_municipio,
+								selected: ""
+							})
+						}
+
+						m0_js_poblar_menu({
+							select: "m5_9_txt_referido_beps_funcionario",
+							datos: datos_select_funcionario
+						})
+
+						m0_js_poblar_menu({
+							select: "m5_9_txt_referido_beps_municipio",
+							datos: datos_select_municipio
+						})
+
+					}
+
+				})
+				.m5_9_gs_referidos_beps_poblar_menus(u.id_oficina);
+
+			m0_js_loading({
+				tipo: "COMPUESTO_CREACION",
+				titulo: "REFERIDOS BEPS",
+				valor: false,
+				texto: "Carga de datos iniciales para el formulario",
+			})
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m5_js_inicializar_pestaña_m5_2",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+
+
+
+	//################################################################################################################################################################################################################
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//SECCION 10 - FORMULARIO ANUALIDAD BEPS
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//################################################################################################################################################################################################################
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//listener de eventos del DOOM
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	$("#m0_div_panel_principal").on("keypress", "#m5_10_txt_base_anualidad_documento", function (e) {
+		if (e.which === 13) {
+			m5_10_js_cargar_info_ciudadano(this.value);
+			m5_10_js_cargar_gestion_ciudadano(this.value);
+		}
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_principal").on("change", "#m5_10_txt_base_anualidad_documento", function (e) {
+		m5_10_js_cargar_info_ciudadano(this.value);
+		m5_10_js_cargar_gestion_ciudadano(this.value);
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_principal").on("click", "#m5_10_btn_base_anualidad_nuevo_acercamiento", function () {
+		m5_10_js_mostrar_formulario_gestion();
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_principal").on("submit", "#m5_10_frm_anualidad_nueva_gestion", function () {
+		console.log(this)
+		m5_10_js_guardar_nueva_gestion(this);
+	});
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//funciones javascript
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	/**
+	 * funcion para cargar los objetos de una seccion especifica
+	 *
+	 * @return  {null}  
+	 */
+	function m5_js_inicializar_pestaña_m5_10() {
+		try {
+
+			m0_js_log_sesion({
+				id_sesion: ID_SESION,
+				log: "M5 - Registrar gestión ANUALIDAD BEPS",
+				tipo_log: "ACCESO A SECCION"
+			});
+
+			var u = USUARIO;
+			var pos;
+			for (var mod = 0; mod < u.modulos.length; mod++) {
+				if (5 == u.modulos[mod].id_modulo) {
+					pos = mod;
+				}
+			}
+			var param_modulos = {
+				icono: u.modulos[pos].icono,
+				id_modulo: 5,
+				texto_1: u.modulos[pos].modulo,
+				texto_2: "Registrar gestión ANUALIDAD BEPS"
+			};
+			m0_js_menu_arbol(param_modulos);
+			$("#m5_10_div_accordion").accordion({
+				heightStyle: "content"
+			});
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m5_js_inicializar_pestaña_m5_10",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Carga la informacion basica del ciudadano ANUALIDAD BEPS
+	 *
+	 * @param   {number}  param  documento del ciudadano
+	 * 
+	 * @return  {null}          
+	 */
+	function m5_10_js_cargar_info_ciudadano(documento) {
+		try {
+
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página")
+				})
+				.withSuccessHandler(function (contenido) {
+					$("#m5_10_div_base_anualidad_nuevo_acercamiento").show();
+					router({
+						tipo_fuente: "VARIABLE",
+						contenido: contenido,
+						contenedor: "m5_10_div_base_anualidad_info_ciudadano",
+						id_privilegio: "5_10"
+					});
+				})
+				.m5_10_gs_cargar_info_ciudadano(documento);
+			$("#m5_10_div_base_anualidad_info_ciudadano").html('<div class="mdl-spinner mdl-spinner--single-color mdl-js-spinner is-active carga_spinner"></div>');
+			componentHandler.upgradeDom();
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m5_10_js_cargar_info_ciudadano",
+				error: e,
+				parametros: {
+					"documento": documento
+				}
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * [Carga la informacion de la gestion realizada con el ciudadano]
+	 *
+	 * @param   {number}  param  documento del ciudadano
+	 *
+	 * @return  {null}          
+	 */
+	function m5_10_js_cargar_gestion_ciudadano(documento) {
+		try {
+
+			var param_tabla = {
+				contenedor: "m5_10_div_base_anualidad_gestion_ciudadano",
+				criterio: {
+					documento: documento
+				}
+			};
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página")
+				})
+				.withSuccessHandler(m0_js_crear_tabla)
+				.m5_10_gs_cargar_gestion_ciudadano(param_tabla);
+			$("#m5_10_div_base_anualidad_gestion_ciudadano").html('<div class="mdl-spinner mdl-spinner--single-color mdl-js-spinner is-active carga_spinner"></div>');
+			componentHandler.upgradeDom();
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m5_10_js_cargar_gestion_ciudadano",
+				error: e,
+				parametros: {
+					"documento": documento
+				}
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Muestra el formulario para guardar una nueva gestion
+	 *
+	 * @return  {null}          
+	 */
+	function m5_10_js_mostrar_formulario_gestion() {
+		try {
+
+			var contenido = '<div class="div_panel mdl-shadow--3dp">';
+			contenido += "<h4>GUARDAR NUEVA GESTIÓN</h4>";
+			var param_formulario = {
+				formulario: "m5_10_frm_anualidad_nueva_gestion",
+				campos: [{
+					id_campo: "m5_10_hid_anualidad_documento",
+					tipo_campo: "hidden"
+				}, {
+					id_campo: "m5_10_sel_anualidad_gestion",
+					nombre_campo: "Seleccione un categoría...",
+					required: "required",
+					tipo_campo: "select",
+				}, {
+					id_campo: "m5_10_txt_anualidad_detalle_gestion",
+					nombre_campo: "Detalle gestión...",
+					tipo_campo: "textarea",
+				}]
+			};
+			contenido += m0_js_crear_formulario(param_formulario);
+			contenido += '</div>';
+			router({
+				tipo_fuente: "VARIABLE",
+				contenido: contenido,
+				contenedor: "m5_10_div_base_anualidad_formulario",
+				id_privilegio: "5_10"
+			});
+			$("#m5_10_hid_anualidad_documento").val($("#m5_10_hid_base_anualidad_info_ciudadano_documento").val());
+			m0_js_poblar_menu({
+				campo: "Seleccione un categoría...",
+				criterio: "",
+				select: "m5_10_sel_anualidad_gestion",
+				datos: [{
+					texto: "",
+					valor: "",
+					selected: "selected"
+				}, {
+					texto: "CONTACTO NO EXITOSO",
+					valor: "CONTACTO NO EXITOSO",
+					selected: ""
+				}, {
+					texto: "CIUDADANO CONTACTADO Y CITADO",
+					valor: "CIUDADANO CONTACTADO Y CITADO",
+					selected: ""
+				}, {
+					texto: "CIUDADANO CONTACTADO, PERO NO INTERESADO",
+					valor: "CIUDADANO CONTACTADO, PERO NO INTERESADO",
+					selected: ""
+				}, {
+					texto: "CIUDADANO ASISTIO A CITA, ANUALIDAD BEPS REALIZADA",
+					valor: "CIUDADANO ASISTIO A CITA, ANUALIDAD BEPS REALIZADA",
+					selected: ""
+				}, {
+					texto: "CIUDADANO NO ASISTIO A LA CITA",
+					valor: "CIUDADANO NO ASISTIO A LA CITA",
+					selected: ""
+				}]
+			});
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m5_10_js_mostrar_formulario_gestion",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Funcion para guardar la informacion de la gestion
+	 *
+	 * @param   {frm}  frm  formulario nueva gestion
+	 *
+	 * @return  {null}          
+	 */
+	function m5_10_js_guardar_nueva_gestion(frm) {
+		try {
+
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página")
+				})
+				.withSuccessHandler(function (r) {
+					m0_js_aviso("aviso_modal_box", r.mensaje);
+					if (r.exito) {
+						m5_10_js_cargar_info_ciudadano($("#m5_10_hid_base_anualidad_info_ciudadano_documento").val());
+						m5_10_js_cargar_gestion_ciudadano($("#m5_10_hid_base_anualidad_info_ciudadano_documento").val());
+						$("#m5_10_div_base_anualidad_formulario").html('');
+					}
+				})
+				.m5_10_gs_guardar_nueva_gestion(frm);
+			event.preventDefault();
+			m0_js_aviso("modal_box", "Por favor espere mientras se almacenan los datos");
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m5_10_js_guardar_nueva_gestion",
+				error: e,
+				parametros: frm
+			});
+		}
+	}
+
+
+
+
+</script>

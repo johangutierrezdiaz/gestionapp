@@ -1,0 +1,91 @@
+<h4 id="m2_1_h4_titulo">CONTROL DE APERTURA / </h4>
+<h5 id="m2_1_titulo"></h5>
+<br />
+<p>Por favor verifique la información consolidada mostrada en cada una de las secciones del Formulario y diligencie los campos
+	requeridos </p>
+<hr />
+<div id="m2_1_div_accordion">
+	<h3><b>SECCION 1: CHECKLIST PERSONAL</b></h3>
+	<div>
+		<p>En caso de que presente alguna novedad con alguno de los integrantes de su equipo de trabajo, desmarque la
+			casilla correspondiente de la columna <u>Disponibilidad</u> y diligencie el campo de <u>Observaciones relacionadas
+				con el personal</u></p>
+		<h5>1.1 Alistamiento equipo de trabajo:</h5>
+		<div id="m2_1_div_personal">
+			<div class="mdl-spinner mdl-spinner--single-color mdl-js-spinner is-active carga_spinner"></div>
+		</div>
+		<br />
+		<h5>1.2 Observaciones generales relacionadas con el personal:</h5>
+		<div class="mdl-textfield mdl-js-textfield">
+			<textarea class="mdl-textfield__input" type="text" rows="3" id="m2_1_txt_descripcion"
+				name="m2_1_txt_descripcion"></textarea>
+		</div>
+		<br />
+		<br />
+	</div>
+	<h3><b>SECCION 2: CHECKLIST INFRAESTRUCTURA / CONECTIVIDAD / EQUIPOS </b></h3>
+	<div>
+		<br />
+		<h5>2.1 Observaciones relacionadas con infraestructura, conectividad y equipos </h5>
+		<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+			<select class="mdl-textfield__input" id="m2_1_sel_reporte_mtto" name="m2_1_sel_reporte_mtto">
+				<option></option>
+			</select>
+			<label class="mdl-textfield__label" for="m2_1_sel_reporte_mtto">Seleccione un tipo de novedad...</label>
+		</div>
+		<br />
+		<div class="mdl-textfield mdl-js-textfield">
+			<textarea class="mdl-textfield__input" type="text" rows="3" id="m2_1_txt_reporte_mtto"
+				name="m2_1_txt_reporte_mtto"></textarea>
+			<label class="mdl-textfield__label" for="m2_1_txt_reporte_mtto">Descripción de la novedad...</label>
+		</div>
+		<br />
+		<br />
+		<button id="m2_1_btn_agregar_novedad_mtto"	class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">AGREGAR NOVEDAD	>></button>
+		<br />
+		<br />
+		<hr />
+		<ul id="m2_1_ul_consolidado_novedades_mtto" class="demo-list-three mdl-list"></ul>
+		<!--
+		<hr />
+		<br />
+		<br />
+		<h5>2.2 Planilla de control de ingreso y temperatura (Prevencion del COVID-19)</h5>
+		<div id="m2_1_div_planilla_control_ingreso">
+			<div class="mdl-spinner mdl-spinner--single-color mdl-js-spinner is-active carga_spinner"></div>
+		</div>
+		-->
+	</div>
+	<h3><b>SECCION 3: REUNIÓN DE APERTURA </b></h3>
+	<div>
+		<h5>3.1 Temas tratados en la reunión apertura de la oficina: </h5>
+		<div class="mdl-textfield mdl-js-textfield">
+			<textarea class="mdl-textfield__input" type="text" rows="3" id="m2_1_txt_reunion"
+				name="m2_1_txt_reunion"></textarea>
+		</div>
+		<br />
+		<br />
+		<h5>3.2 Relación de temas registrados en el banco de conocimientos disponibles para socializar: </h5>
+		<p>En caso de haber socializado algunos de los temas registrados en la base de conocimientos, por favor marcar como socializado y subir su soporte de socialización en caso de que sea requerido</p>
+		<div id="m2_1_div_reporte_socializacion"></div>
+		<br />
+		<br />
+	</div>
+	<h3><b>SECCION 4: APERTURA EN BIZAGI</b></h3>
+	<div>
+		<h5>4.2 Caso Bizagi de Apertura: </h5>
+		<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+			<input class="mdl-textfield__input" type="text" id="m2_1_txt_bizagi" name="m2_1_txt_bizagi">
+			<span class="mdl-textfield__error">Debe ser un radicado Bizagi valido...!</span>
+		</div>
+		<br />
+		<br />
+		<button id="m2_1_btn_registrar_acta"
+			class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
+			REGISTRAR FORMULARIO
+		</button>
+	</div>
+</div>
+<script>
+	m2_js_inicializar_pestaña_m2_1();
+</script>

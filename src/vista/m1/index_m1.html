@@ -1,0 +1,34 @@
+<script>
+	/**---------------------------------------MODULO ADMINISTRACION APP----------------------------------------------------------------------------------- */
+	m0_js_log_sesion({
+		id_sesion: ID_SESION,
+		log: "M1",
+		tipo_log: "ACCESO A MODULO"
+	});
+
+	var param = {
+		id_modulo: 1,
+		secciones: [{
+			nombre_seccion: "Administrar usuarios",
+			fuente: "vista/m1/index_m1_1",
+			privilegio: "1_1",
+			descripcion: "Consultar, Editar, Adicionar o Desactivar usuarios"
+		}, {
+			nombre_seccion: "Administrar privilegios",
+			fuente: "vista/m1/index_m1_2",
+			privilegio: "1_2",
+			descripcion: "Admnistrar los privilegios de acceso a las diferentes funcionalidades de la APP"
+		}, {
+			nombre_seccion: "Administrar oficinas",
+			fuente: "vista/m1/index_m1_3",
+			privilegio: "1_3",
+			descripcion: "Consultar, Editar, Adicionar o Desactivar Oficinas"
+		}, {
+			nombre_seccion: "Delegar oficina",
+			fuente: "vista/m1/index_m1_4",
+			privilegio: "1_4",
+			descripcion: "Formulario para la delegacion de oficinas alternas a usuarios con rol de lider de PAC"
+		}]
+	}
+	m0_js_inicializar_modulo(param);
+</script>

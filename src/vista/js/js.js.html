@@ -1,0 +1,1740 @@
+<script>
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//listener de eventos del DOM
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+
+	BD = {
+		SINCRONIZADO: true,
+		ULTIMA_SINCRONIZACION: new Date()
+	}
+
+	LISTADO_TIPO_OFICINAS = [{
+		texto: "",
+		valor: "",
+		selected: "selected"
+	}, {
+		texto: "PAA",
+		valor: "PAA",
+		selected: ""
+	}, {
+		texto: "PAB",
+		valor: "PAB",
+		selected: ""
+	}, {
+		texto: "PAC",
+		valor: "PAC",
+		selected: ""
+	}, {
+		texto: "PAE",
+		valor: "PAE",
+		selected: ""
+	}, {
+		texto: "PA REGIONAL",
+		valor: "PA REGIONAL",
+		selected: ""
+	}, {
+		texto: "PA PSAP",
+		valor: "PA PSAP",
+		selected: ""
+	}, {
+		texto: "PA BEPS",
+		valor: "PA BEPS",
+		selected: ""
+	}, {
+		texto: "ADMINISTRATIVA REGIONAL",
+		valor: "ADMINISTRATIVA REGIONAL",
+		selected: ""
+	}, {
+		texto: "ADMINISTRATIVA NIVEL CENTRAL",
+		valor: "ADMINISTRATIVA NIVEL CENTRAL",
+		selected: ""
+	}, {
+		texto: "PA EXCLUIDO CONTROL DE APERTURA",
+		valor: "PA EXCLUIDO CONTROL DE APERTURA",
+		selected: ""
+	}];
+
+	//-------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	LISTADO_AREAS = [{
+		texto: "",
+		valor: "",
+		selected: "selected"
+	}, {
+		texto: "SERVICIO AL CIUDADANO",
+		valor: "SERVICIO AL CIUDADANO",
+		selected: ""
+	}, {
+		texto: "DEFENSA JUDICIAL",
+		valor: "DEFENSA JUDICIAL",
+		selected: ""
+	}, {
+		texto: "COMERCIAL RPM",
+		valor: "COMERCIAL RPM",
+		selected: ""
+	}, {
+		texto: "MERCADEO",
+		valor: "MERCADEO",
+		selected: ""
+	}, {
+		texto: "COMERCIAL BEPS",
+		valor: "COMERCIAL BEPS",
+		selected: ""
+	}, {
+		texto: "ADMINISTRATIVA",
+		valor: "ADMINISTRATIVA",
+		selected: ""
+	}, {
+		texto: "TALENTO HUMANO",
+		valor: "TALENTO HUMANO",
+		selected: ""
+	}, {
+		texto: "SERVICIOS GENERALES",
+		valor: "SERVICIOS GENERALES",
+		selected: ""
+	}, {
+		texto: "ADMINISTRATIVA BEPS",
+		valor: "ADMINISTRATIVA BEPS",
+		selected: ""
+	}];
+
+	//-------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+	LISTADO_CARGOS = [{
+		texto: "",
+		valor: "",
+		selected: "selected"
+	}, {
+		texto: "PROFESIONAL",
+		valor: "PROFESIONAL",
+		selected: ""
+	}, {
+		texto: "ANALISTA",
+		valor: "ANALISTA",
+		selected: ""
+	}, {
+		texto: "DIRECTOR",
+		valor: "DIRECTOR",
+		selected: ""
+	}, {
+		texto: "ASISTENTE ADMINISTRATIVA",
+		valor: "ASISTENTE ADMINISTRATIVA",
+		selected: ""
+	}, {
+		texto: "AGENTE DE SERVICIO EN MISIÓN",
+		valor: "AGENTE DE SERVICIO EN MISIÓN",
+		selected: ""
+	}, {
+		texto: "AGENTE DE SERVICIO COLPENSIONES",
+		valor: "AGENTE DE SERVICIO COLPENSIONES",
+		selected: ""
+	}, {
+		texto: "GESTOR DE SERVICIO EN MISIÓN",
+		valor: "GESTOR DE SERVICIO EN MISIÓN",
+		selected: ""
+	}, {
+		texto: "GESTOR DE SERVICIO COLPENSIONES",
+		valor: "GESTOR DE SERVICIO COLPENSIONES",
+		selected: ""
+	}, {
+		texto: "JEFE PAC EN MISIÓN",
+		valor: "JEFE PAC EN MISIÓN",
+		selected: ""
+	}, {
+		texto: "JEFE PAC COLPENSIONES",
+		valor: "JEFE PAC COLPENSIONES",
+		selected: ""
+	}, {
+		texto: "GESTOR BEPS",
+		valor: "GESTOR BEPS",
+		selected: ""
+	}, {
+		texto: "AGENTE DE ROTONDA",
+		valor: "AGENTE DE ROTONDA",
+		selected: ""
+	}, {
+		texto: "ESTUDIANTE UNIVERSITARIO EN PRACTICA",
+		valor: "ESTUDIANTE UNIVERSITARIO EN PRACTICA",
+		selected: ""
+	}, {
+		texto: "AGENTE DE SERVICIO PSAP",
+		valor: "AGENTE DE SERVICIO PSAP",
+		selected: ""
+	}, {
+		texto: "APRENDIZ SENA",
+		valor: "APRENDIZ SENA",
+		selected: ""
+	}, {
+		texto: "ORIENTADOR",
+		valor: "ORIENTADOR",
+		selected: ""
+	}];
+
+	//-------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	LISTADO_ROLES = [{
+		texto: "",
+		valor: "",
+		selected: "selected"
+	}, {
+		texto: "REGIONAL / COMERCIAL RPM",
+		valor: "REGIONAL / COMERCIAL RPM",
+		selected: ""
+	}, {
+		texto: "REGIONAL / COMERCIAL BEPS",
+		valor: "REGIONAL / COMERCIAL BEPS",
+		selected: ""
+	}, {
+		texto: "REGIONAL / INTEGRACIÓN OPERATIVA",
+		valor: "REGIONAL / INTEGRACIÓN OPERATIVA",
+		selected: ""
+	}, {
+		texto: "REGIONAL / DEFENSA JUDICIAL",
+		valor: "REGIONAL / DEFENSA JUDICIAL",
+		selected: ""
+	}, {
+		texto: "REGIONAL / ASEGURAMIENTO DE LA CALIDAD",
+		valor: "REGIONAL / ASEGURAMIENTO DE LA CALIDAD",
+		selected: ""
+	}, {
+		texto: "REGIONAL / MERCADEO",
+		valor: "REGIONAL / MERCADEO",
+		selected: ""
+	}, {
+		texto: "REGIONAL / ADMINISTRATIVA Y TALENTO HUMANO",
+		valor: "REGIONAL / ADMINISTRATIVA Y TALENTO HUMANO",
+		selected: ""
+	}, {
+		texto: "REGIONAL / LÍDER FRENTE DE ACCIÓN",
+		valor: "REGIONAL / LÍDER FRENTE DE ACCIÓN",
+		selected: ""
+	}, {
+		texto: "REGIONAL / LÍDER DE ÁREA",
+		valor: "REGIONAL / LÍDER DE ÁREA",
+		selected: ""
+	}, {
+		texto: "REGIONAL / ANALISTA",
+		valor: "REGIONAL / ANALISTA",
+		selected: ""
+	}, {
+		texto: "REGIONAL / DIRECTOR",
+		valor: "REGIONAL / DIRECTOR",
+		selected: ""
+	}, {
+		texto: "REGIONAL / ESTUDIANTE EN PRACTICA",
+		valor: "REGIONAL / ESTUDIANTE EN PRACTICA",
+		selected: ""
+	}, {
+		texto: "REGIONAL / ASISTENTE ADMINISTRATIVA",
+		valor: "REGIONAL / ASISTENTE ADMINISTRATIVA",
+		selected: ""
+	}, {
+		texto: "PAC / AGENTE DE SERVICIO",
+		valor: "PAC / AGENTE DE SERVICIO",
+		selected: ""
+	}, {
+		texto: "PAC / GESTOR DE SERVICIO",
+		valor: "PAC / GESTOR DE SERVICIO",
+		selected: ""
+	}, {
+		texto: "PAC / ORIENTADOR",
+		valor: "PAC / ORIENTADOR",
+		selected: ""
+	}, {
+		texto: "PAC / AGENTE ROTONDA",
+		valor: "PAC / AGENTE ROTONDA",
+		selected: ""
+	}, {
+		texto: "PAC / LIDER PAC",
+		valor: "PAC / LIDER PAC",
+		selected: ""
+	}, {
+		texto: "PAC / JEFE PAC",
+		valor: "PAC / JEFE PAC",
+		selected: ""
+	}, {
+		texto: "PAC / GESTOR BEPS",
+		valor: "PAC / GESTOR BEPS",
+		selected: ""
+	}, {
+		texto: "PAC / AGENTE PSAP",
+		valor: "PAC / AGENTE PSAP",
+		selected: ""
+	}, {
+		texto: "PAC / COMERCIAL RPM",
+		valor: "PAC / COMERCIAL RPM",
+		selected: ""
+	}];
+
+	//-------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	NOVEDADES_APERTURA_Y_CIERRE = [{
+		texto: "Falla en conectividad",
+		valor: "Falla en conectividad",
+		selected: "selected"
+	}, {
+		texto: "Falla en equipos",
+		valor: "Falla en equipos",
+		selected: ""
+	}, {
+		texto: "Novedad en Infraestructura",
+		valor: "Novedad en Infraestructura",
+		selected: ""
+	}, {
+		texto: "Falla en Aplicativos (Bizagi)",
+		valor: "Falla en Aplicativos (Bizagi)",
+		selected: ""
+	}, {
+		texto: "Falla en Aplicativos (Otros)",
+		valor: "Falla en Aplicativos (Otros)",
+		selected: ""
+	}, {
+		texto: "Falla en el fluido eléctrico",
+		valor: "Falla en el fluido eléctrico",
+		selected: ""
+	}, {
+		texto: "Situaciones externas de fuerza mayor",
+		valor: "Situaciones externas de fuerza mayor",
+		selected: ""
+	}, {
+		texto: "Reporte de cifras o hechos relevantes de la jornada (Solo Informe de Cierre)",
+		valor: "Reporte de cifras o hechos relevantes de la jornada (Solo Informe de Cierre)",
+		selected: ""
+	}, {
+		texto: "Checkeo semanal funcionamiento Planta (Solo Informe de Cierre)",
+		valor: "Checkeo semanal funcionamiento Planta (Solo Informe de Cierre)",
+		selected: ""
+	}]
+
+	//-------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$(document).ready(m0_js_inicializar_app_paso_1());
+
+	//-------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_ul_panel_navegacion_lateral").on("click", "[id*='m0_btn_panel_navegacion_seccion_']", function () {
+		$("#m0_div_panel_principal").empty();
+		$("#m0_div_panel_secundario").empty();
+		router({
+			tipo_fuente: "ARCHIVO",
+			filename: $(this).attr("data-filename"),
+			contenedor: "m0_div_panel_principal",
+			id_privilegio: $(this).attr("data-privilegio")
+		});
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_principal").on("click", "[id*='m0_btn_panel_principal_seccion_']", function () {
+		$("#m0_div_panel_principal").empty();
+		$("#m0_div_panel_secundario").empty();
+		router({
+			tipo_fuente: "ARCHIVO",
+			filename: $(this).attr("data-filename"),
+			contenedor: "m0_div_panel_principal",
+			id_privilegio: $(this).attr("data-privilegio")
+		});
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_li_usuario_oficina").on("click", "#m0_a_modificar_oficina_base", function () {
+		var u = USUARIO;
+		var contenido = '<div class="div_panel mdl-shadow--3dp">';
+		contenido += '<h4 style="text-align: center;">Modificar Oficina - Delegaci&oacute;n</h4>';
+		contenido += '<p>Su usuario tiene el ROL de L&iacute;der de PAC, y se le ha delegado la atenci&oacute;n de una oficina alterna, diferente a la que tiene asignada de base. Para realizar actividades bajo la asignaci&oacute;n de esta oficina alterna, por favor seleccione la oficina y le da enviar.</p>';
+		contenido += m0_js_crear_formulario({
+			formulario: "m0_frm_modificar_oficina_base",
+			campos: [{
+				id_campo: "m0_hid_id_usuario",
+				tipo_campo: "hidden"
+			}, {
+				id_campo: "m0_sel_oficina",
+				nombre_campo: "Seleccione una oficina...",
+				required: "required",
+				tipo_campo: "select",
+			}]
+		});
+		contenido += '</div>';
+		m0_js_aviso("modal_box", contenido);
+		var param_select = {
+			campo: "Seleccione una oficina",
+			criterio: u.id_usuario,
+			select: "m0_sel_oficina",
+			datos: []
+		}
+		google.script.run
+			.withFailureHandler(function () {
+				m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página");
+			})
+			.withSuccessHandler(m0_js_poblar_menu)
+			.m0_gs_modificar_oficina_base_llenar_formulario_oficinas(param_select);
+		$("#m0_hid_id_usuario").val(u.id_usuario);
+	});
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_li_bd_forzar_actualizacion").on("click", "#m0_btn_bd_forzar_actualizacion", function () {
+		try {
+			var u = USUARIO;
+			var id_modulo;
+			for (var j = 0; j < u.modulos.length; j++) {
+				id_modulo = "M" + u.modulos[j].id_modulo;
+				switch (id_modulo) {
+					case "M9":
+						m9_js_inicializacion_bd();
+						break;
+					default:
+						break;
+				}
+			}
+			m0_js_aviso("banner", "La aplicación procedera a sincronizarse con el servidor")
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "click / m0_li_bd_forzar_actualizacion->m0_btn_bd_forzar_actualizacion",
+				error: e,
+				parametros: {}
+			});
+		}
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+	$("#m0_div_panel_aviso_modal_box").on("submit", "#m0_frm_modificar_oficina_base", function () {
+		google.script.run
+			.withFailureHandler(function () {
+				m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página")
+			})
+			.withSuccessHandler(function (mensaje) {
+				m0_js_aviso("aviso_modal_box", mensaje);
+				m0_js_inicializar_app_paso_1();
+			})
+			.m0_gs_modificar_oficina_base_guardar(this);
+		m0_js_aviso("modal_box", "Por favor espere mientras se almacenan los datos");
+		event.preventDefault();
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_principal").on("change", ":file", function () {
+		onchange = document.getElementById("FILE_TEXT_ID").value = this.files[0].name;
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_secundario").on("change", ":file", function () {
+		onchange = document.getElementById("FILE_TEXT_ID").value = this.files[0].name;
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_aviso_modal_box").on("change", ":file", function () {
+		onchange = document.getElementById("FILE_TEXT_ID").value = this.files[0].name;
+	});
+
+
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//funciones javascript
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	/**
+	 * Carga la configuracion inicial de todo el documento... hace el llamado al objeto usuario()
+	 *
+	 * @return  {null}
+	 */
+	function m0_js_inicializar_app_paso_1() {
+		$("#m0_div_accordion_navegador").accordion({
+			heightStyle: "content",
+			collapsible: true,
+			active: 2,
+			classes: {
+				"ui-accordion": "highlight"
+			}
+		});
+		$("#m0_div_panel_principal").empty();
+		$("#m0_div_panel_secundario").empty();
+		$("#m0_div_panel_principal").html('<div class="mdl-progress mdl-js-progress mdl-progress__indeterminate carga"></div>');
+		google.script.run
+			.withFailureHandler(function () {
+				m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página");
+			})
+			.withSuccessHandler(m0_js_inicializar_app_paso_2)
+			.usuario();
+		componentHandler.upgradeDom();
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * carga algunas configuraciones basadas en la informacion de la clase usuario
+	 *
+	 * @param   {object}  u  objeto de la clase usuario
+	 *
+	 * @return  {null}
+	 */
+	function m0_js_inicializar_app_paso_2(u) {
+		USUARIO = u;
+		m0_js_loading({
+			tipo: "COMPUESTO_CREACION",
+			titulo: "CARGANDO APLICACIÓN",
+			valor: false,
+			texto: ""
+		})
+		google.script.run
+			.withFailureHandler(function (e) {
+				m0_js_registrar_error({
+					gs: "m0_gs_inicializar_sesion",
+					funcion: "m0_js_inicializar_app_paso_2",
+					error: { message: e.name + " : " + e.message, name: "AJAX" },
+					parametros: "ACCESO A LA APLICACION"
+				});
+			})
+			.withSuccessHandler(function (id_sesion) {
+				ID_SESION = id_sesion;
+				m0_js_aviso("cierre_modal_box", "")
+			})
+			.m0_gs_inicializar_sesion("ACCESO A LA APLICACION");
+
+		$("#m0_h4_panel_navegacion_titulo").text("NAVEGACIÓN");
+		var html_nav = '<li class="mdl-list__item" id="m0_navegacion_lateral_item">';
+		html_nav += '<span class="mdl-list__item-primary-content">';
+		html_nav += 'INICIO';
+		html_nav += '<div class="mdl-layout-spacer"></div>';
+		html_nav += '<button id="btn_nav_inicio" class="mdl-button mdl-js-button mdl-button--icon mdl-button--colored" onclick=onclick=m0_js_inicializar_app_paso_1()>';
+		html_nav += '<i class="material-icons">home</i>';
+		html_nav += '</button>';
+		html_nav += '</span>';
+		html_nav += '</li>';
+		html_nav += '<div class="mdl-tooltip" for="li_inicio">';
+		html_nav += 'Home de la aplicación';
+		html_nav += '</div>';
+		$("#m0_ul_panel_navegacion_lateral").empty();
+		$("#m0_ul_panel_navegacion_lateral").html(html_nav);
+		$("#m0_span_usuario").text(u.usuario);
+		$("#m0_li_usuario_nombre").html('<i class="material-icons mdl-list__item-icon">person</i><br/><b>' + u.nombre.toLowerCase() + '</b>');
+		if (u.delegacion_activa == 1) {
+			var contenido = '<i class="material-icons mdl-list__item-icon">store_mall_directory</i>';
+			contenido += '<br/>';
+			contenido += '<b>' + u.oficina.toLowerCase() + '</b>';
+			contenido += '<br/>';
+			contenido += '<button id="m0_a_modificar_oficina_base"  class="mdl-button mdl-js-button mdl-button--icon mdl-button--colored" ><i class="material-icons mdl-list__item-icon" style="color: orange;" >cached</i></button>';
+			contenido += '<br/>';
+			contenido += '<div class="mdl-tooltip" data-mdl-for="m0_a_modificar_oficina_base">Usted tiene una delegación de oficina activa. <br/> Haga clic aquí para cambiar de oficina</div>';
+			contenido += '<b id="m0_b_oficina_alterna"></b>';
+			$("#m0_li_usuario_oficina").html(contenido);
+			componentHandler.upgradeDom();
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página");
+				})
+				.withSuccessHandler(function (oficina_alterna) {
+					$("#m0_b_oficina_alterna").text(oficina_alterna.toLowerCase());
+				})
+				.m0_gs_oficina_alterna(u.id_usuario, u.id_oficina);
+		} else {
+			$("#m0_li_usuario_oficina").html('<i class="material-icons mdl-list__item-icon">store_mall_directory</i><br/><b>' + u.oficina.toLowerCase() + '</b>');
+		}
+		$("#m0_li_usuario_mail").html('<i class="material-icons mdl-list__item-icon">business_center</i><br/><br/><b>' + u.rol.toLowerCase() + '</b>');
+		$("#m0_li_usuario_rol").html('<i class="material-icons mdl-list__item-icon">mail</i><br/><b>' + u.correo.toLowerCase() + '</b>');
+		var lista_menu = "";
+		var lista_footer = "";
+		var html_panel = '<div class="mdl-grid">';
+		if (u.modulos.length > 0) {
+			var html_panel = '<div class="mdl-grid">';
+			$("#m0_ul_menu_modulos").empty();
+			for (var j = 0; j < u.modulos.length; j++) {
+				//Cargamos el menu
+				lista_menu = '<li class="mdl-menu__item">';
+				lista_menu += '<a onclick=m0_js_cargar_inicio_modulo(' + u.modulos[j].id_modulo + ')  >' + u.modulos[j].modulo + '</a>';
+				lista_menu += '</li>';
+				$("#m0_ul_menu_modulos").append(lista_menu);
+				lista_footer = '<li><i class="material-icons mdl-list__item-icon">' + u.modulos[j].icono + '</i>' + u.modulos[j].modulo + '</li>';
+				$("#m0_ul_footer_modulos").append(lista_footer);
+				//Cargamos los Cards
+				html_panel += '<div class="mdl-cell mdl-cell--3-col">';
+				html_panel += '<div class="demo-card-wide mdl-card mdl-shadow--2dp">';
+				html_panel += '<div class="mdl-card__title mdl-card--expand titulo-tarjeta" style="background: ' + u.modulos[j].color + '" >';
+				html_panel += '<h5>';
+				html_panel += '<span class="material-icons avatar">' + u.modulos[j].icono + '</span><br/>';
+				html_panel += u.modulos[j].modulo;
+				html_panel += '</h5>';
+				html_panel += '</div>';
+				html_panel += '<div class="mdl-card__supporting-text texto_descripcion">';
+				html_panel += u.modulos[j].descripcion;
+				html_panel += '</div>';
+				html_panel += '<div class="mdl-card__actions mdl-card--border">';
+				html_panel += '<button class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" onclick=m0_js_cargar_inicio_modulo(' + u.modulos[j].id_modulo + ') >';
+				html_panel += 'ACCEDER';
+				html_panel += '</button>';
+				html_panel += '</div>';
+				html_panel += '</div>';
+				html_panel += '</div>';
+			}
+			html_panel += '</div>';
+			$("#m0_div_panel_principal").html(html_panel);
+			var param = {
+				texto_1: ""
+			};
+			m0_js_menu_arbol(param);
+		} else {
+			lista_menu = '<li class="mdl-menu__item" disabled>Sin modulos asignados</li>';
+			$("#m0_ul_menu_modulos").append(lista_menu);
+			lista_footer = '<li><i class="material-icons mdl-list__item-icon">broken_image</i>Sin modulos asignados</li>';
+			$("#m0_ul_footer_modulos").append(lista_footer);
+			m0_js_aviso("banner", "No tiene asignado modulos, contacte con el Administrador de la APP en su Regional");
+		}
+		componentHandler.upgradeDom();
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * carga el modulo que se llame en el menu y en las cards
+	 *
+	 * @param   {number}  id_modulo  id_modulo
+	 *
+	 * @return  {null}
+	 */
+	function m0_js_cargar_inicio_modulo(id_modulo) {
+		$("#m0_div_panel_principal").empty();
+		$("#m0_div_panel_secundario").empty();
+		router({
+			tipo_fuente: "ARCHIVO",
+			filename: "vista/m" + id_modulo + "/index_m" + id_modulo,
+			contenedor: "m0_div_panel_principal",
+			id_privilegio: id_modulo + "_0"
+		});
+	}
+
+
+	//---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Loading de carga no modales y modales, los parametros de la funcion llegan en un objeto PARAM
+	 *
+	 * @example	Carga NO modal:
+	 * {
+	 * 	tipo: "SIMPLE",
+	 * 	contenedor: "NOMBRE_CONTENEDOR"
+	 * }
+	 *
+	 * @example Carga modal - creacion de la ventana:
+	 * {
+	 * 	tipo: "COMPUESTO_CREACION",
+	 * 	titulo: "titulo de la ventana modal",
+	 *  valor: "valor de actualizacion de la ventana modal (de 0 a 100)",
+	 * 	texto: "texto de ayuda de la ventana modal",
+	 * }
+	 * 
+	 * @example	Carga modal - actualizacion de la ventana:
+	 * {
+	 * 	tipo: "COMPUESTO_ACTUALIZACION",
+	 * 	valor: "valor de actualizacion de la ventana modal (de 0 a 100)",
+	 * 	texto: "texto de ayuda de la ventana modal o vacio"
+	 * }
+	 * 
+	 * @param {string} tipo - 3 valores posibles; "SIMPLE": Solo muestra un gif de carga, "CONPUESTO_CREACION": Inicia una ventana modal de carga, "COMPUESTO_ACTUALIZACION": actualiza una ventana modal ya iniciada ).
+	 * @param {string} contenedor - |OPCIONAL (tipo: "SIMPLE")| El div contenedor en donde se mostrara el gif de carga
+	 * @param {string} titulo - |OPCIONAL (tipo: "COMPUESTO_CREACION")| el titulo que tendra la ventana modal de carga .
+	 * @param {string} texto - |OPCIONAL (tipo: "COMPUESTO_CREACION"/"COMPUESTO_ACTUALIZACION")| Si es diferente a vacio, texto a colocar dentro de la ventana de carga }
+	 * @param {string} valor - |OPCIONAL (tipo: "COMPUESTO_ACTUALIZACION")| valor con el que se actualizar el loading de (0 a 100) o "false" se se quiere una carga indeterminada.
+	 */
+	function m0_js_loading(param) {
+		switch (param.tipo) {
+			case "SIMPLE":
+				$("#" + param.contenedor).html('<div class="mdl-spinner mdl-spinner--single-color mdl-js-spinner is-active carga_spinner"></div>');
+				componentHandler.upgradeDom();
+				break;
+			case "COMPUESTO_CREACION":
+				var contenido = '<div>';
+				contenido += '<h4 style="text-align: center;">' + param.titulo + '</h4>';
+				contenido += '<div id="m0_p_loading">' + param.texto + '</div>';
+				contenido += '<br />';
+				contenido += '<div id="m0_div_loading"></div>'
+				contenido += '<br />';
+				contenido += '</div>';
+				m0_js_aviso("modal_box", contenido);
+				$("#m0_div_loading").progressbar({
+					value: param.valor
+				});
+			case "COMPUESTO_ACTUALIZACION":
+				if (param.texto !== "") {
+					$("#m0_p_loading").html(param.texto);
+					$("#m0_div_loading").progressbar({
+						value: param.valor
+					});
+				}
+				break;
+		}
+	}
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Control de los distintos avisos emergente de la app
+	 *
+	 * @param   {string}  aviso     define el tipo de aviso a mostrar:
+	 *                              -"banner":muestra informacion en el banner superior (solo texto). 
+	 *                              -"snackbar": mensajes emergentes en la parte inferior de la pagina. 
+	 *                              -"modal_box": ventana de dialogo que bloquea toda la aplicacion, recibe HTML. 
+	 *                              -"cierre_modal_box": cierra la ventana modal_box
+	 *                              -"progress_simple": muestra un loading indeterminado
+	 * @param   {string}  mensaje   mensaje o contenido html a mostrar
+	 *
+	 * @return  {null}
+	 */
+	function m0_js_aviso(aviso, mensaje) {
+		var notification = document.querySelector('#m0_div_panel_aviso_snackbar');
+		switch (aviso) {
+			case "banner":
+				$("#m0_div_panel_aviso_banner").show();
+				$("#m0_span_panel_aviso_banner").text('');
+				$("#m0_span_panel_aviso_banner").text(mensaje);
+				setTimeout(function () {
+					$("#m0_div_panel_aviso_banner").hide();
+				}, 60000);
+				break;
+			case "snackbar":
+				notification.MaterialSnackbar.showSnackbar({
+					message: mensaje
+				});
+				break;
+			case "modal_box":
+				$("#m0_div_panel_aviso_modal_box").html(mensaje);
+				$("#m0_div_panel_aviso_modal_box").dialog({
+					modal: true,
+					dialogClass: "no-close",
+					width: 500
+				});
+				break;
+			case "cierre_modal_box":
+				$("#m0_div_panel_aviso_modal_box").dialog("close");
+				$("#m0_div_panel_aviso_modal_box").html("");
+				break;
+			case "aviso_modal_box":
+				notification.MaterialSnackbar.showSnackbar({
+					message: mensaje
+				});
+				$("#m0_div_panel_aviso_modal_box").dialog("close");
+				$("#m0_div_panel_aviso_modal_box").html("");
+				break;
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * funcion para la administracion del panel de arbol
+	 *
+	 * @param   {object}  param     objecto con los parametros necesarios para mostrar el arbol:
+	 *                              param = {
+	 *                                          icono: "icono",
+	 *                                          id_modulo: 1,
+	 *                                          texto_1: "modulo",
+	 *                                          texto_2: "modulo"
+	 *                                      }
+	 *
+	 * @return  {null}
+	 */
+	function m0_js_menu_arbol(param) {
+		$("#m0_div_panel_superior_arbol").empty();
+		var html_arbol = '<div>';
+		html_arbol += '<span class="mdl-chip mdl-chip--contact">';
+		html_arbol += '<span class="mdl-chip__contact mdl-color--accent mdl-color-text--white"><i class="material-icons">home</i></span>';
+		html_arbol += '<span class="mdl-chip__text">inicio</span>';
+		html_arbol += '<a class="mdl-chip__action" href="https://script.google.com/a/colpensiones.gov.co/macros/s/AKfycbzTFkgm7Ra_W18qcSziRe-g2urBVb6IGhGUIm8orJhsFRYpgTA/exec" ><i class="material-icons">refresh</i></a>';
+		html_arbol += '</span>';
+		if (param.texto_1 !== "") {
+			html_arbol += '<i class="material-icons" style="vertical-align: bottom">subdirectory_arrow_right</i>';
+			html_arbol += '<span class="mdl-chip mdl-chip--contact">';
+			html_arbol += '<span class="mdl-chip__contact mdl-color--accent mdl-color-text--white"><i class="material-icons">' + param.icono + '</i></span>';
+			html_arbol += '<span class="mdl-chip__text">' + param.texto_1.toLowerCase() + '</span>';
+			html_arbol += '<a class="mdl-chip__action" onclick=m0_js_inicializar_app_paso_1()><i class="material-icons">cancel</i></a>';
+			html_arbol += '</span>';
+			if (param.texto_2 !== "") {
+				html_arbol += '<i class="material-icons" style="vertical-align: bottom">subdirectory_arrow_right</i>';
+				html_arbol += '<span class="mdl-chip mdl-chip--contact">';
+				html_arbol += '<span class="mdl-chip__contact mdl-color--accent mdl-color-text--white"><i class="material-icons">' + param.icono + '</i></span>';
+				html_arbol += '<span class="mdl-chip__text">' + param.texto_2.toLowerCase() + '</span>';
+				html_arbol += '<a class="mdl-chip__action" onclick=m0_js_cargar_inicio_modulo(' + param.id_modulo + ') ><i class="material-icons">cancel</i></a>';
+				html_arbol += '</span>';
+			}
+		}
+		html_arbol += '</div>';
+		$("#m0_div_panel_superior_arbol").html(html_arbol);
+		componentHandler.upgradeDom();
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Carga el modulo seleccionado en el menu de navegacion y en el arbol  
+	 *
+	 * @param   {object}  param     objecto con los parametros para cargar el menu arbol y el menu navegacion:
+	 *                              -id_modulo: 1
+	 *                              -secciones: {
+	 *                                  -nombre_seccion: "pestaña 1",
+	 *                                  -fuente: "index_1",
+	 *                                  -privilegio: "1_0",
+	 *                                  -descripcion: "ayuda 1"
+	 *                              }
+	 *
+	 * @return  {null}     
+	 */
+	function m0_js_inicializar_modulo(param) {
+		var u = USUARIO;
+		var pos;
+		for (var j = 0; j < u.modulos.length; j++) {
+			if (param.id_modulo == u.modulos[j].id_modulo) {
+				pos = j;
+			}
+		}
+
+		var param_modulos = {
+			icono: u.modulos[pos].icono,
+			id_modulo: 1,
+			texto_1: u.modulos[pos].modulo,
+			texto_2: ""
+		};
+		m0_js_menu_arbol(param_modulos);
+
+		var html_panel = '';
+		$("#m0_div_panel_principal").empty();
+		$("#m0_div_panel_secundario").empty();
+
+		$("#m0_h4_panel_navegacion_titulo").text(u.modulos[pos].modulo);
+		$("#m0_ul_panel_navegacion_lateral").empty();
+		var html_panel = '<div class="mdl-grid">';
+		for (j = 0; j < param.secciones.length; j++) {
+			if (m0_js_verificar_acceso(param.secciones[j].privilegio)) {
+				var lista_navegacion = "";
+				lista_navegacion += '<li class="mdl-list__item" id="m0_li_nav_' + j + '">';
+				lista_navegacion += '<span class="mdl-list__item-primary-content">';
+				lista_navegacion += param.secciones[j].nombre_seccion;
+				lista_navegacion += '<div class="mdl-layout-spacer"></div>';
+				lista_navegacion += '<button class="mdl-button mdl-js-button mdl-button--icon mdl-button--colored" id="m0_btn_panel_navegacion_seccion_' + j + '" data-filename="' + param.secciones[j].fuente + '" data-privilegio="' + param.secciones[j].privilegio + '" >';
+				lista_navegacion += '<i class="material-icons">send</i>';
+				lista_navegacion += '</button>';
+				lista_navegacion += '</span>';
+				lista_navegacion += '</li>';
+				$("#m0_ul_panel_navegacion_lateral").append(lista_navegacion);
+
+				//Cargamos los Cards
+				html_panel += '<div class="mdl-cell mdl-cell--3-col">';
+				html_panel += '<div class="demo-card-wide mdl-card mdl-shadow--2dp">';
+				html_panel += '<div class="mdl-card__title mdl-card--expand titulo-tarjeta" style="background: ' + u.modulos[pos].color + '" >';
+				html_panel += '<h5>';
+				html_panel += '<span class="material-icons avatar">' + u.modulos[pos].icono + '</span><br/>';
+				html_panel += param.secciones[j].nombre_seccion;
+				html_panel += '</h5>';
+				html_panel += '</div>';
+				html_panel += '<div class="mdl-card__supporting-text texto_descripcion">';
+				html_panel += param.secciones[j].descripcion;
+				html_panel += '</div>';
+				html_panel += '<div class="mdl-card__actions mdl-card--border">';
+				html_panel += '<button class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" id="m0_btn_panel_principal_seccion_' + j + '" data-filename="' + param.secciones[j].fuente + '" data-privilegio="' + param.secciones[j].privilegio + '"  >';
+				html_panel += 'ACCEDER';
+				html_panel += '</button>';
+				html_panel += '</div>';
+				html_panel += '</div>';
+				html_panel += '</div>';
+			}
+		}
+		html_panel += '</div>';
+		$("#m0_div_panel_principal").html(html_panel);
+		componentHandler.upgradeDom();
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * administra los diferentes paneles para mostrar informacion en la app
+	 *
+	 * @param   {object}  param     objeto con la informacion necesaria para mostrar la informacion:
+	 *                              -"tipo_fuente": acepta 2 valores "VARIABLE" (el html a mostrar se guarda en una variable) y "ARCHIVO" (el html a mostrar se guarda en un archivo externo)
+	 *                              -"contenido": contenido html a mostrar en caso de que se hubiera escogido el tipo_fuente "VARIABLE"
+	 *                              -"filename": el nombre del archivo si se escogio la opcion "ARCHIVO"
+	 *                              -"contenedor": el nombre del panel en donde se mostrara el html
+	 *                              -"id_privilegio": el privilegio de acceso al contenido 
+	 *
+	 * @return  {null}         
+	 */
+	function router(param) {
+		switch (param.tipo_fuente) {
+			case "VARIABLE":
+				$("#" + param.contenedor).html('<div class="mdl-spinner mdl-spinner--single-color mdl-js-spinner is-active carga_spinner"></div>');
+				if (m0_js_verificar_acceso(param.id_privilegio)) {
+					$("#" + param.contenedor).html(param.contenido);
+				} else {
+					m0_js_aviso("banner", "No tiene acceso a este contenido");
+					m0_js_aviso("aviso_modal_box", "No tiene acceso a este contenido");
+					$("#" + param.contenedor).html('');
+				}
+				componentHandler.upgradeDom();
+				break;
+			case "ARCHIVO":
+				$("#" + param.contenedor).html('<div class="mdl-progress mdl-js-progress mdl-progress__indeterminate carga"></div>');
+				if (m0_js_verificar_acceso(param.id_privilegio)) {
+					google.script.run
+						.withFailureHandler(function () {
+							m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página");
+						})
+						.withSuccessHandler(m0_js_inyectar_contenido)
+						.include(param);
+				} else {
+					m0_js_aviso("banner", "No tiene acceso a este contenido");
+					m0_js_aviso("aviso_modal_box", "No tiene acceso a este contenido");
+					$("#" + param.contenedor).html('');
+				}
+				componentHandler.upgradeDom();
+				break;
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * funciona en conjunto con router para las opciones de carga de contenido con archivos externos
+	 *
+	 * @param   {string}  param  contenido html extraido del archivo para  mostrar en la app
+	 *
+	 * @return  {null}         
+	 */
+	function m0_js_inyectar_contenido(param) {
+		if (param.exito) {
+			$("#" + param.contenedor).html(param.contenido);
+		} else {
+			m0_js_aviso("banner", "No tiene acceso a este contenido");
+			$("#" + param.contenedor).html('');
+		}
+		componentHandler.upgradeDom();
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * funcion generica para la creacion de tablas 
+	 * 
+	 * @example
+	 * {
+	 * 	contenedor: "NOMBRE_CONTENEDOR",
+	 * 	titulos: ["TITULO_COLUMNA_1","TITULO_COLUMNA_2"],
+	 * 	datos: [[dato_1_1, dato_2_1],[dato_2_1, dato_2_2]],
+	 * 	error: "",
+	 *	opciones: {
+	 *			"scrollX": true,
+	 *			"responsive": true
+	 *		}
+	 * }
+	 *
+	 * @param {string} contenedor - El div contenedor en donde se mostrara la tabla
+	 * @param {string} titulos - Vector con los nombres de columna de la tabla.
+	 * @param {string} datos - Matrix con los datos que conformaran el cuerpo de la tabla
+	 * @param {string} error - |OPCIONAL| en caso de que no sea undefined, servira para mostrar errores que se hayan presentado en el server con la carga de los datos.
+	 * @param {string} opciones - |OPCIONAL| Objeto con carasteristicas para ser desactivadas en la tabla (scrollx y responsive), por defecto estas vienen en true, a traves de esto se pueden cambiar a false.
+	 */
+	function m0_js_crear_tabla(param_tabla) {
+		try {
+
+			if (typeof param_tabla.error !== 'undefined' && param_tabla.error !== "") {
+				m0_js_registrar_error({
+					funcion: "m0_js_crear_tabla",
+					error: {
+						message: param_tabla.error,
+						name: "GS error"
+					},
+					parametros: param_tabla
+				});
+			} else {
+				var tabla = param_tabla.contenedor.replace("_div_", "_tbl_");
+				$("#" + param_tabla.contenedor).html("");
+				var contenido = '<hr/>';
+				contenido += '<table id="' + tabla + '"  class="hover stripe" cellspacing="0" width="100%">';
+				contenido += '<thead>';
+				contenido += '<tr>';
+				for (var i = 0; i < param_tabla.titulos.length; i++) {
+					contenido += '<th>' + param_tabla.titulos[i] + '</th>';
+				}
+				contenido += '</tr>';
+				contenido += '</thead>';
+				contenido += '<tbody>';
+				for (var j = 0; j < param_tabla.datos.length; j++) {
+					contenido += '<tr>';
+					for (i = 0; i < param_tabla.titulos.length; i++) {
+						contenido += '<td>' + param_tabla.datos[j][i] + '</td>';
+					}
+					contenido += '</tr>';
+				}
+				contenido += '</tbody>';
+				contenido += '</table>';
+				contenido += '<hr/>';
+				$("#" + param_tabla.contenedor).append(contenido);
+				componentHandler.upgradeDom();
+				if (typeof param_tabla.opciones === 'undefined') {
+					param_tabla.opciones = {
+						"scrollX": true,
+						"responsive": true
+					}
+				}
+				$("#" + tabla).DataTable(param_tabla.opciones);
+				$("#" + param_tabla.contenedor).show("blind");
+			}
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m0_js_crear_tabla",
+				error: e,
+				parametros: param_tabla
+			});
+		}
+	}
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * puebla dinamicamente un select box, los parametros de la funcion llegan en un objeto PARAM  
+	 *
+	 * @example SIN ventana modal de espera y criterio de busquedad en el server:
+	 * {
+	 * 	campo: "nombre_select",
+	 * 	select: "id_select",
+	 * 	datos[]: {
+	 * 		texto: "texto_select_option",
+	 * 		valor: "valor_select_option",
+	 * 		selected: "selected"
+	 * 	}
+	 * }
+	 * 
+	 * @example CON ventana modal de espera y criterio de buquedad en el server:
+	 * {
+	 * 	campo: "nombre_select",
+	 * 	criterio: "criterio",
+	 * 	select: "id_select",
+	 * 	mensaje_carga: "Usuarios cargados exitosamente",
+	 * 	datos[]: {
+	 * 		texto: "OPCION 1",
+	 * 		valor: "opcion_1",
+	 * 		selected: "selected"
+	 * 	}
+	 * }
+	 * 
+	 * @param {string} campo - Nombre en pantalla del Select.
+	 * @param {select} select - id del select.
+	 * @param {string} criterio - |OPCIONAL| criterio de busquedad para filtrar la busquedad en el servidor.
+	 * @param {string} mensaje_carga - |OPCIONAL| Bloquea la pagina con una ventana de espera modal y un mensaje de finalizacion de la carga de los datos al select
+	 * @param {Array}	datos[] - Matriz con el conjunto de opciones que alimentara el select, cada opcion va en un objeto.
+	 * @param {string} datos[].texto - Texto que se mostrara en la opcion del SELECT.
+	 * @param {string} datos[].valor - id de la opcion.
+	 * @param {string} datos[].selected - Habilita la opcion como predeterminada o no ("selected" o "").
+	 *
+	 */
+	function m0_js_poblar_menu(param) {
+		if (typeof param.error !== 'undefined' && param.error !== "") {
+			m0_js_registrar_error({
+				funcion: "m0_js_crear_tabla",
+				error: {
+					message: param.error,
+					name: "GS error"
+				},
+				parametros: param
+			});
+		} else {
+			if (param.datos.length > 0) {
+				$("#" + param.select).empty();
+				for (var j = 0; j < param.datos.length; j++) {
+					$("#" + param.select).append('<option value="' + param.datos[j].valor + '" ' + param.datos[j].selected + '>' + param.datos[j].texto + '</option>');
+				}
+				componentHandler.upgradeDom();
+				$("#" + param.select).parent().addClass('is-dirty');
+				if (typeof param.mensaje_carga !== 'undefined' && param.mensaje_carga !== "") {
+					m0_js_aviso("aviso_modal_box", param.mensaje_carga);
+				}
+			} else {
+				m0_js_aviso("banner", "No se pudo traer ninguna opción de la Base de Datos para el campo <<" + param.campo + ">>");
+			}
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * funcion generica para la creacion de formularios, los parametros de la funcion llegan en un objeto PARAM
+	 * 
+	 * @example para mostrar un agrupador de campos (fieldset):
+	 * {
+	 * 	formulario: "m0_frm_formulario_generico",
+	 * 	campos:[{
+	 * 		tipo_campo: "label",
+	 * 		label: "valor a colocar dentro del label"
+	 * 	},{
+	 * 		tipo_campo: "fieldset_inicio",
+	 * 		legend: "Grupo de Controles 1"
+	 * 	},{
+	 * 		tipo_campo: "fieldset_fin",
+	 * 	},{
+	 * 		tipo_campo: "select_multiple",
+	 * 		id_campo: "m0_sel_mul_select",
+	 *  	nombre_campo: "m0_sel_mul_select",
+	 * 		required: "required"
+	 * 	},{
+	 * 		tipo_campo: "select",
+	 * 		id_campo: "m0_sel_select",
+	 *  	nombre_campo: "Nombre del campo",
+	 * 		required: "required"
+	 * 	},{
+	 * 		tipo_campo: "textarea",
+	 * 		id_campo: "m0_txt_textarea",
+	 *  	nombre_campo: "Nombre del campo",
+	 * 		required: "required",
+	 * 		value: "valor inicial cualquiera"
+	 * 	}, {
+	 * 		tipo_campo: "checkbox",
+	 * 		id_campo: "m0_chk_checkbox",
+	 *  	nombre_campo: "m0_chk_checkbox",
+	 * 		checked: true / false,
+	 * 		value: "valor inicial cualquiera"
+	 * 	}, {
+	 * 		tipo_campo: "icon_checkbox",
+	 * 		id_campo: "m0_icon_chk_icon_checkbox",
+	 *  	nombre_campo: "m0_icon_chk_icon_checkbox",
+	 * 		checked: true / false,
+	 * 		value: "valor inicial cualquiera",
+	 * 		icono: "edit"
+	 * 	}, {
+	 * 		tipo_campo: "hidden",
+	 * 		id_campo: "m0_hid_id_select",
+	 * 		value: "valor inicial cualquiera"
+	 * 	}, {
+	 *		tipo_campo: "file",
+	 *		id_campo: "m2_1_txt_archivo",
+	 *		nombre_campo: "Nombre del campo...",
+	 *		required: "required",
+	 * 	}, {
+	 * 		tipo_campo: "text", "datetime", "number", "date", "time", "email", "url"
+	 * 		id_campo: "m0_txt_id_select",
+	 *  	nombre_campo: "m0_txt_text",
+	 * 		value: "valor inicial cualquiera",
+	 * 		required: "required",
+	 * 		pattern: "",
+	 * 		error: "Valor no valido"
+	 * 	}]
+	 * }
+	 * 
+	 * @param {string} formulario - Nombre del formulario a usar
+	 * @param {array} campos - matriz con el listado de campos .
+	 * @param {string} campos[].tipo_campo - El tipo de control que se montara en el form. Funciona con: ("text","textarea", "datetime", "number", "date", "time", "select", "checkbox", "icon_checkbox" , "email", "hidden", "url", "fieldset_inicio", "fieldset_fin", "select_multiple").
+	 * @param {string} campos[].id_campo - Id del campo a mostrar, funciona con: "text","textarea", "datetime", "number", "date", "time", "select", "checkbox", "icon_checkbox" , "email", "hidden", "url", "select_multiple" .
+	 * @param {string} campos[].nombre_campo - Nombre del campo a mostrar, funciona con: "text","textarea", "datetime", "number", "date", "time", "select", "checkbox", "icon_checkbox" , "email", "url", "select_multiple" .
+	 * @param {string} campos[].legend - Mensaje que se muestra en los fieldset ("fieldset_inicio").
+	 * @param {string} campos[].required - Determina si diligenciar el campo es obligatorio o no ("text", "select_multiple","textarea", "datetime", "number", "date", "time", "select", "email", "hidden", "url").
+	 * @param {string} campos[].value - Valor por default del control. Funciona con: ("text","textarea", "datetime", "number", "date", "time", "checkbox", "icon_checkbox" , "email", "hidden", "url")
+	 * @param {string} campos[].checked - Establece si un check esta seleccionado. Funciona con: ("checkbox", "icon_checkbox").
+	 * @param {string} campos[].icono - El icono que se mostrara con el check. Funciona con: ("icon_checkbox").
+	 * @param {string} campos[].pattern - Patron de validacion del control. Funciona con: ("text").
+	 * @param {string} campos[].error - Mensaje de error cuando no se cumple una validacion pattern. Funciona con: ("text").
+	 * @param	{string} campos[].id_file_campo - Solo funciona con el tipo de campo "file", es el nombre final del campo file, es diferente al campo "id_campo" que solo se refiere al campo TXT
+	 * 
+	 * @return  {string}        html con el formulario armado 
+	 */
+	function m0_js_crear_formulario(param) {
+		param.html_formulario = '';
+		if (param.campos.length > 0) {
+			param.html_formulario = '<form id="' + param.formulario + '" >';
+			for (var j = 0; j < param.campos.length; j++) {
+				switch (param.campos[j].tipo_campo) {
+					case "label":
+						param.html_formulario += '<hr>';
+						param.html_formulario += '<label>' + param.campos[j].label + '</label>';
+						param.html_formulario += '<hr/>';
+						param.html_formulario += '<br/>';
+						break;
+					case "fieldset_inicio":
+						param.html_formulario += '<fieldset>';
+						param.html_formulario += '<legend>' + param.campos[j].legend + '</legend>';
+						param.html_formulario += '<br/>';
+						break;
+					case "fieldset_fin":
+						param.html_formulario += '</fieldset>';
+						param.html_formulario += '<br/>';
+						break;
+					case "select_multiple":
+						var requerido = '';
+						if (param.campos[j].required === "required") {
+							requerido = 'required="required"'
+						}
+						param.html_formulario += '<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+						param.html_formulario += '<select class="mdl-textfield__input" id="' + param.campos[j].id_campo + '" name="' + param.campos[j].id_campo + '[]"  ' + requerido + ' size="5" multiple >';
+						param.html_formulario += '<option></option>';
+						param.html_formulario += '</select>';
+						param.html_formulario += '<label class="mdl-textfield__label" for="' + param.campos[j].id_campo + '">' + param.campos[j].nombre_campo + '</label>';
+						param.html_formulario += '</div>';
+						param.html_formulario += '<br/>';
+						param.html_formulario += '<br/>';
+						break;
+					case "select":
+						var requerido = '';
+						if (param.campos[j].required === "required") {
+							requerido = 'required="required"'
+						}
+						param.html_formulario += '<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+						param.html_formulario += '<select class="mdl-textfield__input" id="' + param.campos[j].id_campo + '" name="' + param.campos[j].id_campo + '"  ' + requerido + '>';
+						param.html_formulario += '<option></option>';
+						param.html_formulario += '</select>';
+						param.html_formulario += '<label class="mdl-textfield__label" for="' + param.campos[j].id_campo + '">' + param.campos[j].nombre_campo + '</label>';
+						param.html_formulario += '</div>';
+						param.html_formulario += '<br/>';
+						param.html_formulario += '<br/>';
+						break;
+					case "textarea":
+						var requerido = '';
+						if (param.campos[j].required === "required") {
+							requerido = 'required="required"'
+						}
+						param.html_formulario += '<div class="mdl-textfield mdl-js-textfield">';
+						if (typeof param.campos[j].value === 'undefined') {
+							param.html_formulario += '<textarea class="mdl-textfield__input" rows="3" id="' + param.campos[j].id_campo + '" name="' + param.campos[j].id_campo + '" ' + requerido + ' ></textarea>';
+						} else {
+							param.html_formulario += '<textarea class="mdl-textfield__input" rows="3" id="' + param.campos[j].id_campo + '" name="' + param.campos[j].id_campo + '" ' + requerido + ' >' + param.campos[j].value + '</textarea>';
+						}
+						param.html_formulario += '<label class="mdl-textfield__label" for="' + param.campos[j].id_campo + '" >' + param.campos[j].nombre_campo + '</label>';
+						param.html_formulario += '</div>';
+						param.html_formulario += '<br/>';
+						param.html_formulario += '<br/>';
+						break;
+					case "checkbox":
+						var seleccionado = '';
+						if (param.campos[j].checked) {
+							seleccionado = 'checked="checked"'
+						}
+						param.html_formulario += '<label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="' + param.campos[j].id_campo + '">';
+						if (typeof param.campos[j].value === 'undefined') {
+							param.html_formulario += '<input type="checkbox" id="' + param.campos[j].id_campo + '" name="' + param.campos[j].id_campo + '" class="mdl-switch__input" ' + seleccionado + '>';
+						} else {
+							param.html_formulario += '<input type="checkbox" id="' + param.campos[j].id_campo + '" name="' + param.campos[j].id_campo + '" class="mdl-switch__input" ' + seleccionado + ' value="' + param.campos[j].value + '" >';
+						}
+						param.html_formulario += '<span class="mdl-switch__label">' + param.campos[j].nombre_campo + ' </span>';
+						param.html_formulario += '</label>';
+						param.html_formulario += '<br/>';
+						param.html_formulario += '<br/>';
+						param.html_formulario += '<br/>';
+						param.html_formulario += '<br/>';
+						break;
+					case "icon_checkbox":
+						var seleccionado = '';
+						if (param.campos[j].checked) {
+							seleccionado = 'checked="checked"'
+						}
+						param.html_formulario += '<label class="mdl-icon-toggle mdl-js-icon-toggle mdl-js-ripple-effect" for="' + param.campos[j].id_campo + '">';
+						if (typeof param.campos[j].value === 'undefined') {
+							param.html_formulario += '<input type="checkbox" id="' + param.campos[j].id_campo + '" name="' + param.campos[j].id_campo + '" class="mdl-icon-toggle__input" ' + seleccionado + '>';
+						} else {
+							param.html_formulario += '<input type="checkbox" id="' + param.campos[j].id_campo + '" name="' + param.campos[j].id_campo + '" class="mdl-icon-toggle__input" ' + seleccionado + ' value="' + param.campos[j].value + '">';
+						}
+						param.html_formulario += '<i class="mdl-icon-toggle__label material-icons">' + param.campos[j].icono + '</i>';
+						param.html_formulario += '</label>';
+						param.html_formulario += '<span class="mdl-switch__label">' + param.campos[j].nombre_campo + ' </span>';
+						param.html_formulario += '<br/>';
+						param.html_formulario += '<br/>';
+						param.html_formulario += '<br/>';
+						param.html_formulario += '<br/>';
+						break;
+					case "hidden":
+						if (typeof param.campos[j].value === 'undefined') {
+							param.html_formulario += '<input type="hidden" id="' + param.campos[j].id_campo + '" name="' + param.campos[j].id_campo + '" >';
+						} else {
+							param.html_formulario += '<input type="hidden" id="' + param.campos[j].id_campo + '" name="' + param.campos[j].id_campo + '" value="' + param.campos[j].value + '" >';
+						}
+						param.html_formulario += '<br/>';
+						param.html_formulario += '<br/>';
+						break;
+					case "file":
+						var requerido = '';
+						if (param.campos[j].required === "required") {
+							requerido = 'required="required"'
+						}
+						param.html_formulario += '<div class="mdl-textfield mdl-js-textfield mdl-textfield--file">';
+						param.html_formulario += '<input class="mdl-textfield__input" placeholder="' + param.campos[j].nombre_campo + '" type="text" id="FILE_TEXT_ID" name="FILE_TEXT_ID" readonly />';
+						param.html_formulario += '<div class="mdl-button mdl-button--icon mdl-button--file">';
+						param.html_formulario += '<i class="material-icons">attach_file</i>';
+						param.html_formulario += '<input type="file" name="' + param.campos[j].id_campo + '" id="' + param.campos[j].id_campo + '"  accept="application/pdf" />';
+						param.html_formulario += '</div>';
+						param.html_formulario += '</div>';
+						param.html_formulario += '<br/>';
+						param.html_formulario += '<br/>';
+						break;
+					default:
+						var requerido = '';
+						if (param.campos[j].required === "required") {
+							requerido = 'required="required"'
+						}
+						param.html_formulario += '<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+						if (param.campos[j].pattern === "" || param.campos[j].error === "") {
+							if (typeof param.campos[j].value === 'undefined') {
+								param.html_formulario += '<input class="mdl-textfield__input" type="' + param.campos[j].tipo_campo + '" id="' + param.campos[j].id_campo + '" name="' + param.campos[j].id_campo + '" ' + requerido + ' />';
+							} else {
+								param.html_formulario += '<input class="mdl-textfield__input" type="' + param.campos[j].tipo_campo + '" id="' + param.campos[j].id_campo + '" name="' + param.campos[j].id_campo + '"  value="' + param.campos[j].value + '" ' + requerido + ' />';
+							}
+							param.html_formulario += '<label class="mdl-textfield__label" for = "' + param.campos[j].id_campo + '" >' + param.campos[j].nombre_campo + '</label>';
+						} else {
+							param.html_formulario += '<input class="mdl-textfield__input" type="text" id="' + param.campos[j].id_campo + '" name="' + param.campos[j].id_campo + '" pattern="' + param.campos[j].pattern + '" title="' + param.campos[j].error + '" ' + requerido + ' />';
+							param.html_formulario += '<label class="mdl-textfield__label" for = "' + param.campos[j].id_campo + '" >' + param.campos[j].nombre_campo + '</label>';
+							param.html_formulario += '<span class="mdl-textfield__error">' + param.campos[j].error + '</span>';
+						}
+						param.html_formulario += '</div>';
+						param.html_formulario += '<br/>';
+						param.html_formulario += '<br/>';
+						break;
+				}
+			}
+			param.html_formulario += '<input type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent" value="Enviar Formulario" />';
+			param.html_formulario += '</form>';
+		} else {
+			param.html_formulario += '<div class="aviso_error">No se encuentra contenido para mostrar</div>';
+		}
+		return param.html_formulario;
+	}
+
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * funcion para añadir ceros a la izquierda
+	 *
+	 * @param   {number}  i  numero base 10
+	 *
+	 * @return  {string}     cadena con los ceros a la izquierda
+	 */
+	function m0_js_addZero(i) {
+		if (i < 10) {
+			i = "0" + i;
+		}
+		return i;
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+	/**
+	 * dado el numero del mes devuelve la cadena
+	 *
+	 * @param   {number}  mes  numero del mes
+	 *
+	 * @return  {string}       el nombre del mes
+	 */
+	function obtener_mes(mes) {
+		var r;
+		switch (mes) {
+			case 1:
+				r = "ENERO";
+				break;
+			case 2:
+				r = "FEBRERO";
+				break;
+			case 3:
+				r = "MARZO";
+				break;
+			case 4:
+				r = "ABRIL";
+				break;
+			case 5:
+				r = "MAYO";
+				break;
+			case 6:
+				r = "JUNIO";
+				break;
+			case 7:
+				r = "JULIO";
+				break;
+			case 8:
+				r = "AGOSTO";
+				break;
+			case 9:
+				r = "SEPTIEMBRE";
+				break;
+			case 10:
+				r = "OCTUBRE";
+				break;
+			case 11:
+				r = "NOVIEMBRE";
+				break;
+			case 12:
+				r = "DICIEMBRE";
+				break;
+		}
+		return r;
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+	/**
+	 * dado el numero de la semana devuelve la cadena
+	 *
+	 * @param   {number}  mes  numero de la semana
+	 *
+	 * @return  {string}       el nombre del dia de la semana 
+	 */
+	function obtener_dia_semana(dia) {
+		var r;
+		switch (dia) {
+			case 0:
+				r = "Domingo";
+				break;
+			case 1:
+				r = "Lunes";
+				break;
+			case 2:
+				r = "Martes";
+				break;
+			case 3:
+				r = "Miercoles";
+				break;
+			case 4:
+				r = "Jueves";
+				break;
+			case 5:
+				r = "Viernes";
+				break;
+			case 6:
+				r = "Sabado";
+				break;
+		}
+		return r;
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * verifica los privilegios de acceso a una funcionalidad de la APP
+	 *
+	 * @param   {string}  id_privilegio     id del privilegio
+	 *
+	 * @return  {boolean}                   acceso (true or false)
+	 */
+	function m0_js_verificar_acceso(id_privilegio) {
+		var u = USUARIO;
+		if (u.privilegios.indexOf(id_privilegio) !== -1) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Funcion para cargar los errores que se generen en los JS en el administrador de errores general
+	 *
+	 * @param   {object}  param_error     objecto con los parametros del error
+	 *
+	 * @return  {null}
+	 */
+	function m0_js_registrar_error(param_error) {
+		if (typeof param_error.gs !== 'undefined' && param_error.gs !== "") {
+			var e_adicional = {
+				fileName: "js",
+				lineNumber: param_error.gs,
+				message: param_error.error.message
+			}
+			var param = {
+				tipo_error: "codigo/JS (" + param_error.error.name + ")",
+				parametros: param_error.parametros
+			}
+			google.script.run.log_error(param_error.funcion, param, e_adicional);
+		} else {
+			var e_adicional = {
+				fileName: "js",
+				lineNumber: "N/A",
+				message: param_error.error.message
+			}
+			var param = {
+				tipo_error: "codigo/JS (" + param_error.error.name + ")",
+				parametros: param_error.parametros
+			}
+			google.script.run
+				.withSuccessHandler(function (id_error) {
+					m0_js_aviso("banner", "Error en la aplicacion, por favor intente nuevamente o comuniquese con el administrador (id_error: " + id_error + ")");
+					m0_js_aviso("snackbar", "Se ha presentado un error en la aplicacion, por favor intente nuevamente. Si persiste el error comuniquese con el administrador (id_error: " + id_error + ")");
+					m0_js_aviso("cierre_modal_box", "");
+				})
+				.log_error(param_error.funcion, param, e_adicional);
+		}
+	}
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * verifica el resultado de una operacion en el servidor, si fue positiva o si genero error, activa el log de errores *
+	 * @param   {r}  			object     objecto con los posibles resultados de una operacion; r= {exito: true/false, error: vacio o con informacion del error, para guardar y mostrar en el front}
+	 *
+	 * @return  null
+	 */
+	function m0_js_resultado_operacion(r) {
+		try {
+
+			if (typeof r.error !== 'undefined' && r.error !== "") {
+				m0_js_registrar_error({
+					funcion: "",
+					error: {
+						message: r.error,
+						name: "GS error"
+					},
+					parametros: {}
+				});
+				return false;
+			} else {
+				m0_js_aviso("aviso_modal_box", r.mensaje);
+				if (r.exito) {
+					return true;
+				} else {
+					return false;
+				}
+			}
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m0_js_resultado_operacion",
+				error: e,
+				parametros: {}
+			});
+		}
+
+	}
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	* funcion para convertir un objeto fecha en cadena 
+	*
+	* @param   {object}  obj      objeto fecha
+	* @param   {string}  formato  formato deseado para la fecha
+	*
+	* @return  {string}           cadena con el formato deseado para la fecha
+	*/
+	function m0_js_fecha_texto(obj, formato) {
+		if (obj === 0) {
+			var f = new Date();
+		} else {
+			var f = obj;
+		}
+		var t = "";
+		switch (formato) {
+			case 'FECHA':
+				t = (f.getFullYear() + '/' + m0_js_addZero(f.getMonth() + 1) + '/' + m0_js_addZero(f.getDate()));
+				break;
+			case 'FECHA_HORA':
+				t = (f.getFullYear() + '/' + m0_js_addZero(f.getMonth() + 1) + '/' + m0_js_addZero(f.getDate()) + " " + f.getHours() + ':' + m0_js_addZero(f.getMinutes()) + ':' + m0_js_addZero(f.getSeconds()));
+				break;
+			case 'HORA':
+				t = (f.getHours() + ':' + m0_js_addZero(f.getMinutes()) + ':' + m0_js_addZero(f.getSeconds()));
+				break;
+			case 'HORA_MINUTOS':
+				t = (f.getHours() + ':' + m0_js_addZero(f.getMinutes()));
+				break;
+		}
+		return t;
+	}
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	* funcion para convertir un objeto fecha en cadena 
+	*
+	* @param   {string}  formato  tipo de carga a realizar dentro de la funcion
+	* @param   {object}  obj      objeto con los parametros a usar dentro de la funcion
+	*
+	* @return  {string}           cadena con el formato deseado para la fecha
+	*/
+	function m0_js_carga_configuracion_adicional(tipo_carga, param) {
+		if (tipo_carga !== "index") {
+			switch (tipo_carga) {
+				case 'm3_gs_eliminar_evento':
+					m3_js_eliminar_evento(param);
+					break;
+			}
+		}
+	}
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	* funcion que muestra un mensaje de error predefinido cada que hay un error en una comunicacion ajax 
+	*
+	*/
+	function m0_js_ajax_error(e) {
+		var error = {
+			message: "Error AJAX (" + e.message + ")",
+			name: e.name
+		}
+		throw error;
+
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Funcion que verifica que exista una sesion creada por el usuario
+	 *
+	 * @return  {null}  
+	 */
+	function m0_js_verifica_sesion() {
+		try {
+
+			if (typeof ID_SESION === 'undefined' || ID_SESION === "") {
+				google.script.run
+					.withFailureHandler(function (e) {
+						m0_js_registrar_error({
+							gs: "m0_gs_inicializar_sesion",
+							funcion: "m0_js_verifica_sesion",
+							error: { message: e.name + " : " + e.message, name: "AJAX" },
+							parametros: "VERIFICACION DE SESION ACTIVA"
+						});
+					})
+					.withSuccessHandler(function (id_sesion) {
+						ID_SESION = id_sesion;
+						m0_js_sincronizar_bd();
+					})
+					.m0_gs_inicializar_sesion("VERIFICACION DE SESION ACTIVA");
+			} else {
+				m0_js_sincronizar_bd()
+			}
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m0_js_verifica_sesion",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * funcion que mantiene sincronizada la base de datos con el servidor 
+	 *
+	 * @param   {string}  param  id del modulo
+	 *
+	 * @return  {null}          
+	 */
+	function m0_js_sincronizar_bd() {
+		try {
+
+			google.script.run
+				.withFailureHandler(function (e) {
+					m0_js_registrar_error({
+						gs: "m0_gs_sincronizar_bd",
+						funcion: "m0_js_sincronizar_bd",
+						error: { message: e.name + " : " + e.message, name: "AJAX" },
+						parametros: ID_SESION
+					});
+				})
+				.withSuccessHandler(function (id_modulo) {
+					switch (id_modulo) {
+						case "M9":
+							m9_js_inicializacion_bd();
+							break;
+						default:
+							break;
+					}
+				})
+				.m0_gs_sincronizar_bd(ID_SESION);
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m0_js_sincronizar_bd",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Funcion que actualiza el panel de "Conexion a BD"
+	 *
+	 * @return  {null}          
+	 */
+	function m0_js_actualizacion_panel_bd() {
+		try {
+
+			if (BD.SINCRONIZADO) {
+				$("#m0_li_bd_estado").html('<i class="material-icons mdl-list__item-icon">wifi_tethering</i><br/><br/><b>BASE DE DATOS ACTUALIZADA</b>');
+			} else {
+				$("#m0_li_bd_estado").html('<i class="material-icons mdl-list__item-icon">wifi_tethering_off</i><br/><br/><b>BASE DE DATOS DESACTUALIZADA</b>');
+			}
+			$("#m0_li_bd_ultima_sincronizacion").html('<i class="material-icons mdl-list__item-icon">history</i><br/><b>ÚLTIMA SINCRONIZACIÓN:<b> <br/> ' + m0_js_fecha_texto(BD.ULTIMA_SINCRONIZACION, "FECHA_HORA"));
+			var contenido = '<button id="m0_btn_bd_forzar_actualizacion"  class="mdl-button mdl-js-button mdl-button--icon mdl-button--colored" ><i class="material-icons mdl-list__item-icon" style="color: green;">cached</i></button>';
+			contenido += '<br/>';
+			contenido += '<div class="mdl-tooltip" data-mdl-for="m0_btn_bd_forzar_actualizacion">Haga clic aquí si desea forzar la actualización de la base de datos de la aplicación </div>';
+			contenido += '<br/>';
+			contenido += '<b>FORZAR SINCRONIZACIÓN</b>';
+			$("#m0_li_bd_forzar_actualizacion").html(contenido);
+			componentHandler.upgradeDom();
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m0_js_actualizacion_panel_bd",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Registra los accesos a modulos en el log de sesiones
+	 *
+	 * @param   {number}  param  id del modulo
+	 *
+	 * @return  {null}
+	 */
+	function m0_js_log_sesion(param) {
+		try {
+
+			google.script.run
+				.withFailureHandler(function (e) {
+					m0_js_registrar_error({
+						gs: "m0_gs_log_sesion",
+						funcion: "m0_js_log_sesion",
+						error: { message: e.name + " : " + e.message, name: "AJAX" },
+						parametros: param
+					});
+				})
+				.m0_gs_log_sesion(param);
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m0_js_log_sesion",
+				error: e,
+				parametros: param
+			});
+		}
+	}
+
+
+
+	setInterval(m0_js_verifica_sesion, 900000);
+
+</script>

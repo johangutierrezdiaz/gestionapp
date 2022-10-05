@@ -1,0 +1,2274 @@
+<script>
+	//################################################################################################################################################################################################################
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//SECCION 1 - PROGRAMAR VISITA DE ASEGURAMIENTO
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//################################################################################################################################################################################################################
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//listener de eventos del DOOM
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	$("#m0_div_panel_secundario").on("submit", "#m7_1_frm_programar_visita", function () {
+		m7_1_js_programar_visita(this);
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_secundario").on("change", "#m7_1_sel_programar_visita_pac", function () {
+
+		google.script.run
+			.withFailureHandler(function () {
+				m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página");
+			})
+			.withSuccessHandler(m0_js_poblar_menu)
+			.m7_1_gs_poblar_menu_programar_visita_usuario_oficina({
+				campo: "Quien atendera la visita...",
+				criterio: $("#m7_1_sel_programar_visita_pac option:selected").val(),
+				select: "m7_1_sel_programar_visita_usuario_pac",
+				datos: [],
+				mensaje_carga: "Usuarios cargados exitosamente"
+			});
+		m0_js_aviso("modal_box", "Espere mientras se carga el listado de usuarios disponibles para la oficina <b>" + $("#m7_1_sel_programar_visita_pac  option:selected").text() + "</b>");
+
+	});
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//funciones javascript
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	/**
+	 * funcion para cargar los objetos de una seccion especifica
+	 *
+	 * @return  {null}  
+	 */
+	function m7_js_inicializar_pestaña_m7_1() {
+		try {
+
+			m0_js_log_sesion({
+				id_sesion: ID_SESION,
+				log: "M7 - Programar visita de aseguramiento",
+				tipo_log: "ACCESO A SECCION"
+			});
+
+			var u = USUARIO;
+			var pos;
+			for (var mod = 0; mod < u.modulos.length; mod++) {
+				if (7 == u.modulos[mod].id_modulo) {
+					pos = mod;
+				}
+			}
+			var param_modulos = {
+				icono: u.modulos[pos].icono,
+				id_modulo: 7,
+				texto_1: u.modulos[pos].modulo,
+				texto_2: "Programar visita de aseguramiento"
+			};
+			m0_js_menu_arbol(param_modulos);
+
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página");
+				})
+				.withSuccessHandler(function (r) {
+					var param_formulario = {
+						formulario: "m7_1_frm_programar_visita",
+						campos: [{
+							id_campo: "m7_1_sel_programar_visita_pac",
+							nombre_campo: "Seleccione una oficina...",
+							required: "required",
+							tipo_campo: "select"
+						}, {
+							id_campo: "m7_1_sel_programar_visita_usuario",
+							nombre_campo: "Quien realizara la visita...",
+							required: "required",
+							tipo_campo: "select"
+						}, {
+							id_campo: "m7_1_sel_programar_visita_usuario_pac",
+							nombre_campo: "Quien atendera la visita...",
+							required: "required",
+							tipo_campo: "select"
+						}, {
+							id_campo: "m7_1_txt_programar_visita_fecha",
+							nombre_campo: "Fecha visita...",
+							pattern: "",
+							error: "",
+							required: "required",
+							tipo_campo: "date"
+						}, {
+							id_campo: "m7_1_txt_programar_visita_observaciones",
+							nombre_campo: "Observaciones...",
+							required: "",
+							tipo_campo: "textarea"
+						}]
+					};
+					var rango = {
+						tipo_campo: "fieldset_inicio",
+						legend: "Seleccione las listas de verificación que se usaran en la visita"
+					};
+					param_formulario.campos.push(rango);
+					for (var j = 0; j < r.length; j++) {
+						var id_campo = "m7_1_chk_programar_visita_lista_id-" + r[j].id_lista;
+						var rango = {
+							tipo_campo: "icon_checkbox",
+							id_campo: id_campo,
+							checked: "",
+							nombre_campo: r[j].lista,
+							icono: "ballot",
+							value: r[j].lista
+						};
+						param_formulario.campos.push(rango);
+					}
+					var rango = {
+						tipo_campo: "fieldset_fin",
+					};
+					param_formulario.campos.push(rango);
+					router({
+						tipo_fuente: "VARIABLE",
+						contenido: m0_js_crear_formulario(param_formulario),
+						contenedor: "m0_div_panel_secundario",
+						id_privilegio: "7_1"
+					});
+					componentHandler.upgradeDom();
+					$("#m7_1_txt_programar_visita_fecha").parent().addClass('is-dirty');
+
+					google.script.run
+						.withFailureHandler(function () {
+							m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página");
+						})
+						.withSuccessHandler(m0_js_poblar_menu)
+						.m7_1_gs_poblar_menu_programar_visita_oficina({
+							campo: "Seleccione una oficina...",
+							criterio: u.id_regional,
+							select: "m7_1_sel_programar_visita_pac",
+							datos: []
+						});
+
+					google.script.run
+						.withFailureHandler(function () {
+							m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página");
+						})
+						.withSuccessHandler(m0_js_poblar_menu)
+						.m7_1_gs_poblar_menu_programar_visita_usuario({
+							campo: "Quien realizara la visita...",
+							criterio: u.id_regional,
+							select: "m7_1_sel_programar_visita_usuario",
+							datos: [],
+							mensaje_carga: "Datos cargados exitosamente!"
+						});
+				})
+				.m7_1_gs_poblar_menu_programar_visita_categorias();
+
+			m0_js_aviso("modal_box", "Espere mientras se carga el listado de oficinas, usuarios y categorías de evaluación disponibles para la regional ");
+
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m7_js_inicializar_pestaña_m7_1",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+	/**
+	* modificar
+	*
+	 * @param   {object}  param  objecto con los datos registrados en el formulario
+		*
+	 * @return  {null}
+		*/
+	function m7_1_js_programar_visita(frm) {
+		try {
+
+			var sw = false;
+			$('input[type=checkbox]').each(function () {
+				if (this.checked) {
+					sw = true;
+				}
+			});
+
+			if (sw) {
+				google.script.run
+					.withFailureHandler(function () {
+						m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página");
+					})
+					.withSuccessHandler(function (r) {
+						if (m0_js_resultado_operacion(r)) {
+							m7_js_inicializar_pestaña_m7_1();
+						}
+					})
+					.m7_1_gs_programar_visita(frm);
+				m0_js_aviso("modal_box", "Por favor espere mientras se almacenan los datos");
+			} else {
+				m0_js_aviso("snackbar", "Debe seleccionar por lo menos una lista de verificación");
+			}
+			event.preventDefault();
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m7_1_js_programar_visita",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//SECCION 2 - VISITA DE ASEGURAMIENTO
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	$("#m0_div_panel_principal").on("submit", "#m7_2_frm_v_a_formulario_consulta", function () {
+		event.preventDefault();
+		m7_2_js_v_a_formulario_consulta($("#m7_2_sel_v_a_formulario_consulta").val());
+	});
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//funciones javascript
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	/**
+	 * funcion para cargar los objetos de una seccion especifica
+	 *
+	 * @return  {null}  
+	 */
+	function m7_js_inicializar_pestaña_m7_2() {
+		try {
+
+			m0_js_log_sesion({
+				id_sesion: ID_SESION,
+				log: "M7 - Diligenciamiento visita de aseguramiento",
+				tipo_log: "ACCESO A SECCION"
+			});
+
+			var u = USUARIO;
+			var pos;
+			for (var mod = 0; mod < u.modulos.length; mod++) {
+				if (7 == u.modulos[mod].id_modulo) {
+					pos = mod;
+				}
+			}
+			var param_modulos = {
+				icono: u.modulos[pos].icono,
+				id_modulo: 7,
+				texto_1: u.modulos[pos].modulo,
+				texto_2: "Diligenciamiento visita de aseguramiento"
+			};
+			m0_js_menu_arbol(param_modulos);
+
+			var param_formulario = {
+				formulario: "m7_2_frm_v_a_formulario_consulta",
+				campos: [{
+					id_campo: "m7_2_sel_v_a_formulario_consulta",
+					nombre_campo: "Visita de aseguramiento:",
+					required: "required",
+					tipo_campo: "select",
+				}]
+			};
+
+			router({
+				tipo_fuente: "VARIABLE",
+				contenido: m0_js_crear_formulario(param_formulario),
+				contenedor: "m7_2_div_v_a_consolidado_consulta",
+				id_privilegio: "7_2"
+			});
+
+			google.script.run
+				.withFailureHandler(function () { m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página"); })
+				.withSuccessHandler(m0_js_poblar_menu)
+				.m7_2_gs_v_a_cargar_visitas({
+					campo: "Visita de aseguramiento:",
+					criterio: u.id_regional,
+					select: "m7_2_sel_v_a_formulario_consulta",
+					datos: [],
+					mensaje_carga: "Visitas cargadas exitosamente"
+				});
+			m0_js_aviso("modal_box", "Por favor espere mientras se carga las visitas");
+
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m7_js_inicializar_pestaña_m7_2",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * [descripcion funcion]
+	 *
+	 * @param   {object}  param  [descripcion objeto]
+	 *
+	 * @return  {null}          
+	 */
+	function m7_2_js_v_a_formulario_consulta(id_visita) {
+		try {
+
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página");
+				})
+				.withSuccessHandler(function (r) {
+					if (m0_js_resultado_operacion(r)) {
+
+						router({
+							tipo_fuente: "VARIABLE",
+							contenido: r.contenido,
+							contenedor: "m0_div_panel_secundario",
+							id_privilegio: "7_2"
+						});
+
+						google.script.run
+							.withFailureHandler(function () { m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página"); })
+							.withSuccessHandler(function (param) {
+
+								m0_js_loading({
+									tipo: "COMPUESTO_CREACION",
+									titulo: "FORMULARIO VISITA DE ASEGURAMIENTO",
+									texto: param.mensaje,
+									valor: 0
+								})
+								if (param.exito) {
+									var contenido = '';
+									var contenido_categoria_item = '';
+									var contador_resultado_visitas;
+									var contador_item_visitas;
+									var contador_item;
+									var sw_item_resultado_visitas;
+									var verificacion;
+									var observacion;
+									var categoria;
+									var id_categoria;
+									var descripcion;
+
+									if (param.listas.registros > 0) {
+										contenido += '<p>Recuerde ir guardando en la medida que va diligenciado la visita de aseguramiento.</p>';
+										contenido += '<div id="m7_2_div_v_a_visita_aseguramiento_acordeon">';
+										for (var j = 0; j < param.listas.registros; j++) {
+
+											contador_item_visitas = 0;
+											contador_item = 0;
+											contenido_categoria_item = '';
+											for (var i = 0; i < param.items.registros; i++) {
+
+												if (param.items.datos[i].id_categoria == param.listas.datos[j].id_categoria) {
+													sw_item_resultado_visitas = true
+													verificacion = "";
+													observacion = "";
+													for (var l = 0; l < param.resultado_visita.registros; l++) {
+														if (param.resultado_visita.datos[l].id_item == param.items.datos[i].id_item && sw_item_resultado_visitas) {
+															sw_item_resultado_visitas = false;
+															verificacion = param.resultado_visita.datos[l].verificacion;
+															observacion = param.resultado_visita.datos[l].observacion
+														}
+													}
+													contador_item++;
+													if (sw_item_resultado_visitas) {
+														contenido_categoria_item += '<hr/>';
+														contenido_categoria_item += '<div class="mdl-grid" id="m7_2_div_v_a_item_' + param.items.datos[i].id_item + '">';
+														contenido_categoria_item += '<div class="mdl-cell mdl-cell--5-col">';
+														contenido_categoria_item += '<strong>' + (j + 1) + '.' + (i + 1) + '</strong> ' + param.items.datos[i].item;
+														contenido_categoria_item += '</div>';
+														contenido_categoria_item += '<div class="mdl-cell mdl-cell--3-col">';
+														contenido_categoria_item += '<select name="m7_2_sel_v_a_item_' + param.items.datos[i].id_item + '" id="m7_2_sel_v_a_item_' + param.items.datos[i].id_item + '" data-id_item="' + param.items.datos[i].id_item + '">';
+														contenido_categoria_item += '<option selected value="">-</option>';
+														contenido_categoria_item += '<option>CUMPLE</option>';
+														contenido_categoria_item += '<option>NO CUMPLE</option>';
+														contenido_categoria_item += '<option>NO APLICA</option>';
+														contenido_categoria_item += '</select>';
+														contenido_categoria_item += '</div>';
+														contenido_categoria_item += '<div class="mdl-cell mdl-cell--4-col">';
+														contenido_categoria_item += '<div class="mdl-textfield mdl-js-textfield">';
+														contenido_categoria_item += '<textarea class="mdl-textfield__input" type="text" rows="2" id="m7_2_txt_v_a_item_observacion_' + param.items.datos[i].id_item + '" name="m7_2_txt_v_a_item_observacion_' + param.items.datos[i].id_item + '" ></textarea>';
+														contenido_categoria_item += '<label class="mdl-textfield__label" for="m7_2_txt_v_a_item_observacion_' + param.items.datos[i].id_item + '">Observación...</label>';
+														contenido_categoria_item += '</div>';
+														contenido_categoria_item += '</div>';
+														contenido_categoria_item += '</div>';
+													} else {
+														contador_item_visitas++;
+														contenido_categoria_item += '<hr/>';
+														contenido_categoria_item += '<div class="mdl-grid resaltado" id="m7_2_div_v_a_item_' + param.items.datos[i].id_item + '">';
+														contenido_categoria_item += '<div class="mdl-cell mdl-cell--5-col">';
+														contenido_categoria_item += '<strong>' + (j + 1) + '.' + (i + 1) + '</strong> ' + param.items.datos[i].item;
+														contenido_categoria_item += '</div>';
+														contenido_categoria_item += '<div class="mdl-cell mdl-cell--3-col">';
+														contenido_categoria_item += '<select name="m7_2_sel_v_a_item_' + param.items.datos[i].id_item + '" id="m7_2_sel_v_a_item_' + param.items.datos[i].id_item + '" data-id_item="' + param.items.datos[i].id_item + '">';
+														contenido_categoria_item += '<option value="">-</option>';
+														switch (verificacion) {
+															case "CUMPLE":
+																contenido_categoria_item += '<option selected>CUMPLE</option>';
+																contenido_categoria_item += '<option>NO CUMPLE</option>';
+																contenido_categoria_item += '<option>NO APLICA</option>';
+																break;
+															case "NO CUMPLE":
+																contenido_categoria_item += '<option>CUMPLE</option>';
+																contenido_categoria_item += '<option selected>NO CUMPLE</option>';
+																contenido_categoria_item += '<option>NO APLICA</option>';
+																break;
+															case "NO APLICA":
+																contenido_categoria_item += '<option>CUMPLE</option>';
+																contenido_categoria_item += '<option>NO CUMPLE</option>';
+																contenido_categoria_item += '<option selected>NO APLICA</option>';
+																break;
+															default:
+																break;
+														}
+														contenido_categoria_item += '</select>';
+														contenido_categoria_item += '</div>';
+														contenido_categoria_item += '<div class="mdl-cell mdl-cell--4-col">';
+														contenido_categoria_item += '<div class="mdl-textfield mdl-js-textfield">';
+														contenido_categoria_item += '<textarea class="mdl-textfield__input" type="text" rows="2" id="m7_2_txt_v_a_item_observacion_' + param.items.datos[i].id_item + '" name="m7_2_txt_v_a_item_observacion_' + param.items.datos[i].id_item + '">' + observacion + '</textarea>';
+														contenido_categoria_item += '<label class="mdl-textfield__label" for="m7_2_txt_v_a_item_observacion_' + param.items.datos[i].id_item + '">Observación...</label>';
+														contenido_categoria_item += '</div>';
+														contenido_categoria_item += '</div>';
+														contenido_categoria_item += '</div>';
+													}
+
+													m0_js_loading({
+														tipo: "COMPUESTO_ACTUALIZACION",
+														texto: "",
+														valor: (((j * i) / (param.listas.registros * param.items.registros)) * 100)
+													});
+												}
+											}
+
+											for (l = 0; l < param.categoria.registros; l++) {
+												if (param.categoria.datos[l].id_categoria == param.listas.datos[j].id_categoria) {
+													categoria = param.categoria.datos[l].categoria;
+													id_categoria = param.categoria.datos[l].id_categoria;
+													descripcion = param.categoria.datos[l].descripcion;
+												}
+											}
+
+											contenido += '<h3><b>CHECKLIST : <span id="m7_2_span_v_a_categoria_' + id_categoria + '" class="mdl-badge" data-badge="' + (contador_item - contador_item_visitas) + '">' + categoria + '</span></b></h3>';
+											contenido += '<div>';
+											contenido += '<h5>' + descripcion + '</h5>';
+											contenido += contenido_categoria_item;
+											contenido += '</div>';
+
+										}
+										contenido += '</div>';
+										contenido += '<br/>';
+										contenido += '<div class="mensaje_centrado">';
+										contenido += '<button id="m7_2_btn_v_a_cerrar_visita" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" onclick=m7_2_js_v_a_cerrar_visita_paso_1("' + id_visita + '") >';
+										contenido += 'GUARDAR EVALUACIÓN Y CERRAR VISITA';
+										contenido += '</button>';
+										contenido += '</div>';
+
+									} else {
+										contenido += '<p class="aviso_error">No se asocio ni una lista de verificación a este evento </p>';
+									}
+
+									router({
+										tipo_fuente: "VARIABLE",
+										contenido: contenido,
+										contenedor: "m7_2_div_v_a_consolidado_checklist",
+										id_privilegio: "7_2"
+									});
+
+									$("#m7_2_div_v_a_visita_aseguramiento_acordeon").accordion({
+										heightStyle: "content",
+										collapsible: true,
+										active: 2,
+										classes: {
+											"ui-accordion": "highlight"
+										}
+									});
+									componentHandler.upgradeDom();
+
+									m0_js_aviso("aviso_modal_box", "Formulario de visita de aseguramiento cargado y validado exitosamente")
+								}
+
+							})
+							.m7_2_gs_cargar_visita_paso_2(id_visita);
+						m0_js_loading({
+							tipo: "COMPUESTO_CREACION",
+							titulo: "FORMULARIO VISITA DE ASEGURAMIENTO",
+							texto: "Por favor espere mientras se carga el formulario para diligenciar la visita de aseguramiento",
+							valor: false
+						})
+					}
+				})
+				.m7_2_gs_cargar_visita_paso_1(id_visita);
+
+			m0_js_loading({
+				tipo: "SIMPLE",
+				contenedor: "m0_div_panel_secundario"
+			});
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m7_2_js_v_a_formulario_consulta",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * [descripcion funcion]
+	 *
+	 * @param   {object}  param  [descripcion objeto]
+	 *
+	 * @return  {null}          
+	 */
+	function m7_2_js_v_a_cerrar_visita_paso_1(id_visita) {
+		try {
+
+			m0_js_loading({
+				titulo: "GUARDAR CALIFICACIONES - VISITAS DE ASEGURAMIENTO",
+				tipo: "COMPUESTO_CREACION",
+				texto: "Por favor espere mientras se sube al servidor las calificaciones realizadas",
+				valor: false
+			})
+
+			var id_item;
+			var sw_guardar = true;
+			var param = {
+				id_visita: id_visita,
+				sw_cierre_visitas: true,
+				items: []
+			};
+			$("[id*='m7_2_sel_v_a_item_']").each(function () {
+				id_item = $(this).attr("data-id_item");
+				$("#m7_2_div_v_a_item_" + id_item).removeClass("resaltado");
+				$("#m7_2_div_v_a_item_" + id_item).removeClass("resaltado_aviso");
+				if ($(this).val() === "NO CUMPLE") {
+					if ($("#m7_2_txt_v_a_item_observacion_" + id_item).val() === "") {
+						$("#m7_2_div_v_a_item_" + id_item).addClass("resaltado_aviso");
+						param.sw_cierre_visitas = false;
+						sw_guardar = false;
+					} else {
+						$("#m7_2_div_v_a_item_" + id_item).addClass("resaltado");
+						var rango = {
+							id: id_item,
+							calificacion: $(this).val(),
+							observacion: $("#m7_2_txt_v_a_item_observacion_" + id_item).val()
+						}
+						param.items.push(rango);
+					}
+				} else {
+					if ($(this).val() !== "") {
+						var rango = {
+							id: id_item,
+							calificacion: $(this).val(),
+							observacion: $("#m7_2_txt_v_a_item_observacion_" + id_item).val()
+						}
+						param.items.push(rango);
+						$("#m7_2_div_v_a_item_" + id_item).addClass("resaltado");
+					} else {
+						$("#m7_2_div_v_a_item_" + id_item).addClass("resaltado_aviso");
+						param.sw_cierre_visitas = false;
+					}
+				}
+			});
+
+			if (sw_guardar) {
+				google.script.run
+					.withFailureHandler(function () {
+						m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página");
+					})
+					.withSuccessHandler(function (r) {
+						if (m0_js_resultado_operacion(r)) {
+							aviso_modal_box("aviso_modal_box",r.mensaje)
+							if (param.sw_cierre_visitas) {
+								$("#m0_div_panel_secundario").empty();
+								$("#m0_div_panel_principal").empty();
+								router({
+									tipo_fuente: "ARCHIVO",
+									filename: "vista/m7/index_m7_5",
+									contenedor: "m0_div_panel_principal",
+									id_privilegio: "7_3"
+								});
+							} else {
+								m7_2_js_v_a_formulario_consulta(id_visita)
+							}
+						}
+					})
+					.m7_2_gs_v_a_cerrar_visita_paso_1(param);
+			} else {
+				m0_js_aviso("aviso_modal_box", "Si realizo la calificación de algún Ítem con NO CUMPLE, debe colocar una observación acerca de la No Conformidad")
+			}
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m7_2_js_v_a_cerrar_visita",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+
+
+
+
+	//################################################################################################################################################################################################################
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//SECCION 3 - CALENDARIO VISITAS DE ASEGURAMIENTO
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//################################################################################################################################################################################################################
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//funciones javascript
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	/**
+	 * funcion para cargar los objetos de una seccion especifica
+	 *
+	 * @return  {null}  
+	 */
+	function m7_js_inicializar_pestaña_m7_3() {
+		try {
+
+			m0_js_log_sesion({
+				id_sesion: ID_SESION,
+				log: "M7 - Calendario visitas de aseguramiento",
+				tipo_log: "ACCESO A SECCION"
+			});
+
+			var u = USUARIO;
+			var pos;
+			for (var mod = 0; mod < u.modulos.length; mod++) {
+				if (7 == u.modulos[mod].id_modulo) {
+					pos = mod;
+				}
+			}
+			var param_modulos = {
+				icono: u.modulos[pos].icono,
+				id_modulo: 7,
+				texto_1: u.modulos[pos].modulo,
+				texto_2: "Calendario visitas de aseguramiento"
+			};
+			m0_js_menu_arbol(param_modulos);
+
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página");
+				})
+				.withSuccessHandler(function (r) {
+					m0_js_aviso("snackbar", r.mensaje);
+					if (r.exito) {
+						$("#m7_3_div_calendario").html(r.contenido)
+					} else {
+						$("#m7_3_div_calendario").html("");
+						m0_js_aviso("banner", r.mensaje);
+					}
+				})
+				.m7_3_gs_cargar_calendario(u.id_regional);
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m7_js_inicializar_pestaña_m7_3",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+	//################################################################################################################################################################################################################
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//SECCION 4 - CANCELACION DE VISITAS
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//################################################################################################################################################################################################################
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//listener de eventos del DOOM
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+
+	$("#m0_div_panel_aviso_modal_box").on("submit", "#m7_4_frm_v_a_modificar_visita_confirmacion", function () {
+		event.preventDefault();
+		m7_4_js_v_a_modificar_visita_paso_2();
+	});
+
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//funciones javascript
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	/**
+	 * funcion para cargar los objetos de una seccion especifica
+	 *
+	 * @return  {null}  
+	 */
+	function m7_js_inicializar_pestaña_m7_4() {
+		try {
+
+			m0_js_log_sesion({
+				id_sesion: ID_SESION,
+				log: "M7 - Cancelación visitas de aseguramiento",
+				tipo_log: "ACCESO A SECCION"
+			});
+
+			var u = USUARIO;
+			var pos;
+			for (var mod = 0; mod < u.modulos.length; mod++) {
+				if (7 == u.modulos[mod].id_modulo) {
+					pos = mod;
+				}
+			}
+			var param_modulos = {
+				icono: u.modulos[pos].icono,
+				id_modulo: 7,
+				texto_1: u.modulos[pos].modulo,
+				texto_2: "Cancelación visitas de aseguramiento"
+			};
+			m0_js_menu_arbol(param_modulos);
+
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página");
+				})
+				.withSuccessHandler(m0_js_crear_tabla)
+				.m7_4_gs_cargar_visitas_aseguramiento();
+
+			m0_js_loading({
+				tipo: "SIMPLE",
+				contenedor: "m7_4_div_v_a_modificacion"
+			})
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m7_js_inicializar_pestaña_m7_4",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * [descripcion funcion]
+	 *
+	 * @param   {object}  param  [descripcion objeto]
+	 *
+	 * @return  {null}          
+	 */
+	function m7_4_js_v_a_modificar_visita_paso_1(id_visita) {
+		try {
+
+			var contenido = '<div class="div_panel mdl-shadow--3dp">';
+			contenido += '<h4 style="text-align: center;">CANCELACIÓN VISITA DE ASEGURAMIENTO </h4>';
+			contenido += '<p><b>IMPORTANTE:</b>Esta seguro de hacer la cancelación de la visita ?</p>';
+			contenido += m0_js_crear_formulario({
+				formulario: "m7_4_frm_v_a_modificar_visita_confirmacion",
+				campos: [{
+					tipo_campo: "hidden",
+					id_campo: "m7_4_hid_v_a_modificar_visita_confirmacion",
+					value: id_visita
+				}, {
+					id_campo: "m7_4_sel_v_a_modificar_visita_confirmacion",
+					nombre_campo: "Por favor confirme el registro de la cancelación...",
+					required: "required",
+					pattern: "",
+					error: "",
+					tipo_campo: "select",
+				}]
+			});
+			contenido += '</div>';
+			m0_js_aviso("modal_box", contenido);
+			m0_js_poblar_menu({
+				campo: "Por favor confirme el registro de la cancelación...",
+				criterio: "",
+				select: "m7_4_sel_v_a_modificar_visita_confirmacion",
+				datos: [{
+					texto: "",
+					valor: "",
+					selected: "selected"
+				}, {
+					texto: "SI",
+					valor: "SI",
+					selected: ""
+				}, {
+					texto: "NO",
+					valor: "NO",
+					selected: ""
+				}]
+			});
+			$("#m7_4_sel_v_a_modificar_visita_confirmacion").parent().addClass('is-dirty');
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m7_4_js_v_a_modificar_visita",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	* se envia el formulario de solicitud de permiso al server
+	*
+	* @param   {object}  frm  formulario
+	*
+	* @return  {null}
+	*/
+	function m7_4_js_v_a_modificar_visita_paso_2() {
+		try {
+
+			if ($("#m7_4_sel_v_a_modificar_visita_confirmacion").val() === "SI") {
+
+				google.script.run
+					.withFailureHandler(function () {
+						m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página");
+					})
+					.withSuccessHandler(function (r) {
+						if (m0_js_resultado_operacion(r)) {
+							m7_js_inicializar_pestaña_m7_4();
+						}
+					})
+					.m7_4_gs_v_a_modificar_visita_paso_2($("#m7_4_hid_v_a_modificar_visita_confirmacion").val());
+				m0_js_aviso("modal_box", "Por favor espere mientras se realiza la modificación");
+			} else {
+				m0_js_aviso("cierre_modal_box", "");
+			}
+			event.preventDefault();
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m7_4_sel_v_a_modificar_visita_confirmacion",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+
+
+	//################################################################################################################################################################################################################
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//SECCION 5 - GESTIÓN ACCIONES CORRECTIVA
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//################################################################################################################################################################################################################
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//listener de eventos del DOOM
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_aviso_modal_box").on("submit", "#m7_5_frm_confirmacion_correo_plan_mejoramiento", function () {
+		m7_5_a_c_enviar_correo_paso_2($("#m7_5_hid_confirmacion_id_plan_mejoramiento").val());
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_principal").on("submit", "#m7_5_frm_a_c_formulario_consulta", function () {
+		event.preventDefault();
+		m7_5_js_a_c_formulario_consulta();
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_aviso_modal_box").on("submit", "#m7_5_frm_a_c_actualizacion_plan_mejoramiento", function () {
+		m7_5_js_a_c_actualizacion_plan_mejoramiento(this);
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_aviso_modal_box").on("click", "#m7_5_btn_a_c_actualizacion_plan_mejoramiento_salir", function () {
+		m0_js_aviso("cierre_modal_box", "");
+	});
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//funciones javascript
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	/**
+	 * funcion para cargar los objetos de una seccion especifica
+	 *
+	 * @return  {null}  
+	 */
+	function m7_js_inicializar_pestaña_m7_5() {
+		try {
+
+			m0_js_log_sesion({
+				id_sesion: ID_SESION,
+				log: "M7 - Gestión acciones correctivas",
+				tipo_log: "ACCESO A SECCION"
+			});
+
+			var u = USUARIO;
+			var pos;
+			for (var mod = 0; mod < u.modulos.length; mod++) {
+				if (7 == u.modulos[mod].id_modulo) {
+					pos = mod;
+				}
+			}
+
+			var param_modulos = {
+				icono: u.modulos[pos].icono,
+				id_modulo: 7,
+				texto_1: u.modulos[pos].modulo,
+				texto_2: "Gestión acciones correctivas"
+			};
+			m0_js_menu_arbol(param_modulos);
+
+			var param_formulario = {
+				formulario: "m7_5_frm_a_c_formulario_consulta",
+				campos: [{
+					id_campo: "m7_5_sel_a_c_formulario_consulta",
+					nombre_campo: "Buscar No Conformidades:",
+					required: "required",
+					tipo_campo: "select",
+				}]
+			};
+
+			router({
+				tipo_fuente: "VARIABLE",
+				contenido: m0_js_crear_formulario(param_formulario),
+				contenedor: "m7_5_div_a_c_formulario_consulta",
+				id_privilegio: "7_3"
+			});
+			m0_js_poblar_menu({
+				campo: "Buscar No Conformidades por:",
+				criterio: "",
+				select: "m7_5_sel_a_c_formulario_consulta",
+				datos: [{
+					texto: "",
+					valor: "",
+					selected: "selected"
+				}, {
+					texto: "Abiertas",
+					valor: "PLAN DE MEJORAMIENTO FINALIZADO",
+					selected: ""
+				}, {
+					texto: "Abiertas sin plan de mejoramiento",
+					valor: "PENDIENTE PLAN DE MEJORAMIENTO",
+					selected: ""
+				}, {
+					texto: "Abiertas con plan de mejoramiento",
+					valor: "PLAN DE MEJORAMIENTO ABIERTO",
+					selected: ""
+				}]
+			});
+
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m7_js_inicializar_pestaña_m7_5",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * realiza la busqueda de la operacion de una oficina de acuerdo a un rango de fecha 	
+	 *
+	 * @param   {object}  frm  frm con los criterios de busqueda
+	 *
+	 * @return  {object}					objecto con la tabla de resultados de la busqueda          
+	 */
+	function m7_5_js_a_c_formulario_consulta() {
+		try {
+
+			$("#m0_div_panel_secundario").html('');
+			var u = USUARIO;
+			var param_tabla = {
+				criterio: {
+					plan: $("#m7_5_sel_a_c_formulario_consulta").val(),
+					id_regional: u.id_regional
+				},
+				contenedor: "m7_5_div_a_c_consolidado_consulta"
+			};
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página");
+				})
+				.withSuccessHandler(function (param_tabla) {
+
+					var visita_fecha_visita;
+					var visita_id_pac;
+					var observacion_visita_observacion;
+					var oficina_id_oficina;
+					var oficina_oficina;
+					var oficina_registros;
+					var item_item;
+					var item_id_categoria;
+					var categoria_categoria;
+					for (var j_no_conformidad = 0; j_no_conformidad < param_tabla.no_conformidad.registros; j_no_conformidad++) {
+
+						for (var j_visita = 0; j_visita < param_tabla.visita.registros; j_visita++) {
+							if (param_tabla.visita.datos[j_visita].id_visita == param_tabla.no_conformidad.datos[j_no_conformidad].id_visita) {
+								visita_fecha_visita = param_tabla.visita.datos[j_visita].fecha_visita;
+								visita_id_pac = param_tabla.visita.datos[j_visita].id_pac;
+							}
+						}
+
+						oficina_registros = 0;
+						for (var j_oficina = 0; j_oficina < param_tabla.oficina.registros; j_oficina++) {
+							if (param_tabla.oficina.datos[j_oficina].id_oficina == visita_id_pac && param_tabla.oficina.datos[j_oficina].id_regional == param_tabla.criterio.id_regional) {
+								oficina_id_oficina = param_tabla.oficina.datos[j_oficina].id_oficina;
+								oficina_oficina = param_tabla.oficina.datos[j_oficina].oficina;
+								oficina_registros++;
+							}
+						}
+
+						if (oficina_registros === 1) {
+
+							var fila = [];
+							fila.push(param_tabla.no_conformidad.datos[j_no_conformidad].id_plan);
+							fila.push(oficina_oficina + " (" + visita_fecha_visita + ")");
+
+							for (var j_item = 0; j_item < param_tabla.item.registros; j_item++) {
+								if (param_tabla.item.datos[j_item].id_item == param_tabla.no_conformidad.datos[j_no_conformidad].id_item) {
+									var item_item = param_tabla.item.datos[j_item].item;
+									var item_id_categoria = param_tabla.item.datos[j_item].id_categoria;
+								}
+							}
+
+							for (var j_categoria = 0; j_categoria < param_tabla.categoria.registros; j_categoria++) {
+								if (param_tabla.categoria.datos[j_categoria].id_categoria == item_id_categoria) {
+									categoria_categoria = param_tabla.categoria.datos[j_categoria].categoria;
+								}
+							}
+
+							fila.push(categoria_categoria);
+							fila.push(item_item);
+
+							for (var j_observacion_visita = 0; j_observacion_visita < param_tabla.observacion_visita.registros; j_observacion_visita++) {
+								if (param_tabla.observacion_visita.datos[j_observacion_visita].id_item == param_tabla.no_conformidad.datos[j_no_conformidad].id_item && param_tabla.observacion_visita.datos[j_observacion_visita].id_visita == param_tabla.no_conformidad.datos[j_no_conformidad].id_visita) {
+									observacion_visita_observacion = param_tabla.observacion_visita.datos[j_observacion_visita].observacion;
+								}
+							}
+							fila.push(observacion_visita_observacion);
+
+							fila.push(param_tabla.no_conformidad.datos[j_no_conformidad].estado);
+							fila.push(param_tabla.no_conformidad.datos[j_no_conformidad].fecha_vencimiento);
+
+							fila.push('<a href="#m0_div_panel_secundario" id="m7_5_btn_a_c" class="mdl-button mdl-js-button mdl-button--icon mdl-button--colored" onclick=m7_5_a_c_abrir_visita("' + param_tabla.no_conformidad.datos[j_no_conformidad].id_plan + '")><i class="material-icons">visibility</i></a>');
+							param_tabla.datos.push(fila);
+						}
+					}
+
+					m0_js_crear_tabla(param_tabla);
+
+				})
+				.m7_5_gs_a_c_formulario_consulta(param_tabla);
+			$("#m7_5_div_a_c_consolidado_consulta").html('<div class="mdl-spinner mdl-spinner--single-color mdl-js-spinner is-active carga_spinner"></div>');
+			componentHandler.upgradeDom();
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m7_5_js_a_c_formulario_consulta",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+	/**
+	 * [descripcion funcion]
+	 *
+	 * @param   {object}  param  [descripcion objeto]
+	 *
+	 * @return  {null}          
+	 */
+	function m7_5_a_c_abrir_visita(id_plan) {
+		try {
+
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página");
+				})
+				.withSuccessHandler(function (r) {
+
+					if (r.exito) {
+						router({
+							tipo_fuente: "VARIABLE",
+							contenido: r.contenido,
+							contenedor: "m0_div_panel_secundario",
+							id_privilegio: "7_3"
+						});
+
+						google.script.run
+							.withFailureHandler(function () { m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página"); })
+							.withSuccessHandler(function (param_tabla) {
+								m0_js_crear_tabla(param_tabla);
+								$("#m7_5_span_a_c_plan_mejoramiento_categoria").text(param_tabla.categoria);
+								$("#m7_5_span_a_c_plan_mejoramiento_item").text(param_tabla.item);
+								$("#m7_5_span_a_c_plan_mejoramiento_plan").text(param_tabla.plan);
+								$("#m7_5_span_a_c_plan_mejoramiento_fecha_vencimiento").text(param_tabla.fecha_vencimiento);
+							})
+							.m7_5_gs_a_c_abrir_plan_mejoramiento({
+								id_plan: id_plan,
+								contenedor: "m7_5_div_a_c_consolidado_consulta_2"
+							});
+						$("#m7_5_div_a_c_consolidado_consulta_2").html('<div class="mdl-spinner mdl-spinner--single-color mdl-js-spinner is-active carga_spinner"></div>');
+						componentHandler.upgradeDom();
+					} else {
+						m0_js_aviso("snackbar", "Plan de Mejoramiento finalizado")
+						$("#m0_div_panel_secundario").html("");
+					}
+				})
+				.m7_5_gs_a_c_abrir_visita(id_plan);
+
+			$("#m0_div_panel_secundario").html('<div class="mdl-spinner mdl-spinner--single-color mdl-js-spinner is-active carga_spinner"></div>');
+			componentHandler.upgradeDom();
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m7_5_a_c_abrir_visita",
+				error: e,
+				parametros: {
+					"id_visita": id_visita
+				}
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * [descripcion funcion]
+	 *
+	 * @param   {object}  param  [descripcion objeto]
+	 *
+	 * @return  {null}          
+	 */
+	function m7_5_a_c_enviar_correo_paso_1(id_visita) {
+		try {
+
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página");
+				})
+				.withSuccessHandler(function (r) {
+
+					if (m0_js_resultado_operacion(r)) {
+						var contenido = '<div class="div_panel mdl-shadow--3dp">';
+						contenido += '<h4 style="text-align: center;">CONFIRMACIÓN ENVÍO DE PLAN DE MEJORAMIENTO</h4>';
+						contenido += '<p><b>IMPORTANTE:</b>Ya se ha hecho el envío de un Plan de Mejoramiento para esta visita.<br />Esta seguro de realizar nuevamente el envío ?</p>';
+						contenido += m0_js_crear_formulario({
+							formulario: "m7_5_frm_confirmacion_correo_plan_mejoramiento",
+							campos: [{
+								id_campo: "m7_5_hid_confirmacion_id_plan_mejoramiento",
+								tipo_campo: "hidden",
+								value: id_visita
+							}, {
+								id_campo: "m7_5_sel_confirmacion_correo_plan_mejoramiento",
+								nombre_campo: "Por favor confirme el registro de la solicitud...",
+								required: "required",
+								pattern: "",
+								error: "",
+								tipo_campo: "select",
+							}]
+						});
+						contenido += '</div>';
+						m0_js_aviso("modal_box", contenido);
+						m0_js_poblar_menu({
+							campo: "Por favor confirme el registro de la solicitud...",
+							criterio: "",
+							select: "m7_5_sel_confirmacion_correo_plan_mejoramiento",
+							datos: [{
+								texto: "",
+								valor: "",
+								selected: "selected"
+							}, {
+								texto: "SI",
+								valor: "SI",
+								selected: ""
+							}, {
+								texto: "NO",
+								valor: "NO",
+								selected: ""
+							}]
+						});
+						$("#m7_5_sel_confirmacion_correo_plan_mejoramiento").parent().addClass('is-dirty');
+					} else {
+						google.script.run
+							.withFailureHandler(function () {
+								m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página");
+							})
+							.withSuccessHandler(m0_js_resultado_operacion)
+							.m7_5_gs_a_c_enviar_correo_paso_2(id_visita);
+						m0_js_aviso("modal_box", "Por favor espere mientras se envia el Plan de Mejoramiento");
+					}
+				})
+				.m7_5_gs_a_c_enviar_correo_paso_1(id_visita);
+			m0_js_aviso("modal_box", "Por favor espere mientras se valida si a esta visita ya se le ha hecho el envío del Plan de Mejoramiento");
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m7_5_a_c_enviar_correo_paso_1",
+				error: e,
+				parametros: {
+					"id_visita": id_visita
+				}
+			});
+		}
+	}
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	* se envia el formulario de solicitud de permiso al server
+	*
+	* @param   {object}  frm  formulario
+	*
+	* @return  {null}
+	*/
+	function m7_5_a_c_enviar_correo_paso_2(id_visita) {
+		try {
+
+			if ($("#m7_5_sel_confirmacion_correo_plan_mejoramiento").val() === "SI") {
+				google.script.run
+					.withFailureHandler(function () {
+						m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página");
+					})
+					.withSuccessHandler(m0_js_resultado_operacion)
+					.m7_5_gs_a_c_enviar_correo_paso_2(id_visita);
+				m0_js_aviso("modal_box", "Por favor espere mientras se realiza el envío");
+			} else {
+				m0_js_aviso("cierre_modal_box", "");
+			}
+			event.preventDefault();
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m7_5_a_c_enviar_correo_paso_2",
+				error: e,
+				parametros: frm
+			});
+		}
+	}
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * [descripcion funcion]
+	 *
+	 * @param   {object}  param  [descripcion objeto]
+	 *
+	 * @return  {null}          
+	 */
+	function m7_5_a_c_nueva_actualizacion_plan_mejoramiento(id_plan) {
+		try {
+
+			var contenido = '<div class="div_panel mdl-shadow--3dp">';
+			contenido += '<h5>ACTUALIZACIÓN PLAN DE MEJORAMIENTO</h5>';
+			var param_formulario = {
+				formulario: "m7_5_frm_a_c_actualizacion_plan_mejoramiento",
+				campos: [{
+					id_campo: "m7_5_txt_a_c_actualizacion_plan_mejoramiento_plan",
+					nombre_campo: "Actualización...",
+					required: "required",
+					tipo_campo: "textarea"
+				}, {
+					id_campo: "m7_5_txt_a_c_actualizacion_plan_mejoramiento_fecha_vencimiento",
+					nombre_campo: "Fecha vencimiento...",
+					pattern: "",
+					error: "",
+					required: "",
+					tipo_campo: "date"
+				}, {
+					id_campo: "m7_5_chk_a_c_actualizacion_plan_mejoramiento_inicio",
+					nombre_campo: "Marcar esta Actualizacion como Plan de Mejoramiento para esta No Conformidad",
+					checked: "",
+					tipo_campo: "checkbox",
+					value: "SI"
+				}, {
+					id_campo: "m7_5_hid_a_c_actualizacion_plan_mejoramiento_id",
+					tipo_campo: "hidden",
+					value: id_plan
+				}, {
+					id_campo: "m7_5_chk_a_c_actualizacion_plan_mejoramiento_cierre",
+					nombre_campo: "Cerrar este Plan de Mejoramiento",
+					checked: "",
+					tipo_campo: "icon_checkbox",
+					icono: "block",
+					value: "SI"
+				}]
+			};
+			contenido += m0_js_crear_formulario(param_formulario);
+			contenido += '<hr />';
+			contenido += '<button id="m7_5_btn_a_c_actualizacion_plan_mejoramiento_salir" class="mdl-button mdl-js-button mdl-button--accent" >CERRAR VENTANA<i class="material-icons">meeting_room</i></button>';
+			contenido += '<br/>';
+			contenido += '</div>';
+
+			m0_js_aviso("modal_box", contenido);
+			componentHandler.upgradeDom();
+			$("#m7_5_txt_a_c_actualizacion_plan_mejoramiento_fecha_vencimiento").parent().addClass('is-dirty');
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m7_5_a_c_nueva_actualizacion_plan_mejoramiento",
+				error: e,
+				parametros: {
+					"id_plan": id_plan
+				}
+			});
+		}
+	}
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+	/**
+	 * [descripcion funcion]
+	 *
+	 * @param   {object}  param  [descripcion objeto]
+	 *
+	 * @return  {null}          
+	 */
+	function m7_5_js_a_c_actualizacion_plan_mejoramiento(frm) {
+		try {
+
+			if ($("#m7_5_chk_a_c_actualizacion_plan_mejoramiento_inicio").is(":checked")) {
+				if ($("#m7_5_txt_a_c_actualizacion_plan_mejoramiento_fecha_vencimiento").val() !== "") {
+					google.script.run
+						.withFailureHandler(function () {
+							m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página");
+						})
+						.withSuccessHandler(function (r) {
+							if (m0_js_resultado_operacion(r)) {
+								m7_5_js_a_c_formulario_consulta();
+								m7_5_a_c_abrir_visita(r.id_plan);
+							}
+						})
+						.m7_5_gs_a_c_guardar_actualizacion_plan_mejoramiento(frm);
+					m0_js_aviso("modal_box", "Por favor espere mientras guardan los datos");
+				} else {
+					m0_js_aviso("snackbar", "Si está marcando esta actualización como el plan de mejoramiento, es necesario que le defina una fecha de vencimiento ");
+				}
+			} else {
+				google.script.run
+					.withFailureHandler(function () {
+						m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página");
+					})
+					.withSuccessHandler(function (r) {
+						if (m0_js_resultado_operacion(r)) {
+							m7_5_js_a_c_formulario_consulta();
+							m7_5_a_c_abrir_visita(r.id_plan)
+						}
+					})
+					.m7_5_gs_a_c_guardar_actualizacion_plan_mejoramiento(frm);
+				m0_js_aviso("modal_box", "Por favor espere mientras guardan los datos");
+			}
+			event.preventDefault();
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m7_5_js_a_c_actualizacion_plan_mejoramiento",
+				error: e,
+				parametros: {
+					"frm": frm
+				}
+			});
+		}
+	}
+
+
+
+
+	//################################################################################################################################################################################################################
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//SECCION 6 - GESTION CHECKLIST
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//################################################################################################################################################################################################################
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//listener de eventos del DOOM
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+
+	$("#m0_div_panel_principal").on("click", "#m7_6_btn_item_nuevo", function () {
+		m7_6_js_item_manipular(-1, "INSERTAR");
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_principal").on("click", "#m7_6_btn_item_editar", function () {
+		m7_6_js_item_manipular($(this).attr("data-id_item"), "EDITAR");
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_secundario").on("submit", "#m7_6_frm_manipular_item", function () {
+		m7_6_js_item_manipular_guardar(this);
+	});
+
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//funciones javascript
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	/**
+	 * funcion para cargar los objetos de una seccion especifica
+	 *
+	 * @return  {null}  
+	 */
+	function m7_js_inicializar_pestaña_m7_6() {
+		try {
+
+			m0_js_log_sesion({
+				id_sesion: ID_SESION,
+				log: "M7 - Gestión checklist",
+				tipo_log: "ACCESO A SECCION"
+			});
+
+			var u = USUARIO;
+			var pos;
+			for (var mod = 0; mod < u.modulos.length; mod++) {
+				if (7 == u.modulos[mod].id_modulo) {
+					pos = mod;
+				}
+			}
+			var param_modulos = {
+				icono: u.modulos[pos].icono,
+				id_modulo: 7,
+				texto_1: u.modulos[pos].modulo,
+				texto_2: "Gestión checklist"
+			};
+			m0_js_menu_arbol(param_modulos);
+
+			m0_js_loading({
+				tipo: "SIMPLE",
+				contenedor: "m7_6_div_consolidado_panel"
+			})
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página");
+				})
+				.withSuccessHandler(m0_js_crear_tabla)
+				.m7_6_gs_cargar_items({
+					contenedor: "m7_6_div_consolidado_panel"
+				});
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m7_js_inicializar_pestaña_m7_6",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+	/**
+	 * [descripcion funcion]
+	 *
+	 * @param   {number}  id_parametro	id del parametro a modificar
+	 * @param   {string}  operacion			tipo de modificacion a realizar
+	 *
+	 * @return  {object}	r							objecto con el resultado de la operacion de modificacion en el servidor          
+	 */
+	function m7_6_js_item_manipular(id_item, operacion) {
+		try {
+
+			var contenido = '<div class="div_panel mdl-shadow--3dp">';
+			if (operacion === "INSERTAR") {
+				contenido += "<h4>CREAR ÍTEM</h4>";
+				contenido += "<p>Ingresar información para el nuevo ítem</p>";
+			} else {
+				contenido += "<h4>EDITAR ÍTEM</h4>";
+				contenido += "<p>Editar información del ítem</p>";
+			}
+			var param_formulario = {
+				formulario: "m7_6_frm_manipular_item",
+				campos: [{
+					id_campo: "m7_6_hid_id_item",
+					tipo_campo: "hidden",
+				}, {
+					id_campo: "m7_6_hid_operacion",
+					tipo_campo: "hidden",
+					value: "INSERTAR"
+				}, {
+					tipo_campo: "textarea",
+					id_campo: "m7_6_txt_item",
+					nombre_campo: "Item...",
+					required: "required",
+					value: ""
+				}, {
+					id_campo: "m7_6_sel_item_categoria",
+					nombre_campo: "Categoría...",
+					required: "required",
+					tipo_campo: "select",
+				}, {
+					id_campo: "m7_6_chk_item_activo",
+					nombre_campo: "Activar o inactivar item",
+					tipo_campo: "checkbox",
+					checked: "checked",
+					value: "SI"
+				}]
+			};
+			contenido += m0_js_crear_formulario(param_formulario);
+			contenido += '</div>';
+
+			router({
+				tipo_fuente: "VARIABLE",
+				contenido: contenido,
+				contenedor: "m0_div_panel_secundario",
+				id_privilegio: "7_4"
+			});
+
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página");
+				})
+				.withSuccessHandler(m0_js_poblar_menu)
+				.m7_6_gs_item_poblar_categoria({
+					campo: "Item...",
+					select: "m7_6_sel_item_categoria",
+					datos: []
+				});
+
+			if (operacion === "EDITAR") {
+				google.script.run
+					.withFailureHandler(function () {
+						m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página");
+					})
+					.withSuccessHandler(function (r) {
+						$("#m7_6_hid_id_item").val(r.id_item);
+						$("#m7_6_hid_operacion").val(r.operacion);
+						$("#m7_6_txt_item").val(r.item).parent().addClass('is-dirty');
+						$("#m7_6_sel_item_categoria").val(r.id_categoria);
+						if (r.activo == 1) {
+							$("#m7_6_chk_item_activo").prop('checked', true).parent().addClass('is-checked');
+						} else {
+							$("#m7_6_chk_item_activo").prop('checked', false).parent().removeClass('is-checked');
+						}
+					})
+					.m7_6_gs_poblar_formulario_item(id_item);
+			}
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m7_6_js_item_manipular",
+				error: e,
+				parametros: {
+					"id_item": id_item,
+					"operacion": operacion
+				}
+			});
+		}
+	}
+
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+	/**
+	 * [Guardamos los datos del formulario en el servidor]
+	 *
+	 * @param   {object}  frm  	formulario
+	 *
+	 * @return  {object}	r			onjecto con el resultado de la operacion en el servidor         
+	 */
+	function m7_6_js_item_manipular_guardar(frm) {
+		try {
+
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página");
+				})
+				.withSuccessHandler(function (r) {
+					if (m0_js_resultado_operacion(r)) {
+						$("#m7_6_hid_id_item").val("");
+						$("#m7_6_hid_operacion").val("INSERTAR");
+						$("#m7_6_txt_item").val("").parent().addClass('is-dirty');
+						$("#m7_6_sel_item_categoria").val("");
+						$("#m7_6_chk_item_activo").prop('checked', false).parent().removeClass('is-checked');
+						componentHandler.upgradeDom();
+						m0_js_loading({
+							tipo: "SIMPLE",
+							contenedor: "m7_6_div_consolidado_panel"
+						})
+						google.script.run
+							.withFailureHandler(function () {
+								m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página");
+							})
+							.withSuccessHandler(m0_js_crear_tabla)
+							.m7_6_gs_cargar_items({
+								contenedor: "m7_6_div_consolidado_panel"
+							});
+					}
+				})
+				.m7_6_gs_item_manipular_guardar(frm);
+
+			m0_js_aviso("modal_box", "Por favor espere mientras se almacenan los datos");
+			event.preventDefault();
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m5_6_js_parametro_manipular_guardar",
+				error: e,
+				parametros: frm
+			});
+		}
+	}
+
+
+
+
+
+	//################################################################################################################################################################################################################
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//SECCION 7 - GESTION CATEGORIAS CHECKLIST
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//################################################################################################################################################################################################################
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//listener de eventos del DOOM
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+
+	$("#m0_div_panel_principal").on("click", "#m7_7_btn_categoria_nuevo", function () {
+		m7_7_js_categoria_manipular(-1, "INSERTAR");
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_principal").on("click", "#m7_7_a_categoria_editar", function () {
+		m7_7_js_categoria_manipular($(this).attr("data-id_categoria"), "EDITAR");
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_secundario").on("submit", "#m7_7_frm_manipular_categoria", function () {
+		m7_7_js_categoria_manipular_guardar(this);
+	});
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//funciones javascript
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	/**
+	 * funcion para cargar los objetos de una seccion especifica
+	 *
+	 * @return  {null}  
+	 */
+	function m7_js_inicializar_pestaña_m7_7() {
+		try {
+
+			m0_js_log_sesion({
+				id_sesion: ID_SESION,
+				log: "M7 - Gestión categorías checklist",
+				tipo_log: "ACCESO A SECCION"
+			});
+
+			var u = USUARIO;
+			var pos;
+			for (var mod = 0; mod < u.modulos.length; mod++) {
+				if (7 == u.modulos[mod].id_modulo) {
+					pos = mod;
+				}
+			}
+			var param_modulos = {
+				icono: u.modulos[pos].icono,
+				id_modulo: 7,
+				texto_1: u.modulos[pos].modulo,
+				texto_2: "Gestión categorías checklist"
+			};
+			m0_js_menu_arbol(param_modulos);
+
+			m0_js_loading({
+				tipo: "SIMPLE",
+				contenedor: "m7_7_div_consolidado_panel"
+			})
+
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página");
+				})
+				.withSuccessHandler(m0_js_crear_tabla)
+				.m7_7_gs_cargar_categorias({
+					contenedor: "m7_7_div_consolidado_panel"
+				});
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m7_js_inicializar_pestaña_m7_7",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+	/**
+	 * Muestra el formulario para editar o ingresar la info de la categoria
+	 *
+	 * @param   {number}  id_parametro	id del parametro a modificar
+	 * @param   {string}  operacion			tipo de modificacion a realizar
+	 *
+	 * @return  {object}	r							objecto con el resultado de la operacion de modificacion en el servidor          
+	 */
+	function m7_7_js_categoria_manipular(id_categoria, operacion) {
+		try {
+
+			var contenido = '<div class="div_panel mdl-shadow--3dp">';
+			if (operacion === "INSERTAR") {
+				contenido += "<h4>CREAR CATEGORÍA</h4>";
+				contenido += "<p>Ingresar información para la nueva categoría</p>";
+			} else {
+				contenido += "<h4>EDITAR CATEGORÍA</h4>";
+				contenido += "<p>Editar información de la categoría</p>";
+			}
+			var param_formulario = {
+				formulario: "m7_7_frm_manipular_categoria",
+				campos: [{
+					id_campo: "m7_7_hid_id_categoria",
+					tipo_campo: "hidden",
+					value: id_categoria
+				}, {
+					id_campo: "m7_7_hid_operacion",
+					tipo_campo: "hidden",
+					value: "INSERTAR"
+				}, {
+					id_campo: "m7_7_txt_categoria",
+					nombre_campo: "Categoría...",
+					pattern: "",
+					error: "",
+					required: "required",
+					tipo_campo: "text",
+				}, {
+					tipo_campo: "textarea",
+					id_campo: "m7_7_txt_categoria_descripcion",
+					nombre_campo: "Descripción categoría...",
+					required: "",
+					value: ""
+				}, {
+					id_campo: "m7_7_chk_categoria_activo",
+					nombre_campo: "Activar o inactivar categoría",
+					tipo_campo: "checkbox",
+					checked: "checked",
+					value: "SI"
+				}]
+			};
+			contenido += m0_js_crear_formulario(param_formulario);
+			contenido += '</div>';
+
+			router({
+				tipo_fuente: "VARIABLE",
+				contenido: contenido,
+				contenedor: "m0_div_panel_secundario",
+				id_privilegio: "7_5"
+			});
+
+			if (operacion === "EDITAR") {
+				google.script.run
+					.withFailureHandler(function () {
+						m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página");
+					})
+					.withSuccessHandler(function (r) {
+						$("#m7_7_hid_id_categoria").val(r.id_categoria);
+						$("#m7_7_hid_operacion").val(r.operacion);
+						$("#m7_7_txt_categoria").val(r.categoria).parent().addClass('is-dirty');
+						$("#m7_7_txt_categoria_descripcion").val(r.categoria_descripcion).parent().addClass('is-dirty');
+						if (r.activo == 1) {
+							$("#m7_7_chk_categoria_activo").prop('checked', true).parent().addClass('is-checked');
+						} else {
+							$("#m7_7_chk_categoria_activo").prop('checked', false).parent().removeClass('is-checked');
+						}
+					})
+					.m7_7_gs_poblar_formulario_categoria(id_categoria);
+			}
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m7_7_js_categoria_manipular",
+				error: e,
+				parametros: {
+					"id_categoria": id_categoria,
+					"operacion": operacion
+				}
+			});
+		}
+	}
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+	/**
+	 * [Guardamos los datos del formulario en el servidor]
+	 *
+	 * @param   {object}  frm  	formulario
+	 *
+	 * @return  {object}	r			onjecto con el resultado de la operacion en el servidor         
+	 */
+	function m7_7_js_categoria_manipular_guardar(frm) {
+		try {
+
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página");
+				})
+				.withSuccessHandler(function (r) {
+					if (m0_js_resultado_operacion(r)) {
+						m7_js_inicializar_pestaña_m7_7();
+						$("#m7_7_hid_id_categoria").val("");
+						$("#m7_7_hid_operacion").val("INSERTAR");
+						$("#m7_7_txt_categoria").val("").parent().addClass('is-dirty');
+						$("#m7_7_txt_categoria_descripcion").val("");
+						$("#m7_7_chk_categoria_activo").prop('checked', false).parent().removeClass('is-checked');
+						componentHandler.upgradeDom();
+
+						m0_js_loading({
+							tipo: "SIMPLE",
+							contenedor: "m7_7_div_consolidado_panel"
+						})
+
+						google.script.run
+							.withFailureHandler(function () {
+								m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página");
+							})
+							.withSuccessHandler(m0_js_crear_tabla)
+							.m7_7_gs_cargar_categorias({
+								contenedor: "m7_7_div_consolidado_panel"
+							});
+					}
+				})
+				.m7_7_gs_categoria_manipular_guardar(frm);
+
+			m0_js_aviso("modal_box", "Por favor espere mientras se almacenan los datos");
+			event.preventDefault();
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m7_7_js_categoria_manipular_guardar",
+				error: e,
+				parametros: frm
+			});
+		}
+	}
+
+
+
+
+	//################################################################################################################################################################################################################
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//SECCION 8 - REPORTES VISITA DE ASEGURAMIENTO
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//################################################################################################################################################################################################################
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//listener de eventos del DOOM
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//funciones javascript
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	/**
+	 * funcion para cargar los objetos de una seccion especifica
+	 *
+	 * @return  {null}  
+	 */
+	function m7_js_inicializar_pestaña_m7_8() {
+		try {
+
+			m0_js_log_sesion({
+				id_sesion: ID_SESION,
+				log: "M7 - Reporte visitas de aseguramiento",
+				tipo_log: "ACCESO A SECCION"
+			});
+
+			var u = USUARIO;
+			var pos;
+			for (var mod = 0; mod < u.modulos.length; mod++) {
+				if (7 == u.modulos[mod].id_modulo) {
+					pos = mod;
+				}
+			}
+			var param_modulos = {
+				icono: u.modulos[pos].icono,
+				id_modulo: 7,
+				texto_1: u.modulos[pos].modulo,
+				texto_2: "Reporte visitas de aseguramiento"
+			};
+			m0_js_menu_arbol(param_modulos);
+
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página");
+				})
+				.withSuccessHandler(function (r) {
+					m0_js_aviso("snackbar", r.mensaje);
+					if (r.exito) {
+						$("#m7_8_div_consolidado_programacion_visitas").html(r.contenido_v_a)
+						$("#m7_8_div_consolidado_acciones_correctivas").html(r.contenido_a_c)
+						componentHandler.upgradeDom();
+					} else {
+						$("#m7_8_div_consolidado_programacion_visitas").html("");
+						$("#m7_8_div_consolidado_acciones_correctivas").html("");
+						m0_js_aviso("banner", r.mensaje);
+					}
+				})
+				.m7_8_gs_cargar_reportes(u.id_regional);
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m7_js_inicializar_pestaña_m7_8",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+	/**
+	 * [descripcion funcion]
+	 *
+	 * @param   {object}  param  [descripcion objeto]
+	 *
+	 * @return  {null}          
+	 */
+	function m7_8_js_actualizar_reporte_v_a() {
+		try {
+
+			var u = USUARIO;
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página");
+				})
+				.withSuccessHandler(function (param) {
+					if (param.exito) {
+						var data = [];
+						var oficina;
+						var contenido;
+						var nombre_usuario;
+
+						for (var j = 0; j < param.programacion.registros; j++) {
+							oficina = "";
+							for (var l = 0; l < param.oficinas.registros; l++) {
+								if (param.programacion.datos[j].id_pac == param.oficinas.datos[l].id_oficina && param.oficinas.datos[l].id_regional == u.id_regional) {
+									oficina = param.oficinas.datos[l].oficina;
+								}
+							}
+							if (oficina !== "") {
+								var fila = [];
+								fila.push(param.programacion.datos[j].id_visita);
+								fila.push(oficina);
+
+								//usuario visita
+								nombre_usuario = "";
+								for (l = 0; l < param.usuarios.registros; l++) {
+									if (param.usuarios.datos[l].id_usuario == param.programacion.datos[j].id_usuario) {
+										nombre_usuario = param.usuarios.datos[l].nombre;
+									}
+								}
+								fila.push(nombre_usuario)
+
+								//usuario_pac
+								nombre_usuario = ""
+								for (l = 0; l < param.usuarios.registros; l++) {
+									if (param.usuarios.datos[l].id_usuario == param.programacion.datos[j].id_usuario_pac) {
+										nombre_usuario = param.usuarios.datos[l].nombre;
+									}
+								}
+								fila.push(nombre_usuario)
+
+								fila.push(param.programacion.datos[j].fecha_visita);
+								fila.push(param.programacion.datos[j].estado);
+
+								contenido = '';
+								for (l = 0; l < param.visitas_categoria.registros; l++) {
+									if (param.visitas_categoria.datos[l].id_visita == param.programacion.datos[j].id_visita) {
+										for (var k = 0; k < param.categorias.registros; k++) {
+											if (param.visitas_categoria.datos[l].id_categoria == param.categorias.datos[k].id_categoria) {
+												contenido += '- ' + param.categorias.datos[k].categoria + '\r';
+											}
+										}
+									}
+								}
+								fila.push(contenido)
+
+								fila.push(param.programacion.datos[j].observaciones)
+
+								data.push(fila);
+							}
+							m0_js_loading({
+								tipo: "COMPUESTO_ACTUALIZACION",
+								texto: "",
+								valor: ((j / param.programacion.registros) * 100)
+							})
+						}
+
+						google.script.run
+							.withFailureHandler(function () {
+								m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página");
+							})
+							.withSuccessHandler(m0_js_resultado_operacion)
+							.m7_8_gs_actualizar_reporte_v_a_paso_2(data);
+
+						m0_js_loading({
+							tipo: "COMPUESTO_ACTUALIZACION",
+							texto: "Por favor espere mientras se sube al servidor la base de datos actualizada",
+							valor: false
+						})
+					}
+				})
+				.m7_8_gs_actualizar_reporte_v_a_paso_1();
+			m0_js_loading({
+				tipo: "COMPUESTO_CREACION",
+				titulo: "ACTUALIZACIÓN REPORTE VISITAS DE ASEGURAMIENTO",
+				texto: "Por favor espere mientras se descargan los datos del servidor",
+				valor: false
+			})
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m7_8_js_actualizar_reporte_v_a",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+	/**
+	 * [descripcion funcion]
+	 *
+	 * @param   {object}  param  [descripcion objeto]
+	 *
+	 * @return  {null}          
+	 */
+	function m7_8_js_actualizar_reporte_a_c() {
+		try {
+
+			var u = USUARIO;
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página");
+				})
+				.withSuccessHandler(function (param) {
+					if (param.exito) {
+						var data = [];
+						var id_oficina;
+						var id_visita;
+						var id_usuario;
+						var id_usuario_pac;
+						var fecha_visita;
+						var oficina;
+						var nombre_usuario;
+						var observacion;
+
+						for (var j = 0; j < param.acciones_correctivas.registros; j++) {
+							id_oficina = "";
+							id_visita = "";
+							id_usuario = "";
+							id_usuario_pac = "";
+							fecha_visita = "";
+
+							for (var l = 0; l < param.programacion.registros; l++) {
+								if (param.acciones_correctivas.datos[j].id_visita == param.programacion.datos[l].id_visita) {
+									id_oficina = param.programacion.datos[l].id_pac;
+									id_visita = param.programacion.datos[l].id_visita;
+									id_usuario = param.programacion.datos[l].id_usuario;
+									id_usuario_pac = param.programacion.datos[l].id_usuario_pac;
+									fecha_visita = param.programacion.datos[l].fecha_visita;
+								}
+							}
+							oficina = "";
+							for (l = 0; l < param.oficinas.registros; l++) {
+								if (id_oficina == param.oficinas.datos[l].id_oficina && param.oficinas.datos[l].id_regional == u.id_regional) {
+									oficina = param.oficinas.datos[l].oficina;
+								}
+							}
+							if (oficina !== "") {
+								var fila = [];
+								fila.push(param.acciones_correctivas.datos[j].id_plan);
+								fila.push(id_visita);
+								fila.push(oficina);
+								fila.push(fecha_visita);
+
+								nombre_usuario = "";
+								for (l = 0; l < param.usuarios.registros; l++) {
+									if (param.usuarios.datos[l].id_usuario == id_usuario) {
+										nombre_usuario = param.usuarios.datos[l].nombre;
+									}
+								}
+								fila.push(nombre_usuario);
+
+								for (l = 0; l < param.items.registros; l++) {
+									if (param.acciones_correctivas.datos[j].id_item == param.items.datos[l].id_item) {
+
+										for (var k = 0; k < param.categorias.registros; k++) {
+											if (param.items.datos[l].id_categoria == param.categorias.datos[k].id_categoria) {
+												fila.push(param.categorias.datos[k].categoria);
+											}
+										}
+										fila.push(param.items.datos[l].item)
+									}
+								}
+
+								observacion = "";
+								for (l = 0; l < param.visita.registros; l++) {
+									if (param.acciones_correctivas.datos[j].id_visita == param.visita.datos[l].id_visita && param.acciones_correctivas.datos[j].id_item == param.visita.datos[l].id_item) {
+										observacion = param.visita.datos[l].observacion;
+									}
+								}
+								fila.push(observacion);
+
+								fila.push(param.acciones_correctivas.datos[j].estado);
+								fila.push(param.acciones_correctivas.datos[j].plan_mejoramiento);
+
+								nombre_usuario = "";
+								for (l = 0; l < param.usuarios.registros; l++) {
+									if (param.usuarios.datos[l].id_usuario == id_usuario_pac) {
+										nombre_usuario = param.usuarios.datos[l].nombre;
+									}
+								}
+								fila.push(nombre_usuario);
+
+								fila.push(param.acciones_correctivas.datos[j].fecha_vencimiento);
+
+								var contenido = '';
+								for (l = 0; l < param.actualizaciones.registros; l++) {
+									if (param.actualizaciones.datos[l].id_plan == param.acciones_correctivas.datos[j].id_plan) {
+										contenido += '-' + param.actualizaciones.datos[l].fecha_actualizacion + " / " + param.actualizaciones.datos[l].actualizacion + '\r';
+									}
+								}
+								fila.push(contenido)
+
+								data.push(fila);
+							}
+
+							m0_js_loading({
+								tipo: "COMPUESTO_ACTUALIZACION",
+								texto: "",
+								valor: ((j / param.acciones_correctivas.registros) * 100)
+							})
+						}
+						google.script.run
+							.withFailureHandler(function () {
+								m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página");
+							})
+							.withSuccessHandler(m0_js_resultado_operacion)
+							.m7_8_gs_actualizar_reporte_a_c_paso_2(data);
+
+						m0_js_loading({
+							tipo: "COMPUESTO_ACTUALIZACION",
+							texto: "Por favor espere mientras se sube al servidor la base de datos actualizada",
+							valor: false
+						})
+					}
+				})
+				.m7_8_gs_actualizar_reporte_a_c_paso_1();
+			m0_js_loading({
+				tipo: "COMPUESTO_CREACION",
+				titulo: "ACTUALIZACIÓN REPORTE ACCIONES CORRECTIVAS",
+				texto: "Por favor espere mientras se descargan los datos del servidor",
+				valor: false
+			})
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m7_8_js_actualizar_reporte_a_c",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+</script>

@@ -1,0 +1,64 @@
+<script>
+	/**---------------------------------------MODULO GESTIÓN BEPS----------------------------------------------------------------------------------- */
+	m0_js_log_sesion({
+		id_sesion: ID_SESION,
+		log: "M5",
+		tipo_log: "ACCESO A MODULO"
+	});
+
+	var param = {
+		id_modulo: 5,
+		secciones: [{
+			nombre_seccion: "Registrar gestión PSAP",
+			fuente: "vista/m5/index_m5_1",
+			privilegio: "5_1",
+			descripcion: "Formulario para el registro de la gestión realizada con la base PSAP de la Regional"
+		}, {
+			nombre_seccion: "Registrar gestión ISPV-BEPS",
+			fuente: "vista/m5/index_m5_2",
+			privilegio: "5_2",
+			descripcion: "Modulo para el registro rapido de la gestión con los traslados ISPV - BEPS"
+		}, {
+			nombre_seccion: "Registrar referidos BEPS",
+			fuente: "vista/m5/index_m5_9",
+			privilegio: "5_9",
+			descripcion: "Modulo para el registro de referidos BEPS"
+		}, {
+			nombre_seccion: "Registrar cantadas gestores BEPS",
+			fuente: "vista/m5/index_m5_3",
+			privilegio: "5_3",
+			descripcion: "Formulario para subir la produccion diaria de los gestores BEPS"
+		}, {
+			nombre_seccion: "Registrar prospectiva BEPS",
+			fuente: "vista/m5/index_m5_7",
+			privilegio: "5_7",
+			descripcion: "Formulario para subir la información proveniente del Informe de Prospectiva BEPS"
+		}, {
+			nombre_seccion: "Registrar gestión gestores culturales",
+			fuente: "vista/m5/index_m5_4",
+			privilegio: "5_4",
+			descripcion: "Formulario para subir la gestión realizada con relación a los gestores culturales"
+		}, {
+			nombre_seccion: "Parametros BEPS",
+			fuente: "vista/m5/index_m5_6",
+			privilegio: "5_6",
+			descripcion: "Administrar los parámetros de medición BEPS"
+		}, {
+			nombre_seccion: "Registrar gestión Anualidad BEPS",
+			fuente: "vista/m5/index_m5_10",
+			privilegio: "5_10",
+			descripcion: "Formulario para el registro de la gestión realizada con la base Anualidades BEPS no contactados nivel central"
+		}, {
+			nombre_seccion: "Cuadro de Control BEPS",
+			fuente: "vista/m5/index_m5_5",
+			privilegio: "5_5",
+			descripcion: "Acceder al cuadro control BEPS"
+		}, {
+			nombre_seccion: "Reportes BEPS",
+			fuente: "vista/m5/index_m5_8",
+			privilegio: "5_8",
+			descripcion: "Reporte en formato tabular de la gestión reportada en los informes de prospectiva y en el reporte de cantadas"
+		}]
+	}
+		m0_js_inicializar_modulo(param);
+</script>

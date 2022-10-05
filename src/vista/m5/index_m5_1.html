@@ -1,0 +1,42 @@
+<h4>REGISTRO GESTIÓN PSAP</h4>
+<p>Por favor, realice primero la busquedad del ciudadano o ciudadanos a contactar en la sección <u>BASE PSAP</u>. Luego con el numero de documento procede a registrar la gestion realizada en la seccion <u>FORMULARIO REGISTRO GESTIÓN PSAP</u> </p>
+<hr />
+<div id="m5_1_div_accordion">
+	<h3><b>BASE PSAP</b></h3>
+	<div>
+		<iframe width="600" height="450" src="https://datastudio.google.com/embed/reporting/1gw39VyzuN_qLv-xJE0SUnVZbCbQ5WMrZ/page/1aiv" frameborder="0" style="border:0" allowfullscreen></iframe>
+	</div>
+	<h3><b>FORMULARIO REGISTRO GESTIÓN PSAP</b></h3>
+	<div>
+		<h5>Documento ciudadano:</h5>
+		<div class="mdl-textfield mdl-js-textfield mdl-textfield--expandable">
+			<label class="mdl-button mdl-js-button mdl-button--icon" for="m5_1_txt_base_psap_documento">
+				<i class="material-icons">search</i>
+			</label>
+			<div class="mdl-textfield__expandable-holder">
+				<input class="mdl-textfield__input" type="text" id="m5_1_txt_base_psap_documento"
+					name="m5_1_txt_base_psap_documento">
+				<label class="mdl-textfield__label" for="m5_1_txt_base_psap_documento">Numero de documento del ciudadano</label>
+			</div>
+		</div>
+		<br />
+		<div id="m5_1_div_base_psap_info_ciudadano"></div>
+		<br />
+		<div id="m5_1_div_base_psap_gestion_ciudadano"></div>
+		<br />
+		<div id="m5_div_base_psap_nuevo_acercamiento" class="oculto">
+			<div class="alineado_derecha">
+				<a href="#m5_1_div_base_psap_formulario" id="m5_1_btn_base_psap_nuevo_acercamiento" class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored">
+					<i class="material-icons">add_comment</i>
+				</a>
+			</div>
+			<div class="mdl-tooltip" for="m12_btn_base_empresarial_nuevo">Por favor haga clic aquí si desea registrar una nueva gestión realizada con el ciudadano</div>
+		</div>
+        <br />
+        <div id="m5_1_div_base_psap_formulario"></div>
+	</div>
+</div>
+
+<script>
+	m5_js_inicializar_pestaña_m5_1();
+</script>

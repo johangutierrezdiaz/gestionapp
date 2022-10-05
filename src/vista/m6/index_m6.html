@@ -1,0 +1,34 @@
+<script>
+	/**---------------------------------------MODULO REPORTES ----------------------------------------------------------------------------------- */
+	m0_js_log_sesion({
+		id_sesion: ID_SESION,
+		log: "M6",
+		tipo_log: "ACCESO A MODULO"
+	});
+
+	var param = {
+		id_modulo: 6,
+		secciones: [{
+			nombre_seccion: "FORMULARIO SOLICITUD DE VIÁTICOS",
+			fuente: "vista/m6/index_m6_1",
+			privilegio: "6_1",
+			descripcion: "Formulario para la solicitud de viáticos"
+		}, {
+			nombre_seccion: "MIS SOLICITUDES DE VIÁTICOS",
+			fuente: "vista/m6/index_m6_2",
+			privilegio: "6_1",
+			descripcion: "Consolidado de todas las solicitudes de viáticos registradas"
+		}, {
+			nombre_seccion: "AUTORIZACIÓN SOLICITUDES DE VIÁTICOS",
+			fuente: "vista/m6/index_m6_3",
+			privilegio: "6_3",
+			descripcion: "solicitudes de viáticos en espera de autorización"
+		}, {
+			nombre_seccion: "REPORTE DE SOLICITUDES DE VIÁTICOS",
+			fuente: "vista/m6/index_m6_4",
+			privilegio: "6_4",
+			descripcion: "Reporte de solicitudes de viáticos"
+		}]
+	}
+	m0_js_inicializar_modulo(param);
+</script>

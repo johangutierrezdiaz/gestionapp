@@ -1,0 +1,705 @@
+<script>
+	//################################################################################################################################################################################################################
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//SECCION 1 - REGISTRO INCONSISTENCIA RADICACION
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//################################################################################################################################################################################################################
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//listener de eventos del DOOM
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	$("#m0_div_panel_principal").on("submit", "#m8_1_frm_ir_registro", function () {
+		m8_1_js_ir_registro(this);
+	});
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//funciones javascript
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+
+	/**
+	 * funcion para cargar los objetos de una seccion especifica
+	 *
+	 * @return  {null}  
+	 */
+	function m8_js_inicializar_pestaña_m8_1() {
+		try {
+
+			m0_js_log_sesion({
+				id_sesion: ID_SESION,
+				log: "M8 - Registro inconsistencia",
+				tipo_log: "ACCESO A SECCION"
+			});
+
+			var u = USUARIO;
+			var pos;
+			for (var mod = 0; mod < u.modulos.length; mod++) {
+				if (8 == u.modulos[mod].id_modulo) {
+					pos = mod;
+				}
+			}
+			var param_modulos = {
+				icono: u.modulos[pos].icono,
+				id_modulo: 8,
+				texto_1: u.modulos[pos].modulo,
+				texto_2: "Registro inconsistencia"
+			};
+			m0_js_menu_arbol(param_modulos);
+
+			var param_formulario = {
+				formulario: "m8_1_frm_ir_registro",
+				campos: [{
+					id_campo: "m8_1_txt_ir_inconsistencia",
+					nombre_campo: "Inconsistencia...",
+					required: "required",
+					error: "",
+					tipo_campo: "textarea",
+				}, {
+					id_campo: "m8_1_sel_ir_categoria_inconsistencia",
+					nombre_campo: "Categoría inconsistencia...",
+					required: "required",
+					tipo_campo: "select",
+				}, {
+					id_campo: "m8_1_sel_ir_agente_rotonda",
+					nombre_campo: "Agente de rotonda...",
+					required: "required",
+					tipo_campo: "select",
+				}, {
+					id_campo: "m8_1_txt_ir_bizagi",
+					nombre_campo: "Radicado bizagi...",
+					pattern: "",
+					error: "",
+					required: "required",
+					tipo_campo: "text",
+				}, {
+					id_campo: "m8_1_sel_ir_causa_inconsistencia",
+					nombre_campo: "Causa inconsistencia...",
+					required: "required",
+					tipo_campo: "select",
+				}, {
+					id_campo: "m8_1_chk_ir_caso_oya",
+					nombre_campo: "Caso OYA",
+					tipo_campo: "checkbox",
+					checked: "checked"
+				}]
+			};
+			router({
+				tipo_fuente: "VARIABLE",
+				contenido: m0_js_crear_formulario(param_formulario),
+				contenedor: "m8_div_ir_consolidado",
+				id_privilegio: "8_0"
+			});
+
+			var param_select = ({
+				campo: "Agente de rotonda...",
+				criterio: u.id_oficina,
+				select: "m8_1_sel_ir_agente_rotonda",
+				datos: []
+			});
+
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página")
+				})
+				.withSuccessHandler(m0_js_poblar_menu)
+				.m8_1_gs_ir_cargar_agente_rotonda(param_select);
+
+			$("#m8_1_chk_ir_caso_oya").val("SI");
+
+			m0_js_poblar_menu({
+				campo: "Categoría inconsistencia...",
+				criterio: "",
+				select: "m8_1_sel_ir_categoria_inconsistencia",
+				datos: [{
+					texto: "",
+					valor: "",
+					selected: "selected"
+				}, {
+					texto: "Afiliado existe, actualizar información en sabass",
+					valor: "Afiliado existe, actualizar información en sabass",
+					selected: ""
+				}, {
+					texto: "Afiliado no existe se debe crear en sabass",
+					valor: "Afiliado no existe se debe crear en sabass",
+					selected: ""
+				}, {
+					texto: "Campo obligatorio es nulo a vacío",
+					valor: "Campo obligatorio es nulo a vacío",
+					selected: ""
+				}, {
+					texto: "Campo obligatorio faltante",
+					valor: "Campo obligatorio faltante",
+					selected: ""
+				}, {
+					texto: "Campo obligatorio no se encuentra en tabla de referencia",
+					valor: "Campo obligatorio no se encuentra en tabla de referencia",
+					selected: ""
+				}, {
+					texto: "Campos obligatorios para ejecución de los afiliados sabass",
+					valor: "Campos obligatorios para ejecución de los afiliados sabass",
+					selected: ""
+				}, {
+					texto: "Certificado de residencia expedido por el consulado (en caso de ser colombiano en el exterior)",
+					valor: "Certificado de residencia expedido por el consulado (en caso de ser colombiano en el exterior)",
+					selected: ""
+				}, {
+					texto: "Dato es diferente a información de bizagi",
+					valor: "Dato es diferente a información de bizagi",
+					selected: ""
+				}, {
+					texto: "Datos incompletos",
+					valor: "Datos incompletos",
+					selected: ""
+				}, {
+					texto: "Fallo validación de coincidencia documental, campo de documento anexo no se capturo",
+					valor: "Fallo validación de coincidencia documental, campo de documento anexo no se capturo",
+					selected: ""
+				}, {
+					texto: "Fallo validación de coincidencia documental, valor diferente en ambos documentos",
+					valor: "Fallo validación de coincidencia documental, valor diferente en ambos documentos",
+					selected: ""
+				}, {
+					texto: "Fallo validación sobre datos del mismo documento",
+					valor: "Fallo validación sobre datos del mismo documento",
+					selected: ""
+				}, {
+					texto: "Imagen ilegible",
+					valor: "Imagen ilegible",
+					selected: ""
+				}]
+			});
+
+			m0_js_poblar_menu({
+				campo: "Causa inconsistencia...",
+				criterio: "",
+				select: "m8_1_sel_ir_causa_inconsistencia",
+				datos: [{
+					texto: "",
+					valor: "",
+					selected: "selected"
+				}, {
+					texto: "CORRESPONDENCIA",
+					valor: "CORRESPONDENCIA",
+					selected: ""
+				}, {
+					texto: "ERROR DILIGENCIAMIENTO NO DETECTADO POR AGENTE DE SERVICIO",
+					valor: "ERROR DILIGENCIAMIENTO NO DETECTADO POR AGENTE DE SERVICIO",
+					selected: ""
+				}, {
+					texto: "ERROR SYC - BACKOFFICE",
+					valor: "ERROR SYC - BACKOFFICE",
+					selected: ""
+				}, {
+					texto: "ERROR SYC - ROTONDA",
+					valor: "ERROR SYC - ROTONDA",
+					selected: ""
+				}, {
+					texto: "INSISTENCIA TERCERO / APODERADO",
+					valor: "INSISTENCIA TERCERO / APODERADO",
+					selected: ""
+				}]
+			});
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m8_js_inicializar_pestaña_m8_1",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * [descripcion funcion]
+	 *
+	 * @param   {object}  param  [descripcion objeto]
+	 *
+	 * @return  {null}          
+	 */
+	function m8_1_js_ir_registro(frm) {
+		try {
+
+			var base_numero = /^20\d{2}_\d{1,8}/;
+			if (base_numero.test($("#m8_1_txt_ir_bizagi").val())) {
+				google.script.run
+					.withFailureHandler(function () {
+						m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página")
+					})
+					.withSuccessHandler(function (r) {
+						if (m0_js_resultado_operacion(r)) {
+							m8_js_inicializar_pestaña_m8_1();
+						}
+					})
+					.m5_6_gs_ir_registro(frm);
+				m0_js_aviso("modal_box", "Por favor espere mientras se guarda la información");
+			} else {
+				$("#m8_1_txt_ir_bizagi").parent().addClass('is-invalid');
+				m0_js_aviso("snackbar", "Debe colocar un radicado Bizagi valido en el campo << Radicado bizagi >>");
+			}
+
+			event.preventDefault();
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m8_1_js_ir_registro",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+
+
+	//################################################################################################################################################################################################################
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//SECCION 2 - REPORTE CONSOLIDADO
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//################################################################################################################################################################################################################
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//listener de eventos del DOOM
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//funciones javascript
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	/**
+	 * funcion para cargar los objetos de una seccion especifica
+	 *
+	 * @return  {null}  
+	 */
+	function m8_js_inicializar_pestaña_m8_2() {
+		try {
+
+			m0_js_log_sesion({
+				id_sesion: ID_SESION,
+				log: "M8 - Reporte consolidados",
+				tipo_log: "ACCESO A SECCION"
+			});
+
+			var u = USUARIO;
+			var pos;
+			for (var mod = 0; mod < u.modulos.length; mod++) {
+				if (8 == u.modulos[mod].id_modulo) {
+					pos = mod;
+				}
+			}
+			var param_modulos = {
+				icono: u.modulos[pos].icono,
+				id_modulo: 8,
+				texto_1: u.modulos[pos].modulo,
+				texto_2: "Reporte consolidados"
+			};
+			m0_js_menu_arbol(param_modulos);
+
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página")
+				})
+				.withSuccessHandler(function (r) {
+					m0_js_aviso("snackbar", r.mensaje);
+					if (r.exito) {
+						$("#m8_2_div_reporte_reproceso_consolidado").html(r.contenido_inconsistencias)
+						$("#m8_2_div_reporte_qof_consolidado").html(r.contenido_qof)
+						componentHandler.upgradeDom();
+					} else {
+						$("#m8_2_div_reporte_reproceso_consolidado").html("");
+						$("#m8_2_div_reporte_qof_consolidado").html("")
+						m0_js_aviso("banner", r.mensaje);
+					}
+				})
+				.m8_2_gs_cargar_reporte_incosistencias(u.id_regional);
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m8_js_inicializar_pestaña_m8_2",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+	/**
+	 * [descripcion funcion]
+	 *
+	 * @param   {object}  param  [descripcion objeto]
+	 *
+	 * @return  {null}          
+	 */
+	function m8_2_js_actualizar_informe() {
+		try {
+
+			var u = USUARIO;
+			google.script.run
+				.withFailureHandler(function (e) {
+					m0_js_registrar_error({
+						gs: "m8_2_gs_actualizar_informe_paso_1",
+						funcion: "m8_2_js_actualizar_informe",
+						error: { message: e.name + " : " + e.message, name: "AJAX" },
+						parametros: {}
+					});
+				})
+				.withSuccessHandler(function (param) {
+					if (param.exito) {
+						var data = [];
+						var usuario_rotonda;
+
+						for (var j = 0; j < param.inconsistencias.registros; j++) {
+							var fila = [];
+
+							fila.push(param.inconsistencias.datos[j].id_inconsistencia);
+
+              var oficina = "";
+							for (var l = 0; l < param.oficinas.registros; l++) {
+								if (param.inconsistencias.datos[j].id_oficina == param.oficinas.datos[l].id_oficina) {
+									oficina = param.oficinas.datos[l].oficina;
+								}
+							}
+              fila.push(oficina);
+
+							fila.push(param.inconsistencias.datos[j].fecha);
+
+              var nombre = ""
+							for (l = 0; l < param.usuarios.registros; l++) {
+								if (param.usuarios.datos[l].id_usuario == param.inconsistencias.datos[j].id_usuario) {
+									nombre = param.usuarios.datos[l].nombre;
+								}
+							}
+              fila.push(nombre);
+
+							fila.push(param.inconsistencias.datos[j].caso_oya);
+							fila.push(param.inconsistencias.datos[j].caso_bizagi);
+							usuario_rotonda = "";
+							for (l = 0; l < param.usuarios.registros; l++) {
+								if (param.usuarios.datos[l].id_usuario == param.inconsistencias.datos[j].id_usuario_rotonda) {
+									usuario_rotonda = param.usuarios.datos[l].nombre;
+								}
+							}
+							fila.push(usuario_rotonda);
+							fila.push(param.inconsistencias.datos[j].categoria_inconsistencia);
+							fila.push(param.inconsistencias.datos[j].causa_inconsistencia);
+							fila.push(param.inconsistencias.datos[j].inconsistencia)
+              
+
+							data.push(fila);
+							m0_js_loading({
+								tipo: "COMPUESTO_ACTUALIZACION",
+								texto: "",
+								valor: ((j / param.inconsistencias.registros) * 100)
+							});
+						}
+
+						google.script.run
+							.withFailureHandler(function (e) {
+								m0_js_registrar_error({
+									gs: "m8_2_gs_actualizar_informe_paso_2",
+									funcion: "m8_2_js_actualizar_informe",
+									error: { message: e.name + " : " + e.message, name: "AJAX" },
+									parametros: data
+								})
+							})
+							.withSuccessHandler(m0_js_resultado_operacion)
+							.m8_2_gs_actualizar_informe_paso_2(data);
+						m0_js_loading({
+							tipo: "COMPUESTO_ACTUALIZACION",
+							texto: "Por favor espere mientras se sube al servidor la base de datos actualizada",
+							valor: false
+						})
+					}
+				})
+				.m8_2_gs_actualizar_informe_paso_1();
+			m0_js_loading({
+				tipo: "COMPUESTO_CREACION",
+				titulo: "ACTUALIZACIÓN REPORTE",
+				texto: "Por favor espere mientras se descargan los datos del servidor",
+				valor: false
+			})
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m8_2_js_actualizar_informe",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+	/**
+	 * [descripcion funcion]
+	 *
+	 * @param   {object}  param  [descripcion objeto]
+	 *
+	 * @return  {null}          
+	 */
+	function m8_2_js_actualizar_informe_qof() {
+		try {
+
+			var u = USUARIO;
+			google.script.run
+				.withFailureHandler(function (e) {
+					m0_js_registrar_error({
+						gs: "m8_2_gs_actualizar_informe_qof_paso_1",
+						funcion: "m8_2_js_actualizar_informe_qof",
+						error: { message: e.name + " : " + e.message, name: "AJAX" },
+						parametros: {}
+					});
+				})
+				.withSuccessHandler(function (param) {
+
+					if (param.exito) {
+						var data = [];
+
+						for (var j = 0; j < param.qof.registros; j++) {
+							var fila = [];
+
+							fila.push(param.qof.datos[j].id_qof)
+							fila.push(param.qof.datos[j].tipo)
+							fila.push(param.qof.datos[j].fecha)
+							fila.push(param.qof.datos[j].bizagi)
+							var usuario_qof = "";
+							for (l = 0; l < param.usuarios.registros; l++) {
+								if (param.usuarios.datos[l].id_usuario == param.qof.datos[j].id_usuario) {
+									usuario_qof = param.usuarios.datos[l].nombre;
+								}
+							}
+							fila.push(usuario_qof)
+
+							var oficina_qof;
+							for (var l = 0; l < param.oficinas.registros; l++) {
+								if (param.qof.datos[j].id_oficina == param.oficinas.datos[l].id_oficina) {
+									fila.push(param.oficinas.datos[l].oficina);
+								}
+							}
+							fila.push(oficina_qof)
+							fila.push(param.qof.datos[j].observacion)
+
+							data.push(fila);
+							m0_js_loading({
+								tipo: "COMPUESTO_ACTUALIZACION",
+								texto: "",
+								valor: ((j / param.qof.registros) * 100)
+							});
+						}
+
+						google.script.run
+							.withFailureHandler(function (e) {
+								m0_js_registrar_error({
+									gs: "m8_2_gs_actualizar_informe_qof_paso_2",
+									funcion: "m8_2_js_actualizar_informe_qof",
+									error: { message: e.name + " : " + e.message, name: "AJAX" },
+									parametros: data
+								})
+							})
+							.withSuccessHandler(m0_js_resultado_operacion)
+							.m8_2_gs_actualizar_informe_qof_paso_2(data);
+
+						m0_js_loading({
+							tipo: "COMPUESTO_ACTUALIZACION",
+							texto: "Por favor espere mientras se sube al servidor la base de datos actualizada",
+							valor: false
+						})
+					}
+					
+				})
+				.m8_2_gs_actualizar_informe_qof_paso_1();
+
+			m0_js_loading({
+				tipo: "COMPUESTO_CREACION",
+				titulo: "ACTUALIZACIÓN REPORTE",
+				texto: "Por favor espere mientras se descargan los datos del servidor",
+				valor: false
+			})
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m8_2_js_actualizar_informe_qof",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+
+
+	//################################################################################################################################################################################################################
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//SECCION 3 - REGISTRO QUEJAS Y FELICITACIONES
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//################################################################################################################################################################################################################
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//listener de eventos del DOOM
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_principal").on("submit", "#m8_3_frm_qof_registro", function () {
+		try {
+
+			var base_numero = /^20\d{2}_\d{1,8}/;
+			if (base_numero.test($("#m8_3_txt_qof_bizagi").val())) {
+
+				google.script.run
+					.withFailureHandler(function (e) {
+						m0_js_registrar_error({
+							gs: "m8_3_gs_creacion_registro_qof",
+							funcion: "submit / m8_3_frm_qof_registro",
+							error: { message: e.name + " : " + e.message, name: "AJAX" },
+							parametros: {}
+						});
+					})
+					.withSuccessHandler(function (r) {
+						if (m0_js_resultado_operacion(r)) {
+							m8_js_inicializar_pestaña_m8_3();
+						}
+					})
+					.m8_3_gs_creacion_registro_qof(this);
+				m0_js_aviso("modal_box", "Por favor espere mientras guardan los datos");
+			} else {
+				$("#m8_3_txt_qof_bizagi").parent().addClass('is-invalid');
+				m0_js_aviso("snackbar", "Debe colocar un radicado Bizagi valido en el campo << Radicado bizagi >>");
+			}
+
+			event.preventDefault();
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "submit / m8_3_frm_qof_registro",
+				error: e,
+				parametros: {}
+			});
+		}
+	});
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//funciones javascript
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	/**
+	 * funcion para cargar los objetos de una seccion especifica
+	 *
+	 * @return  {null}  
+	 */
+	function m8_js_inicializar_pestaña_m8_3() {
+		try {
+
+			m0_js_log_sesion({
+				id_sesion: ID_SESION,
+				log: "M8 - Registro Quejas y Felicitaciones",
+				tipo_log: "ACCESO A SECCION"
+			});
+
+			var u = USUARIO;
+			var pos;
+			for (var mod = 0; mod < u.modulos.length; mod++) {
+				if (8 == u.modulos[mod].id_modulo) {
+					pos = mod;
+				}
+			}
+			var param_modulos = {
+				icono: u.modulos[pos].icono,
+				id_modulo: 3,
+				texto_1: u.modulos[pos].modulo,
+				texto_2: "Registro Quejas y Felicitaciones"
+			};
+			m0_js_menu_arbol(param_modulos);
+
+			var param_formulario = {
+				formulario: "m8_3_frm_qof_registro",
+				campos: [{
+					id_campo: "m8_3_txt_qof_bizagi",
+					nombre_campo: "Radicado bizagi...",
+					pattern: "",
+					error: "",
+					required: "required",
+					tipo_campo: "text",
+				}, {
+					id_campo: "m8_3_txt_qof_tipo_pqrs",
+					nombre_campo: "Tipo PQRS...",
+					required: "required",
+					tipo_campo: "select",
+				}, {
+					id_campo: "m8_3_txt_qof_observaciones",
+					nombre_campo: "Observaciones...",
+					required: "required",
+					error: "",
+					tipo_campo: "textarea",
+				}]
+			};
+			router({
+				tipo_fuente: "VARIABLE",
+				contenido: m0_js_crear_formulario(param_formulario),
+				contenedor: "m8_3_div_qof_consolidado",
+				id_privilegio: "8_3"
+			});
+
+			m0_js_poblar_menu({
+				campo: "Tipo PQRS...",
+				criterio: "",
+				select: "m8_3_txt_qof_tipo_pqrs",
+				datos: [{
+					texto: "",
+					valor: "",
+					selected: "selected"
+				}, {
+					texto: "QUEJA",
+					valor: "QUEJA",
+					selected: ""
+				}, {
+					texto: "FELICITACIÓN",
+					valor: "FELICITACIÓN",
+					selected: ""
+				}]
+			});
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m8_js_inicializar_pestaña_m8_3",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------
+</script>

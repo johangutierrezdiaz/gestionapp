@@ -1,0 +1,2922 @@
+<script>
+	//################################################################################################################################################################################################################
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//SECCION 1 - CONSULTA NOVEDADES
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//################################################################################################################################################################################################################
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//listener de eventos del DOOM
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	$("#m0_div_panel_principal").on(
+		"submit",
+		"#m3_1_frm_solicitud_consulta",
+		function () {
+			m3_1_js_solicitud_consulta();
+		}
+	);
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//funciones javascript
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	/**
+	 * funcion para cargar los objetos de una seccion especifica
+	 *
+	 * @return  {null}
+	 */
+	function m3_js_inicializar_pestaña_m3_1() {
+		try {
+
+			m0_js_log_sesion({
+				id_sesion: ID_SESION,
+				log: "M3 - Consulta novedades",
+				tipo_log: "ACCESO A SECCION"
+			});
+
+			var u = USUARIO;
+			var pos;
+			for (var mod = 0; mod < u.modulos.length; mod++) {
+				if (3 == u.modulos[mod].id_modulo) {
+					pos = mod;
+				}
+			}
+			var param_modulos = {
+				icono: u.modulos[pos].icono,
+				id_modulo: 3,
+				texto_1: u.modulos[pos].modulo,
+				texto_2: "Consulta novedades",
+			};
+			m0_js_menu_arbol(param_modulos);
+
+			var param_formulario = {
+				formulario: "m3_1_frm_solicitud_consulta",
+				campos: [
+					{
+						id_campo: "m3_1_txt_solicitud_consulta_fecha_inicial",
+						nombre_campo: "Fecha inicial...",
+						pattern: "",
+						error: "",
+						required: "required",
+						tipo_campo: "date",
+					},
+					{
+						id_campo: "m3_1_txt_solicitud_consulta_fecha_final",
+						nombre_campo: "Fecha final...",
+						pattern: "",
+						required: "required",
+						error: "",
+						tipo_campo: "date",
+					},
+				],
+			};
+
+			router({
+				tipo_fuente: "VARIABLE",
+				contenido: m0_js_crear_formulario(param_formulario),
+				contenedor: "m3_1_div_consolidado_consulta_novedades",
+				id_privilegio: "3_1",
+			});
+			$("#m3_1_txt_solicitud_consulta_fecha_inicial")
+				.parent()
+				.addClass("is-dirty");
+			$("#m3_1_txt_solicitud_consulta_fecha_final")
+				.parent()
+				.addClass("is-dirty");
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m3_js_inicializar_pestaña_m3_1",
+				error: e,
+				parametros: {},
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Envia los criterios de busquedad al server para iniciar la busquedad
+	 *
+	 * @param   {object}  frm  objecto con los criterios de busquedad
+	 *
+	 * @return  {object}	    objecto con la tabla de resultados de la busqueda
+	 */
+	function m3_1_js_solicitud_consulta() {
+		try {
+			var u = USUARIO;
+			var param_tabla = {
+				criterio: {
+					fecha_inicial: $("#m3_1_txt_solicitud_consulta_fecha_inicial").val(),
+					fecha_final: $("#m3_1_txt_solicitud_consulta_fecha_final").val(),
+					id_usuario: u.id_usuario,
+				},
+				contenedor: "m0_div_panel_secundario",
+			};
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso(
+						"banner",
+						"Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página"
+					);
+				})
+				.withSuccessHandler(m0_js_crear_tabla)
+				.m3_1_gs_solicitud_consulta(param_tabla);
+			$("#m0_div_panel_secundario").html(
+				'<div class="mdl-spinner mdl-spinner--single-color mdl-js-spinner is-active carga_spinner"></div>'
+			);
+			componentHandler.upgradeDom();
+			event.preventDefault();
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m3_1_js_solicitud_consulta",
+				error: e,
+				parametros: {},
+			});
+		}
+	}
+
+	//################################################################################################################################################################################################################
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//SECCION 2 - SOLICITUD DE PERMISO
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//################################################################################################################################################################################################################
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//listener de eventos del DOOM
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	$("#m0_div_panel_aviso_modal_box").on(
+		"submit",
+		"#m3_2_frm_confirmacion_solicitud",
+		function () {
+			m3_2_js_solicitud();
+		}
+	);
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+	$("#m0_div_panel_secundario").on(
+		"submit",
+		"#m3_2_frm_solicitud",
+		function () {
+			m3_2_js_confirmacion_solicitud();
+		}
+	);
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_aviso_modal_box").on(
+		"click",
+		"#m3_2_a_solicitud_salir",
+		function () {
+			m3_js_inicializar_pestaña_m3_2();
+			m0_js_aviso("cierre_modal_box", "");
+		}
+	);
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//funciones javascript
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	/**
+	 * funcion para cargar los objetos de una seccion especifica
+	 *
+	 * @return  {null}
+	 */
+	function m3_js_inicializar_pestaña_m3_2() {
+		try {
+
+			m0_js_log_sesion({
+				id_sesion: ID_SESION,
+				log: "M3 - Solicitud de permiso",
+				tipo_log: "ACCESO A SECCION"
+			});
+
+			var u = USUARIO;
+			var pos;
+			for (var mod = 0; mod < u.modulos.length; mod++) {
+				if (3 == u.modulos[mod].id_modulo) {
+					pos = mod;
+				}
+			}
+			var param_modulos = {
+				icono: u.modulos[pos].icono,
+				id_modulo: 3,
+				texto_1: u.modulos[pos].modulo,
+				texto_2: "Solicitud de permiso",
+			};
+			m0_js_menu_arbol(param_modulos);
+			if (m0_js_verificar_acceso("3_16")) {
+				var param_formulario = {
+					formulario: "m3_2_frm_solicitud",
+					campos: [
+						{
+							id_campo: "m3_2_sel_solicitud_usuario",
+							nombre_campo: "Seleccione el usuario...",
+							required: "required",
+							tipo_campo: "select",
+						},
+						{
+							id_campo: "m3_2_sel_solicitud_tipo_novedad",
+							nombre_campo: "Seleccione el tipo de novedad",
+							required: "required",
+							tipo_campo: "select",
+						},
+						{
+							id_campo: "m3_2_txt_solicitud_fecha_inicio_novedad",
+							nombre_campo: "Fecha inicio novedad",
+							pattern: "",
+							error: "",
+							required: "required",
+							tipo_campo: "datetime-local",
+						},
+						{
+							id_campo: "m3_2_txt_solicitud_fecha_fin_novedad",
+							nombre_campo: "Fecha fin novedad",
+							pattern: "",
+							error: "",
+							required: "required",
+							tipo_campo: "datetime-local",
+						},
+						{
+							id_campo: "m3_2_txt_solicitud_detalle",
+							nombre_campo: "Descripción novedad...",
+							required: "required",
+							tipo_campo: "textarea",
+						},
+					],
+				};
+			} else {
+				var param_formulario = {
+					formulario: "m3_2_frm_solicitud",
+					campos: [
+						{
+							id_campo: "m3_2_sel_solicitud_tipo_novedad",
+							nombre_campo: "Seleccione el tipo de novedad",
+							required: "required",
+							tipo_campo: "select",
+						},
+						{
+							id_campo: "m3_2_txt_solicitud_fecha_inicio_novedad",
+							nombre_campo: "Fecha inicio novedad",
+							pattern: "",
+							error: "",
+							required: "required",
+							tipo_campo: "datetime-local",
+						},
+						{
+							id_campo: "m3_2_txt_solicitud_fecha_fin_novedad",
+							nombre_campo: "Fecha fin novedad",
+							pattern: "",
+							error: "",
+							required: "required",
+							tipo_campo: "datetime-local",
+						},
+						{
+							id_campo: "m3_2_txt_solicitud_detalle",
+							nombre_campo: "Descripción novedad...",
+							required: "required",
+							tipo_campo: "textarea",
+						},
+					],
+				};
+			}
+			router({
+				tipo_fuente: "VARIABLE",
+				contenido: m0_js_crear_formulario(param_formulario),
+				contenedor: "m0_div_panel_secundario",
+				id_privilegio: "3_1",
+			});
+			$("#m3_2_txt_solicitud_fecha_inicio_novedad")
+				.parent()
+				.addClass("is-dirty");
+			$("#m3_2_txt_solicitud_fecha_fin_novedad").parent().addClass("is-dirty");
+			m0_js_poblar_menu({
+				campo: "Seleccione el tipo de novedad",
+				criterio: "",
+				select: "m3_2_sel_solicitud_tipo_novedad",
+				datos: [
+					{
+						texto: "",
+						valor: "",
+						selected: "selected",
+					},
+					{
+						texto: "Permiso por asistencia a servicios médicos",
+						valor: "Permiso por asistencia a servicios médicos",
+						selected: "",
+					},
+					{
+						texto: "Permiso por asuntos personales",
+						valor: "Permiso por asuntos personales",
+						selected: "",
+					},
+					{
+						texto: "Permiso por calamidad doméstica",
+						valor: "Permiso por calamidad doméstica",
+						selected: "",
+					},
+					{
+						texto: "Permiso por estudio",
+						valor: "Permiso por estudio",
+						selected: "",
+					},
+					{
+						texto: "Permiso por sufragio",
+						valor: "Permiso por sufragio",
+						selected: "",
+					},
+					{
+						texto: "Permisos por jurado de votación",
+						valor: "Permisos por jurado de votación",
+						selected: "",
+					},
+					{
+						texto: "Permiso por cumpleaños",
+						valor: "Permiso por cumpleaños",
+						selected: "",
+					},
+					{
+						texto: "Licencia por enfermedad grave de un pariente",
+						valor: "Licencia por enfermedad grave de un pariente",
+						selected: "",
+					},
+					{
+						texto: "Permiso por matrimonio",
+						valor: "Permiso por matrimonio",
+						selected: "",
+					},
+					{
+						texto: "Permiso por lactancia",
+						valor: "Permiso por lactancia",
+						selected: "",
+					},
+					{
+						texto: "Permiso especial",
+						valor: "Permiso especial",
+						selected: "",
+					},
+					{
+						texto: "Permiso por Talentos",
+						valor: "Permiso por Talentos",
+						selected: "",
+					},
+					{
+						texto: "Permiso por solicitud propia",
+						valor: "Permiso por solicitud propia",
+						selected: "",
+					},
+					{
+						texto: "Permiso por luto",
+						valor: "Permiso por luto",
+						selected: "",
+					},
+					{
+						texto: "Medio día por el uso de medios alternativos de transporte",
+						valor: "Medio día por el uso de medios alternativos de transporte",
+						selected: "",
+					},
+					{
+						texto: "Otros",
+						valor: "Otros",
+						selected: "",
+					},
+				],
+			});
+			if (m0_js_verificar_acceso("3_16")) {
+				google.script.run
+					.withFailureHandler(function () {
+						m0_js_aviso(
+							"banner",
+							"Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página"
+						);
+					})
+					.withSuccessHandler(m0_js_poblar_menu)
+					.m3_7_gs_poblar_menu_programacion_vacaciones({
+						campo: "Seleccione el usuario...",
+						criterio: u.id_regional,
+						select: "m3_2_sel_solicitud_usuario",
+						datos: [],
+						mensaje_carga: "Usuarios cargados exitosamente",
+					});
+				m0_js_aviso(
+					"modal_box",
+					"Espere mientras se carga el listado de usuarios activos de la regional"
+				);
+			}
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m3_js_inicializar_pestaña_m3_1",
+				error: e,
+				parametros: {},
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * se envia el formulario de solicitud de permiso al server
+	 *
+	 * @param   {object}  frm  formulario
+	 *
+	 * @return  {null}
+	 */
+	function m3_2_js_confirmacion_solicitud() {
+		try {
+			var f_inicio = new Date(
+				$("#m3_2_txt_solicitud_fecha_inicio_novedad").val()
+			);
+			var f_fin = new Date($("#m3_2_txt_solicitud_fecha_fin_novedad").val());
+			var mensaje_contenido = "";
+			if (f_fin > f_inicio) {
+				if (f_inicio.getDate() !== f_fin.getDate()) {
+					var dif_dias =
+						(f_fin.getTime() - f_inicio.getTime()) / (1000 * 60 * 60 * 24);
+					mensaje_contenido =
+						"El permiso a solicitar es <b>por " +
+						Math.trunc(dif_dias) +
+						" días</b>";
+				} else {
+					var dif_horas = Math.abs((f_inicio - f_fin) / 36e5);
+					mensaje_contenido =
+						"El permiso a solicitar es <b>por " + dif_horas + " horas</b>";
+				}
+			} else {
+				mensaje_contenido =
+					"La fecha de inicio de la novedad es mayor a la fecha de finalización";
+			}
+			var contenido = '<div class="div_panel mdl-shadow--3dp">';
+			contenido +=
+				'<h4 style="text-align: center;">REGISTRAR SOLICITUD DE PERMISO</h4>';
+			contenido +=
+				"<p><b>IMPORTANTE:</b>" +
+				mensaje_contenido +
+				"</br>Esta seguro de guardar los datos ?</p>";
+			contenido += m0_js_crear_formulario({
+				formulario: "m3_2_frm_confirmacion_solicitud",
+				campos: [
+					{
+						id_campo: "m3_2_sel_confirmacion_solicitud",
+						nombre_campo: "Por favor confirme el registro de la solicitud...",
+						required: "required",
+						pattern: "",
+						error: "",
+						tipo_campo: "select",
+					},
+				],
+			});
+			contenido += "</div>";
+			m0_js_aviso("modal_box", contenido);
+			m0_js_poblar_menu({
+				campo: "Por favor confirme el registro de la solicitud...",
+				criterio: "",
+				select: "m3_2_sel_confirmacion_solicitud",
+				datos: [
+					{
+						texto: "",
+						valor: "",
+						selected: "selected",
+					},
+					{
+						texto: "SI",
+						valor: "SI",
+						selected: "",
+					},
+					{
+						texto: "NO",
+						valor: "NO",
+						selected: "",
+					},
+				],
+			});
+			$("#m3_2_sel_confirmacion_solicitud").parent().addClass("is-dirty");
+			event.preventDefault();
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m3_2_js_confirmacion_solicitud",
+				error: e,
+				parametros: frm,
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * se envia el formulario de solicitud de permiso al server
+	 *
+	 * @param   {object}  frm  formulario
+	 *
+	 * @return  {null}
+	 */
+	function m3_2_js_solicitud() {
+		try {
+			if ($("#m3_2_sel_confirmacion_solicitud").val() === "SI") {
+				if (m0_js_verificar_acceso("3_16")) {
+					var frm = {
+						m3_2_sel_solicitud_usuario: $("#m3_2_sel_solicitud_usuario").val(),
+						m3_2_sel_solicitud_tipo_novedad: $(
+							"#m3_2_sel_solicitud_tipo_novedad"
+						).val(),
+						m3_2_txt_solicitud_fecha_inicio_novedad: $(
+							"#m3_2_txt_solicitud_fecha_inicio_novedad"
+						).val(),
+						m3_2_txt_solicitud_fecha_fin_novedad: $(
+							"#m3_2_txt_solicitud_fecha_fin_novedad"
+						).val(),
+						m3_2_txt_solicitud_detalle: $("#m3_2_txt_solicitud_detalle").val(),
+					};
+				} else {
+					var frm = {
+						m3_2_sel_solicitud_tipo_novedad: $(
+							"#m3_2_sel_solicitud_tipo_novedad"
+						).val(),
+						m3_2_txt_solicitud_fecha_inicio_novedad: $(
+							"#m3_2_txt_solicitud_fecha_inicio_novedad"
+						).val(),
+						m3_2_txt_solicitud_fecha_fin_novedad: $(
+							"#m3_2_txt_solicitud_fecha_fin_novedad"
+						).val(),
+						m3_2_txt_solicitud_detalle: $("#m3_2_txt_solicitud_detalle").val(),
+					};
+				}
+				google.script.run
+					.withFailureHandler(function () {
+						m0_js_aviso(
+							"banner",
+							"Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página"
+						);
+					})
+					.withSuccessHandler(function (r) {
+						if (m0_js_resultado_operacion(r)) {
+							var contenido = "";
+							var contenido = '<div class="div_panel mdl-shadow--3dp">';
+							contenido +=
+								'<h4 style="text-align: center;">SOLICITUD DE PERMISO</h4>';
+							contenido +=
+								"<p>Ya puede generar su solicitud de permiso, recuerde que debe terminar de diligenciar la solicitud directamente sobre el archivo.</p>";
+							contenido +=
+								'<a id="m3_1_a_consulta_novedades_' +
+								r.id_archivo +
+								'" href="https://docs.google.com/spreadsheets/d/' +
+								r.id_archivo +
+								'/edit?usp=sharing" target="_blank" class="mdl-button mdl-js-button mdl-button--accent" >VISUALIZAR SOLICITUD DE PERMISO <i class="material-icons">print</i></a>';
+							contenido +=
+								'<div class="mdl-tooltip" for="m3_1_a_consulta_novedades_' +
+								r.id_archivo +
+								'">Por favor haga clic aquí si desea imprimir el soporte</div>';
+							contenido += " | ";
+							contenido +=
+								'<button id="m3_2_a_solicitud_salir" class="mdl-button mdl-js-button mdl-button--accent" >SALIR</button>';
+							contenido += "</div>";
+							m0_js_aviso("modal_box", contenido);
+						}
+					})
+					.m3_2_gs_solicitud(frm);
+				m0_js_aviso(
+					"modal_box",
+					"Por favor espere mientras se almacenan los datos"
+				);
+			} else {
+				m0_js_aviso("cierre_modal_box", "");
+			}
+
+			event.preventDefault();
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m3_2_js_solicitud",
+				error: e,
+				parametros: frm,
+			});
+		}
+	}
+
+	//################################################################################################################################################################################################################
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//SECCION 3 - AUTORIZACION PERMISOS PAC
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//################################################################################################################################################################################################################
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//listener de eventos del DOOM
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	$("#m0_div_panel_aviso_modal_box").on(
+		"submit",
+		"#m3_3_frm_autorizacion_permiso",
+		function () {
+			m3_3_js_guardar_autorizacion_permiso(this);
+		}
+	);
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_aviso_modal_box").on(
+		"click",
+		"#m3_3_btn_autorizacion_permiso_salir",
+		function () {
+			m0_js_aviso("cierre_modal_box", "");
+		}
+	);
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_principal").on(
+		"submit",
+		"#m3_3_frm_autorizacion_permiso_mostrar_consolidado",
+		function () {
+			m3_3_js_autorizacion_permiso_mostrar_consolidado(this);
+		}
+	);
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_aviso_modal_box").on("click", "#m3_3_btn_autorizacion_permiso_salir", function () {
+		m0_js_aviso("cierre_modal_box", "");
+	});
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//funciones javascript
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	/**
+	 * funcion para cargar los objetos de una seccion especifica
+	 *
+	 * @return  {null}
+	 */
+	function m3_js_inicializar_pestaña_m3_3() {
+		try {
+
+			m0_js_log_sesion({
+				id_sesion: ID_SESION,
+				log: "M3 - Autorización de permisos",
+				tipo_log: "ACCESO A SECCION"
+			});
+
+			var u = USUARIO;
+			var pos;
+			for (var mod = 0; mod < u.modulos.length; mod++) {
+				if (3 == u.modulos[mod].id_modulo) {
+					pos = mod;
+				}
+			}
+			var param_modulos = {
+				icono: u.modulos[pos].icono,
+				id_modulo: 3,
+				texto_1: u.modulos[pos].modulo,
+				texto_2: "Autorización de permisos",
+			};
+			m0_js_menu_arbol(param_modulos);
+            /*
+			var contenido = '<div class="div_panel mdl-shadow--3dp">';
+			contenido += '<h4 style="text-align: center;">AUTORIZACIÓN ENVÍO DE CORREO</h4>';
+			contenido += '<p>';
+			contenido += '<b>IMPORTANTE:</b>';
+			contenido += 'De acuerdo con requerimientos especiales definidos por el área de Talento Humano con referencia a la solicitudes de permisos para el personal que se encuentra en trabajo en casa, es necesario que los correos de autorización de permisos provengan expresamente de las cuentas de correo de los jefes y director.';
+			contenido += '</p>';
+			contenido += '<p>Esta autorización solo se hará para el envió de correos de autorización de permisos y se podrá cancelar en cualquier momento de su cuenta de configuración de G Suite. </p>';
+			contenido += '</br>';
+			contenido += '<a href="https://script.google.com/a/colpensiones.gov.co/macros/s/AKfycbyo0y4hIdBxU14RYBRaB4S0DbS0wb5fpLs-J2VuOoBT6jAv16Y/exec?m=0&f=autorizar_script" target="_blank" >Haga clic aquí para autorizar que Gestion.APP envíe correos desde su cuenta de correo corporativo</a>';
+			contenido += '<hr />';
+			contenido += '<button id="m3_3_btn_autorizacion_permiso_salir" class="mdl-button mdl-js-button mdl-button--accent" >CERRAR VENTANA<i class="material-icons">meeting_room</i></button>';
+			contenido += '<br/>';
+			contenido += "</div>";
+			m0_js_aviso("modal_box", contenido);
+            */
+			var param_formulario = {
+				formulario: "m3_3_frm_autorizacion_permiso_mostrar_consolidado",
+				campos: [
+					{
+						tipo_campo: "hidden",
+						id_campo: "m3_3_hid_autorizacion_permiso_oficina",
+						value: u.id_oficina,
+					},
+					{
+						id_campo: "m3_3_txt_autorizacion_permiso_fecha_inicial",
+						nombre_campo: "Fecha inicial...",
+						pattern: "",
+						error: "",
+						required: "required",
+						tipo_campo: "date",
+					},
+					{
+						id_campo: "m3_3_txt_autorizacion_permiso_fecha_final",
+						nombre_campo: "Fecha final...",
+						pattern: "",
+						required: "required",
+						error: "",
+						tipo_campo: "date",
+					},
+					{
+						id_campo: "m3_3_sel_autorizacion_permiso_opcion",
+						nombre_campo: "Tipo de solicitud que desa ver :",
+						required: "required",
+						tipo_campo: "select",
+					},
+				],
+			};
+
+			router({
+				tipo_fuente: "VARIABLE",
+				contenido: m0_js_crear_formulario(param_formulario),
+				contenedor: "m3_3_div_autorizacion_permiso_consolidado",
+				id_privilegio: "3_2",
+			});
+
+			$("#m3_3_txt_autorizacion_permiso_fecha_inicial")
+				.parent()
+				.addClass("is-dirty");
+			$("#m3_3_txt_autorizacion_permiso_fecha_final")
+				.parent()
+				.addClass("is-dirty");
+
+			m0_js_poblar_menu({
+				campo: "Tipo de solicitud que desa ver:",
+				criterio: "",
+				select: "m3_3_sel_autorizacion_permiso_opcion",
+				datos: [
+					{
+						texto: "Todas las solicitudes",
+						valor: "ALL",
+						selected: "selected",
+					},
+					{
+						texto: "Solicitudes Autorizadas y vigentes",
+						valor: "AUTORIZADAS",
+						selected: "",
+					},
+					{
+						texto: "Solicitudes NO Autorizadas y vigentes",
+						valor: "NO_AUTORIZADAS",
+						selected: "",
+					},
+				],
+			});
+
+			$("#m0_div_panel_secundario").empty();
+
+			m0_js_loading({
+				tipo: "SIMPLE",
+				contenedor: "m0_div_panel_secundario",
+			});
+
+			google.script.run
+				.withFailureHandler(function (e) {
+					m0_js_registrar_error({
+						gs: "m3_3_gs_cargar_solicitudes_permiso_default",
+						funcion: "m3_js_inicializar_pestaña_m3_3",
+						error: { message: e.name + " : " + e.message, name: "AJAX" },
+						parametros: {
+							id_regional: u.id_regional,
+							id_oficina: u.id_oficina,
+						},
+					});
+				})
+				.withSuccessHandler(m0_js_crear_tabla)
+				.m3_3_gs_cargar_solicitudes_permiso_default({
+					id_regional: u.id_regional,
+					id_oficina: u.id_oficina,
+				});
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m3_js_inicializar_pestaña_m3_3",
+				error: e,
+				parametros: {},
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 *
+	 *
+	 * @return  {null}
+	 */
+	function m3_3_js_autorizacion_permiso_mostrar_consolidado(frm) {
+		try {
+			m0_js_loading({
+				tipo: "SIMPLE",
+				contenedor: "m0_div_panel_secundario",
+			});
+
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso(
+						"banner",
+						"Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página"
+					);
+				})
+				.withSuccessHandler(m0_js_crear_tabla)
+				.m3_3_gs_cargar_solicitudes_permiso(frm);
+
+			event.preventDefault();
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m3_3_js_autorizacion_permiso_mostrar_consolidado",
+				error: e,
+				parametros: {},
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * pide confirmacion de la autorizacion del permiso
+	 *
+	 * @param   {number}  id_novedad  id del permiso
+	 *
+	 * @return  {null}
+	 */
+	function m3_3_autorizar_permiso(id_novedad) {
+		try {
+			var u = USUARIO;
+			var contenido = '<div class="div_panel mdl-shadow--3dp">';
+			contenido += '<h4 style="text-align: center;">AUTORIZAR PERMISO</h4>';
+			contenido +=
+				"<p>IMPORTANTE: Tenga en cuenta que una vez se autorice el permiso, este no se podrá modificar. </br>Esta seguro de autorizar el permiso ?</p>";
+			contenido += m0_js_crear_formulario({
+				formulario: "m3_3_frm_autorizacion_permiso",
+				campos: [
+					{
+						id_campo: "m3_3_hid_autorizacion_permiso_id_novedad",
+						tipo_campo: "hidden",
+					},
+					{
+						id_campo: "m3_3_sel_autorizacion_permiso_confirmacion",
+						nombre_campo: "Autorizar permiso...",
+						required: "required",
+						pattern: "",
+						error: "",
+						tipo_campo: "select",
+					},
+					{
+						tipo_campo: "textarea",
+						id_campo: "m3_3_txt_autorizacion_permiso_observacion",
+						nombre_campo: "Observaciones...",
+						required: "",
+						value: "",
+					},
+					{
+						tipo_campo: "file",
+						id_campo: "m3_3_file_autorizacion_permiso",
+						nombre_campo: "Permiso firmado y escaneado...",
+						required: "",
+					},
+					{
+						id_campo: "m3_3_hid_autorizacion_permiso_id_regional",
+						tipo_campo: "hidden",
+						value: u.id_regional,
+					},
+				],
+			});
+			contenido += "<hr />";
+			contenido +=
+				'<button id="m3_3_btn_autorizacion_permiso_salir" class="mdl-button mdl-js-button mdl-button--accent" >CERRAR VENTANA<i class="material-icons">meeting_room</i></button>';
+			contenido += "<br/>";
+			contenido += "</div>";
+			m0_js_aviso("modal_box", contenido);
+			m0_js_poblar_menu({
+				campo: "Por favor confirme el registro de la autorización...",
+				criterio: "",
+				select: "m3_3_sel_autorizacion_permiso_confirmacion",
+				datos: [
+					{
+						texto: "",
+						valor: "",
+						selected: "selected",
+					},
+					{
+						texto: "SI",
+						valor: "SI",
+						selected: "",
+					},
+					{
+						texto: "NO",
+						valor: "NO",
+						selected: "",
+					},
+				],
+			});
+			$("#m3_3_hid_autorizacion_permiso_id_novedad").val(id_novedad);
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m3_3_autorizar_permiso",
+				error: e,
+				parametros: {
+					id_novedad: id_novedad,
+				},
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * enviar al server la autorizacion del permiso
+	 *
+	 * @return  {null}
+	 */
+	function m3_3_js_guardar_autorizacion_permiso(frm) {
+		try {
+			m0_js_aviso("modal_box", "Espere mientras se almacenan los datos");
+			google.script.run
+				.withFailureHandler(m0_js_ajax_error)
+				.withSuccessHandler(function (r) {
+					if (m0_js_resultado_operacion(r)) {
+						m3_js_inicializar_pestaña_m3_3();
+						var contenido = '<div class="div_panel mdl-shadow--3dp">';
+						contenido += '<h4 style="text-align: center;">AUTORIZACIÓN ENVÍO DE CORREO</h4>';
+						contenido += '<p>';
+						contenido += '<b>IMPORTANTE:</b>';
+						contenido += 'El permiso se ha modificado exitosamente. Sin embargo, de acuerdo con requerimientos especiales definidos por el área de Talento Humano con referencia a las solicitudes de permisos para el personal que se encuentra en trabajo en casa, es necesario que el correo de notificación de autorización del permiso provenga expresamente de su cuenta de correo.';
+						contenido += '</p>';
+						contenido += '<p>Por favor haga clic en el siguiente enlace para proceder a generar los correos de notificación de autorización del permiso: </p>';
+						contenido += '<a href="' + r.url + '" target="_blank" >ENVIAR CORREO >>></a>';
+						contenido += '<hr />';
+						contenido += '<button id="m3_3_btn_autorizacion_permiso_salir" class="mdl-button mdl-js-button mdl-button--accent" >CERRAR VENTANA<i class="material-icons">meeting_room</i></button>';
+						contenido += '<br/>';
+						contenido += "</div>";
+						m0_js_aviso("modal_box", contenido);
+					}
+				})
+				.m3_3_gs_guardar_autorizacion_permiso(frm);
+			event.preventDefault();
+
+			/*
+			if ($("#m3_3_sel_autorizacion_permiso_confirmacion").val() === "SI") {
+				if ($("#FILE_TEXT_ID").val() !== "") {
+					m0_js_aviso("modal_box", "Espere mientras se carga el permiso")
+					google.script.run
+						.withFailureHandler(function () {
+							m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página");
+						})
+						.withSuccessHandler(function (r) {
+							if (m0_js_resultado_operacion(r)) {
+								m3_js_inicializar_pestaña_m3_3();
+							}
+						})
+						.m3_3_gs_guardar_autorizacion_permiso(frm);
+				} else {
+					$("#FILE_TEXT_ID").parent().addClass('is-invalid');
+					m0_js_aviso("snackbar", "Por favor cargue el permiso firmado y escaneado en formato PDF");
+				}
+			} else {
+				if ($("#m3_3_txt_autorizacion_permiso_observacion").val() !== "") {
+					m0_js_aviso("modal_box", "Espere mientras se carga el permiso")
+					google.script.run
+						.withFailureHandler(function () {
+							m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página");
+						})
+						.withSuccessHandler(function (r) {
+							if (m0_js_resultado_operacion(r)) {
+								$("m0_div_panel_secundario").html("");
+								m3_js_inicializar_pestaña_m3_3();
+							}
+						})
+						.m3_3_gs_guardar_autorizacion_permiso(frm);
+				} else {
+					$("#m3_3_txt_autorizacion_permiso_observacion").parent().addClass('is-invalid');
+					m0_js_aviso("snackbar", "Si no autoriza el permiso debe especificar los motivos en el campo de observaciones");
+				}
+			}
+			*/
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m3_3_js_guardar_autorizacion_permiso",
+				error: e,
+				parametros: {},
+			});
+		}
+	}
+
+	//################################################################################################################################################################################################################
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//SECCION 5 - REGISTRO DE INCAPACIDADES
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//################################################################################################################################################################################################################
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//listener de eventos del DOOM
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	$("#m0_div_panel_secundario").on(
+		"submit",
+		"#m3_5_frm_registro_incapacidad",
+		function () {
+			m3_5_js_registro_incapacidad(this);
+		}
+	);
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//funciones javascript
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	/**
+	 * funcion para cargar los objetos de una seccion especifica
+	 *
+	 * @return  {null}
+	 */
+	function m3_js_inicializar_pestaña_m3_5() {
+		try {
+
+			m0_js_log_sesion({
+				id_sesion: ID_SESION,
+				log: "M3 - Registro de incapacidades",
+				tipo_log: "ACCESO A SECCION"
+			});
+
+			var u = USUARIO;
+			var pos;
+			for (var mod = 0; mod < u.modulos.length; mod++) {
+				if (3 == u.modulos[mod].id_modulo) {
+					pos = mod;
+				}
+			}
+			var param_modulos = {
+				icono: u.modulos[pos].icono,
+				id_modulo: 3,
+				texto_1: u.modulos[pos].modulo,
+				texto_2: "Registro de incapacidades",
+			};
+			m0_js_menu_arbol(param_modulos);
+
+			var param_formulario = {
+				formulario: "m3_5_frm_registro_incapacidad",
+				campos: [
+					{
+						id_campo: "m3_5_sel_registro_incapacidad_usuario",
+						nombre_campo: "Seleccione el usuario",
+						required: "required",
+						tipo_campo: "select",
+					},
+					{
+						id_campo: "m3_5_txt_registro_incapacidad_fecha_inicio",
+						nombre_campo: "Fecha inicio novedad",
+						pattern: "",
+						error: "",
+						required: "required",
+						tipo_campo: "date",
+					},
+					{
+						id_campo: "m3_5_txt_registro_incapacidad_fecha_fin",
+						nombre_campo: "Fecha fin novedad",
+						pattern: "",
+						error: "",
+						required: "required",
+						tipo_campo: "date",
+					},
+					{
+						id_campo: "m3_5_txt_registro_incapacidad_detalle",
+						nombre_campo: "Descripción novedad...",
+						required: "",
+						tipo_campo: "textarea",
+					},
+					{
+						id_campo: "m3_5_file_registro_incapacidad_soporte",
+						nombre_campo: "Soporte incapacidad...",
+						tipo_campo: "file",
+					},
+				],
+			};
+			router({
+				tipo_fuente: "VARIABLE",
+				contenido: m0_js_crear_formulario(param_formulario),
+				contenedor: "m0_div_panel_secundario",
+				id_privilegio: "3_4",
+			});
+			$("#m3_5_txt_registro_incapacidad_fecha_inicio")
+				.parent()
+				.addClass("is-dirty");
+			$("#m3_5_txt_registro_incapacidad_fecha_fin")
+				.parent()
+				.addClass("is-dirty");
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso(
+						"banner",
+						"Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página"
+					);
+				})
+				.withSuccessHandler(m0_js_poblar_menu)
+				.m3_5_gs_poblar_menu_registro_incapacidad({
+					campo: "Seleccione el usuario",
+					criterio: u.id_regional,
+					select: "m3_5_sel_registro_incapacidad_usuario",
+					datos: [],
+					mensaje_carga: "Usuarios cargados exitosamente",
+				});
+			m0_js_aviso(
+				"modal_box",
+				"Espere mientras se carga el listado de usuarios activos de la regional"
+			);
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m3_js_inicializar_pestaña_m3_5",
+				error: e,
+				parametros: {},
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Mandamos la informacion correspondiente a la novedad que se quiere registrar en la base (PROGRAMACION AGENTE EN MISION O TRASLADO AGENTE PAC)
+	 *
+	 * @param   {object}  param  objecto con los datos registrados en el formulario
+	 *
+	 * @return  {null}
+	 */
+	function m3_5_js_registro_incapacidad(frm) {
+		try {
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso(
+						"banner",
+						"Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página"
+					);
+				})
+				.withSuccessHandler(function (r) {
+					if (m0_js_resultado_operacion(r)) {
+						m3_js_inicializar_pestaña_m3_5();
+					}
+				})
+				.m3_5_gs_registro_incapacidad(frm);
+			m0_js_aviso(
+				"modal_box",
+				"Por favor espere mientras se almacenan los datos"
+			);
+			event.preventDefault();
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m3_5_js_registro_incapacidad",
+				error: e,
+				parametros: {},
+			});
+		}
+	}
+
+	//################################################################################################################################################################################################################
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//SECCION 6 - LICENCIA
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//################################################################################################################################################################################################################
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//listener de eventos del DOOM
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	$("#m0_div_panel_secundario").on("submit", "#m3_6_frm_licencia", function () {
+		m3_6_js_licencia(this);
+	});
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//funciones javascript
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	/**
+	 * funcion para cargar los objetos de una seccion especifica
+	 *
+	 * @return  {null}
+	 */
+	function m3_js_inicializar_pestaña_m3_6() {
+		try {
+
+			m0_js_log_sesion({
+				id_sesion: ID_SESION,
+				log: "M3 - Licencia NO remunerada",
+				tipo_log: "ACCESO A SECCION"
+			});
+
+			var u = USUARIO;
+			var pos;
+			for (var mod = 0; mod < u.modulos.length; mod++) {
+				if (3 == u.modulos[mod].id_modulo) {
+					pos = mod;
+				}
+			}
+			var param_modulos = {
+				icono: u.modulos[pos].icono,
+				id_modulo: 3,
+				texto_1: u.modulos[pos].modulo,
+				texto_2: "Licencia NO remunerada",
+			};
+			m0_js_menu_arbol(param_modulos);
+
+			var param_formulario = {
+				formulario: "m3_6_frm_licencia",
+				campos: [
+					{
+						id_campo: "m3_6_txt_licencia_tipo_licencia",
+						nombre_campo: "Seleccione el tipo de Licencia",
+						required: "required",
+						tipo_campo: "select",
+					},
+					{
+						id_campo: "m3_6_sel_licencia_usuario",
+						nombre_campo: "Seleccione el usuario",
+						required: "required",
+						tipo_campo: "select",
+					},
+					{
+						id_campo: "m3_6_txt_licencia_fecha_inicio",
+						nombre_campo: "Fecha inicio novedad",
+						pattern: "",
+						error: "",
+						required: "required",
+						tipo_campo: "date",
+					},
+					{
+						id_campo: "m3_6_txt_licencia_fecha_fin",
+						nombre_campo: "Fecha fin novedad",
+						pattern: "",
+						error: "",
+						required: "required",
+						tipo_campo: "date",
+					},
+					{
+						id_campo: "m3_6_txt_licencia_detalle",
+						nombre_campo: "Descripción novedad...",
+						required: "required",
+						tipo_campo: "textarea",
+					},
+					{
+						tipo_campo: "file",
+						id_campo: "m3_6_file_licencia_soporte",
+						nombre_campo: "Soporte:",
+					},
+				],
+			};
+			router({
+				tipo_fuente: "VARIABLE",
+				contenido: m0_js_crear_formulario(param_formulario),
+				contenedor: "m0_div_panel_secundario",
+				id_privilegio: "3_5",
+			});
+			$("#m3_6_txt_licencia_fecha_inicio").parent().addClass("is-dirty");
+			$("#m3_6_txt_licencia_fecha_fin").parent().addClass("is-dirty");
+			m0_js_poblar_menu({
+				campo: "Seleccione el tipo de licencia",
+				criterio: "",
+				select: "m3_6_txt_licencia_tipo_licencia",
+				datos: [
+					{
+						texto: "",
+						valor: "",
+						selected: "selected",
+					},
+					{
+						texto: "Licencia por maternidad",
+						valor: "Licencia por maternidad",
+						selected: "",
+					},
+					{
+						texto: "Licencia por paternidad",
+						valor: "Licencia por paternidad",
+						selected: "",
+					},
+					{
+						texto: "Licencia NO remunerada",
+						valor: "Licencia NO remunerada",
+						selected: "",
+					}
+				],
+			});
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso(
+						"banner",
+						"Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página"
+					);
+				})
+				.withSuccessHandler(m0_js_poblar_menu)
+				.m3_6_gs_poblar_menu_licencia({
+					campo: "Seleccione el usuario",
+					criterio: u.id_regional,
+					select: "m3_6_sel_licencia_usuario",
+					datos: [],
+					mensaje_carga: "Usuarios cargados exitosamente",
+				});
+			m0_js_aviso(
+				"modal_box",
+				"Espere mientras se carga el listado de usuarios activos de la regional"
+			);
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m3_js_inicializar_pestaña_m3_6",
+				error: e,
+				parametros: {},
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Mandamos la informacion correspondiente a la novedad que se quiere registrar en la base (PROGRAMACION AGENTE EN MISION O TRASLADO AGENTE PAC)
+	 *
+	 * @param   {object}  param  objecto con los datos registrados en el formulario
+	 *
+	 * @return  {null}
+	 */
+	function m3_6_js_licencia(frm) {
+		try {
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso(
+						"banner",
+						"Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página"
+					);
+				})
+				.withSuccessHandler(function (r) {
+					if (m0_js_resultado_operacion(r)) {
+						m3_js_inicializar_pestaña_m3_6();
+					}
+				})
+				.m3_6_gs_licencia(frm);
+			m0_js_aviso(
+				"modal_box",
+				"Por favor espere mientras se almacenan los datos"
+			);
+			event.preventDefault();
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m3_6_js_licencia",
+				error: e,
+				parametros: {},
+			});
+		}
+	}
+
+	//################################################################################################################################################################################################################
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//SECCION 7 - PROGRAMACION DE VACACIONES
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//################################################################################################################################################################################################################
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//listener de eventos del DOOM
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	$("#m0_div_panel_secundario").on(
+		"submit",
+		"#m3_7_frm_programacion_vacaciones",
+		function () {
+			m3_7_js_programacion_vacaciones(this);
+		}
+	);
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//funciones javascript
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	/**
+	 * funcion para cargar los objetos de una seccion especifica
+	 *
+	 * @return  {null}
+	 */
+	function m3_js_inicializar_pestaña_m3_7() {
+		try {
+
+			m0_js_log_sesion({
+				id_sesion: ID_SESION,
+				log: "M3 - Programación vacaciones",
+				tipo_log: "ACCESO A SECCION"
+			});
+
+			var u = USUARIO;
+			var pos;
+			for (var mod = 0; mod < u.modulos.length; mod++) {
+				if (3 == u.modulos[mod].id_modulo) {
+					pos = mod;
+				}
+			}
+			var param_modulos = {
+				icono: u.modulos[pos].icono,
+				id_modulo: 3,
+				texto_1: u.modulos[pos].modulo,
+				texto_2: "Programación vacaciones",
+			};
+			m0_js_menu_arbol(param_modulos);
+
+			var param_formulario = {
+				formulario: "m3_7_frm_programacion_vacaciones",
+				campos: [
+					{
+						id_campo: "m3_7_sel_programacion_vacaciones_usuario",
+						nombre_campo: "Seleccione el usuario",
+						required: "required",
+						tipo_campo: "select",
+					},
+					{
+						id_campo: "m3_7_txt_programacion_vacaciones_fecha_inicio",
+						nombre_campo: "Fecha inicio novedad",
+						pattern: "",
+						error: "",
+						required: "required",
+						tipo_campo: "date",
+					},
+					{
+						id_campo: "m3_7_txt_programacion_vacaciones_fecha_fin",
+						nombre_campo: "Fecha fin novedad",
+						pattern: "",
+						error: "",
+						required: "required",
+						tipo_campo: "date",
+					},
+					{
+						id_campo: "m3_7_txt_programacion_vacaciones_detalle",
+						nombre_campo: "Descripción novedad...",
+						required: "",
+						tipo_campo: "textarea",
+					},
+				],
+			};
+			router({
+				tipo_fuente: "VARIABLE",
+				contenido: m0_js_crear_formulario(param_formulario),
+				contenedor: "m0_div_panel_secundario",
+				id_privilegio: "3_6",
+			});
+			$("#m3_7_txt_programacion_vacaciones_fecha_inicio")
+				.parent()
+				.addClass("is-dirty");
+			$("#m3_7_txt_programacion_vacaciones_fecha_fin")
+				.parent()
+				.addClass("is-dirty");
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso(
+						"banner",
+						"Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página"
+					);
+				})
+				.withSuccessHandler(m0_js_poblar_menu)
+				.m3_7_gs_poblar_menu_programacion_vacaciones({
+					campo: "Seleccione el usuario",
+					criterio: u.id_regional,
+					select: "m3_7_sel_programacion_vacaciones_usuario",
+					datos: [],
+					mensaje_carga: "Usuarios cargados exitosamente",
+				});
+			m0_js_aviso(
+				"modal_box",
+				"Espere mientras se carga el listado de usuarios activos de la regional"
+			);
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m3_js_inicializar_pestaña_m3_7",
+				error: e,
+				parametros: {},
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Mandamos la informacion correspondiente a la novedad que se quiere registrar en la base (PROGRAMACION AGENTE EN MISION O TRASLADO AGENTE PAC)
+	 *
+	 * @param   {object}  param  objecto con los datos registrados en el formulario
+	 *
+	 * @return  {null}
+	 */
+	function m3_7_js_programacion_vacaciones(frm) {
+		try {
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso(
+						"banner",
+						"Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página"
+					);
+				})
+				.withSuccessHandler(function (r) {
+					if (m0_js_resultado_operacion(r)) {
+						m3_js_inicializar_pestaña_m3_7();
+					}
+				})
+				.m3_7_gs_programacion_vacaciones(frm);
+			m0_js_aviso(
+				"modal_box",
+				"Por favor espere mientras se almacenan los datos"
+			);
+			event.preventDefault();
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m3_7_js_programacion_vacaciones",
+				error: e,
+				parametros: {},
+			});
+		}
+	}
+
+	//################################################################################################################################################################################################################
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//SECCION 10 - CALENDARIO NOVEDADES PLANTA PERSONAL
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//################################################################################################################################################################################################################
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//listener de eventos del DOOM
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//funciones javascript
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	/**
+	 * funcion para cargar los objetos de una seccion especifica
+	 *
+	 * @return  {null}
+	 */
+	function m3_js_inicializar_pestaña_m3_10() {
+		try {
+
+			m0_js_log_sesion({
+				id_sesion: ID_SESION,
+				log: "M3 - Calendario novedades TH",
+				tipo_log: "ACCESO A SECCION"
+			});
+
+			var u = USUARIO;
+			var pos;
+			for (var mod = 0; mod < u.modulos.length; mod++) {
+				if (3 == u.modulos[mod].id_modulo) {
+					pos = mod;
+				}
+			}
+			var param_modulos = {
+				icono: u.modulos[pos].icono,
+				id_modulo: 3,
+				texto_1: u.modulos[pos].modulo,
+				texto_2: "Calendario novedades TH",
+			};
+			m0_js_menu_arbol(param_modulos);
+
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso(
+						"banner",
+						"Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página"
+					);
+				})
+				.withSuccessHandler(function (r) {
+					m0_js_aviso("snackbar", r.mensaje);
+					if (r.exito) {
+						$("#m3_10_div_calendario").html(r.contenido);
+					} else {
+						$("#m3_10_div_calendario").html("");
+						m0_js_aviso("banner", r.mensaje);
+					}
+				})
+				.m3_10_gs_cargar_calendario(u.id_regional);
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m3_js_inicializar_pestaña_m3_10",
+				error: e,
+				parametros: {},
+			});
+		}
+	}
+
+	//################################################################################################################################################################################################################
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//SECCION 11 - PROGRAMACIÓN DE AGENTES EN MISIÓN
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//################################################################################################################################################################################################################
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//listener de eventos del DOOM
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	$("#m0_div_panel_secundario").on(
+		"submit",
+		"#m3_11_frm_agentes_mision",
+		function () {
+			m3_11_js_agentes_mision(this);
+		}
+	);
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//funciones javascript
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	/**
+	 * funcion para cargar los objetos de una seccion especifica
+	 *
+	 * @return  {null}
+	 */
+	function m3_js_inicializar_pestaña_m3_11() {
+		try {
+
+			m0_js_log_sesion({
+				id_sesion: ID_SESION,
+				log: "M3 - Programación agentes en misión",
+				tipo_log: "ACCESO A SECCION"
+			});
+
+			var u = USUARIO;
+			var pos;
+			for (var mod = 0; mod < u.modulos.length; mod++) {
+				if (3 == u.modulos[mod].id_modulo) {
+					pos = mod;
+				}
+			}
+			var param_modulos = {
+				icono: u.modulos[pos].icono,
+				id_modulo: 3,
+				texto_1: u.modulos[pos].modulo,
+				texto_2: "Programación agentes en misión",
+			};
+			m0_js_menu_arbol(param_modulos);
+
+			var param_formulario = {
+				formulario: "m3_11_frm_agentes_mision",
+				campos: [
+					{
+						id_campo: "m3_11_sel_agentes_mision_usuario",
+						nombre_campo: "Seleccione el usuario",
+						required: "required",
+						tipo_campo: "select",
+					},
+					{
+						id_campo: "m3_11_txt_agentes_mision_fecha_inicio",
+						nombre_campo: "Fecha inicio novedad",
+						pattern: "",
+						error: "",
+						required: "required",
+						tipo_campo: "date",
+					},
+					{
+						id_campo: "m3_11_txt_agentes_mision_fecha_fin",
+						nombre_campo: "Fecha fin novedad",
+						pattern: "",
+						error: "",
+						required: "required",
+						tipo_campo: "date",
+					},
+					{
+						id_campo: "m3_11_txt_agentes_mision_detalle",
+						nombre_campo: "Descripción novedad...",
+						required: "",
+						tipo_campo: "textarea",
+					},
+				],
+			};
+			router({
+				tipo_fuente: "VARIABLE",
+				contenido: m0_js_crear_formulario(param_formulario),
+				contenedor: "m0_div_panel_secundario",
+				id_privilegio: "3_10",
+			});
+			$("#m3_11_txt_agentes_mision_fecha_inicio").parent().addClass("is-dirty");
+			$("#m3_11_txt_agentes_mision_fecha_fin").parent().addClass("is-dirty");
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso(
+						"banner",
+						"Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página"
+					);
+				})
+				.withSuccessHandler(m0_js_poblar_menu)
+				.m3_11_gs_poblar_menu_agentes_mision({
+					campo: "Seleccione el usuario",
+					criterio: u.id_regional,
+					select: "m3_11_sel_agentes_mision_usuario",
+					datos: [],
+					mensaje_carga: "Usuarios cargados exitosamente",
+				});
+			m0_js_aviso(
+				"modal_box",
+				"Espere mientras se carga el listado de usuarios activos de la regional"
+			);
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m3_js_inicializar_pestaña_m3_11",
+				error: e,
+				parametros: {},
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Mandamos la informacion correspondiente a la novedad que se quiere registrar en la base (PROGRAMACION AGENTE EN MISION O TRASLADO AGENTE PAC)
+	 *
+	 * @param   {object}  param  objecto con los datos registrados en el formulario
+	 *
+	 * @return  {null}
+	 */
+	function m3_11_js_agentes_mision(frm) {
+		try {
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso(
+						"banner",
+						"Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página"
+					);
+				})
+				.withSuccessHandler(function (r) {
+					if (m0_js_resultado_operacion(r)) {
+						m3_js_inicializar_pestaña_m3_11();
+					}
+				})
+				.m3_11_gs_agentes_mision(frm);
+			m0_js_aviso(
+				"modal_box",
+				"Por favor espere mientras se almacenan los datos"
+			);
+			event.preventDefault();
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m3_11_js_agentes_mision",
+				error: e,
+				parametros: {},
+			});
+		}
+	}
+
+	//################################################################################################################################################################################################################
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//SECCION 12 - PROGRAMACION APRENDICES SENA / ESTUDIANTES EN PRACTICA
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//################################################################################################################################################################################################################
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//listener de eventos del DOOM
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	$("#m0_div_panel_secundario").on(
+		"submit",
+		"#m3_12_frm_sena_pej",
+		function () {
+			m3_12_js_sena_pej(this);
+		}
+	);
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//funciones javascript
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	/**
+	 * funcion para cargar los objetos de una seccion especifica
+	 *
+	 * @return  {null}
+	 */
+	function m3_js_inicializar_pestaña_m3_12() {
+		try {
+
+			m0_js_log_sesion({
+				id_sesion: ID_SESION,
+				log: "M3 - Programación aprendices SENA / estudiantes PEJ",
+				tipo_log: "ACCESO A SECCION"
+			});
+
+			var u = USUARIO;
+			var pos;
+			for (var mod = 0; mod < u.modulos.length; mod++) {
+				if (3 == u.modulos[mod].id_modulo) {
+					pos = mod;
+				}
+			}
+			var param_modulos = {
+				icono: u.modulos[pos].icono,
+				id_modulo: 3,
+				texto_1: u.modulos[pos].modulo,
+				texto_2: "Programación aprendices SENA / estudiantes PEJ",
+			};
+			m0_js_menu_arbol(param_modulos);
+
+			var param_formulario = {
+				formulario: "m3_12_frm_sena_pej",
+				campos: [
+					{
+						id_campo: "m3_12_sel_sena_pej_usuario",
+						nombre_campo: "Seleccione el usuario",
+						required: "required",
+						tipo_campo: "select",
+					},
+					{
+						id_campo: "m3_12_txt_sena_pej_fecha_inicio",
+						nombre_campo: "Fecha inicio novedad",
+						pattern: "",
+						error: "",
+						required: "required",
+						tipo_campo: "date",
+					},
+					{
+						id_campo: "m3_12_txt_sena_pej_fecha_fin",
+						nombre_campo: "Fecha fin novedad",
+						pattern: "",
+						error: "",
+						required: "required",
+						tipo_campo: "date",
+					},
+					{
+						id_campo: "m3_12_txt_sena_pej_detalle",
+						nombre_campo: "Descripción novedad...",
+						required: "",
+						tipo_campo: "textarea",
+					},
+				],
+			};
+			router({
+				tipo_fuente: "VARIABLE",
+				contenido: m0_js_crear_formulario(param_formulario),
+				contenedor: "m0_div_panel_secundario",
+				id_privilegio: "3_11",
+			});
+			$("#m3_12_txt_sena_pej_fecha_inicio").parent().addClass("is-dirty");
+			$("#m3_12_txt_sena_pej_fecha_fin").parent().addClass("is-dirty");
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso(
+						"banner",
+						"Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página"
+					);
+				})
+				.withSuccessHandler(m0_js_poblar_menu)
+				.m3_12_gs_poblar_menu_sena_pej({
+					campo: "Seleccione el usuario",
+					criterio: u.id_regional,
+					select: "m3_12_sel_sena_pej_usuario",
+					datos: [],
+					mensaje_carga: "Usuarios cargados exitosamente",
+				});
+			m0_js_aviso(
+				"modal_box",
+				"Espere mientras se carga el listado de usuarios activos de la regional"
+			);
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "mX_js_inicializar_pestaña_mX_X",
+				error: e,
+				parametros: {},
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Mandamos la informacion correspondiente a la novedad que se quiere registrar en la base (PROGRAMACION AGENTE EN MISION O TRASLADO AGENTE PAC)
+	 *
+	 * @param   {object}  param  objecto con los datos registrados en el formulario
+	 *
+	 * @return  {null}
+	 */
+	function m3_12_js_sena_pej(frm) {
+		try {
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso(
+						"banner",
+						"Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página"
+					);
+				})
+				.withSuccessHandler(function (r) {
+					if (m0_js_resultado_operacion(r)) {
+						m3_js_inicializar_pestaña_m3_12();
+					}
+				})
+				.m3_12_gs_sena_pej(frm);
+			m0_js_aviso(
+				"modal_box",
+				"Por favor espere mientras se almacenan los datos"
+			);
+			event.preventDefault();
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m3_12_js_sena_pej",
+				error: e,
+				parametros: {},
+			});
+		}
+	}
+
+	//################################################################################################################################################################################################################
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//SECCION 13 - REPORTE GENERAL BASE NOVEDADES TH
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//################################################################################################################################################################################################################
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//listener de eventos del DOOM
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//funciones javascript
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	/**
+	 * funcion para cargar los objetos de una seccion especifica
+	 *
+	 * @return  {null}
+	 */
+	function m3_js_inicializar_pestaña_m3_13() {
+		try {
+
+			m0_js_log_sesion({
+				id_sesion: ID_SESION,
+				log: "M3 - Reporte del modulo NOVEDADES TH",
+				tipo_log: "ACCESO A SECCION"
+			});
+
+			var u = USUARIO;
+			var pos;
+			for (var mod = 0; mod < u.modulos.length; mod++) {
+				if (3 == u.modulos[mod].id_modulo) {
+					pos = mod;
+				}
+			}
+			var param_modulos = {
+				icono: u.modulos[pos].icono,
+				id_modulo: 3,
+				texto_1: u.modulos[pos].modulo,
+				texto_2: "Reporte del modulo NOVEDADES TH",
+			};
+			m0_js_menu_arbol(param_modulos);
+
+			google.script.run
+				.withFailureHandler(m0_js_ajax_error)
+				.withSuccessHandler(function (r) {
+					m0_js_aviso("snackbar", r.mensaje);
+					if (r.exito) {
+						$("#m3_13_div_consolidado_base_usuarios_regional").html(
+							r.contenido_usuarios
+						);
+						$("#m3_13_div_consolidado_consolidado_novedades").html(
+							r.contenido_novedades
+						);
+						componentHandler.upgradeDom();
+					} else {
+						$("#m3_13_div_consolidado_base_usuarios_regional").html("");
+						$("#m3_13_div_consolidado_consolidado_novedades").html("");
+						m0_js_aviso("banner", r.mensaje);
+					}
+				})
+				.m3_13_gs_cargar_reportes(u.id_regional);
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m3_js_inicializar_pestaña_m3_13",
+				error: e,
+				parametros: {},
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Actualiza el reporte
+	 *
+	 * @return  {null}
+	 */
+	function m3_13_js_usuarios_actualizar_reporte() {
+		try {
+			var u = USUARIO;
+			google.script.run
+				.withFailureHandler(m0_js_ajax_error)
+				.withSuccessHandler(function (param) {
+					if (param.exito) {
+						var data = [];
+						var oficina;
+
+						for (var j = 0; j < param.usuarios.registros; j++) {
+							oficina = "";
+							for (var l = 0; l < param.oficinas.registros; l++) {
+								if (
+									param.usuarios.datos[j].id_oficina ==
+									param.oficinas.datos[l].id_oficina &&
+									param.oficinas.datos[l].id_regional == u.id_regional
+								) {
+									oficina = param.oficinas.datos[l].oficina;
+								}
+							}
+							if (oficina !== "") {
+								var fila = [];
+								fila.push(param.usuarios.datos[j].id_usuario);
+								fila.push(param.usuarios.datos[j].usuario);
+								fila.push(param.usuarios.datos[j].correo);
+								fila.push(param.usuarios.datos[j].nombre);
+								fila.push(oficina);
+								fila.push(param.usuarios.datos[j].cargo);
+								fila.push(param.usuarios.datos[j].rol);
+								fila.push(param.usuarios.datos[j].area);
+								if (param.usuarios.datos[j].activo == 1) {
+									fila.push("SI");
+								} else {
+									fila.push("NO");
+								}
+
+								data.push(fila);
+							}
+							m0_js_loading({
+								tipo: "COMPUESTO_ACTUALIZACION",
+								texto: "",
+								valor: (j / param.usuarios.registros) * 100,
+							});
+						}
+
+						google.script.run
+							.withFailureHandler(function () {
+								m0_js_aviso(
+									"banner",
+									"Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página"
+								);
+							})
+							.withSuccessHandler(m0_js_resultado_operacion)
+							.m3_13_gs_usuarios_actualizar_reporte_paso_2(data);
+
+						m0_js_loading({
+							tipo: "COMPUESTO_ACTUALIZACION",
+							texto:
+								"Por favor espere mientras se sube al servidor la base de datos actualizada",
+							valor: false,
+						});
+					}
+				})
+				.m3_13_gs_usuarios_actualizar_reporte_paso_1();
+			m0_js_loading({
+				tipo: "COMPUESTO_CREACION",
+				titulo: "ACTUALIZACIÓN REPORTE USUARIOS REGISTRADOS EN Gestion.APP",
+				texto: "Por favor espere mientras se descargan los datos del servidor",
+				valor: false,
+			});
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m3_13_js_usuarios_actualizar_reporte",
+				error: e,
+				parametros: {},
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Actualiza el reporte
+	 *
+	 * @return  {null}
+	 */
+	function m3_13_js_novedades_actualizar_reporte() {
+		try {
+			var u = USUARIO;
+			google.script.run
+				.withFailureHandler(m0_js_ajax_error)
+				.withSuccessHandler(function (param) {
+					if (param.exito) {
+						var data = [];
+						var oficina;
+						var usuario_novedad;
+						var contenido;
+						var usuario_reporte;
+						var fecha_hora_inicio;
+						var fecha_hora_fin;
+						var ruta;
+
+						for (
+							var j_novedades = 0;
+							j_novedades < param.novedad.registros;
+							j_novedades++
+						) {
+							oficina = "";
+							for (
+								var j_oficinas = 0;
+								j_oficinas < param.oficina.registros;
+								j_oficinas++
+							) {
+								if (
+									param.novedad.datos[j_novedades].id_pac ==
+									param.oficina.datos[j_oficinas].id_oficina &&
+									param.oficina.datos[j_oficinas].id_regional == u.id_regional
+								) {
+									oficina = param.oficina.datos[j_oficinas].oficina;
+								}
+							}
+
+							if (oficina !== "") {
+								var fila = [];
+								usuario_novedad = "";
+								usuario_reporte = "";
+								for (
+									var j_usuarios = 0;
+									j_usuarios < param.usuario.registros;
+									j_usuarios++
+								) {
+									if (
+										param.usuario.datos[j_usuarios].id_usuario ==
+										param.novedad.datos[j_novedades].id_usuario
+									) {
+										usuario_novedad = param.usuario.datos[j_usuarios].nombre;
+									}
+									if (
+										param.usuario.datos[j_usuarios].id_usuario ==
+										param.novedad.datos[j_novedades].id_usuario_reporte
+									) {
+										usuario_reporte = param.usuario.datos[j_usuarios].nombre;
+									}
+								}
+								fila.push(usuario_novedad);
+								fila.push(oficina);
+								fila.push(usuario_reporte);
+								fila.push(param.novedad.datos[j_novedades].fecha);
+								fila.push(param.novedad.datos[j_novedades].novedad);
+								fecha_hora_inicio = param.novedad.datos[
+									j_novedades
+								].fecha_inicio_novedad.split(" ");
+								fila.push(fecha_hora_inicio[0]);
+								fila.push(fecha_hora_inicio[1]);
+								fecha_hora_fin = param.novedad.datos[
+									j_novedades
+								].fecha_fin_novedad.split(" ");
+								fila.push(fecha_hora_fin[0]);
+								fila.push(fecha_hora_fin[1]);
+								fila.push(param.novedad.datos[j_novedades].detalle);
+								if (param.novedad.datos[j_novedades].soporte === "") {
+									if (param.novedad.datos[j_novedades].id_archivo === "") {
+										fila.push("");
+									} else {
+										fila.push(
+											"https://docs.google.com/spreadsheets/d/" +
+											param.novedad.datos[j_novedades].id_archivo +
+											"/edit?usp=sharing"
+										);
+									}
+								} else {
+									for (var f = 0; f < param.upload.datos.length; f++) {
+										if (
+											param.novedad.datos[j_novedades].soporte ===
+											param.upload.datos[f].id_upload
+										) {
+											ruta = param.upload.datos[f].ruta;
+										}
+									}
+									fila.push(ruta);
+								}
+								data.push(fila);
+							}
+							m0_js_loading({
+								tipo: "COMPUESTO_ACTUALIZACION",
+								texto: "",
+								valor: (j_novedades / param.novedad.registros) * 100,
+							});
+						}
+
+						google.script.run
+							.withFailureHandler(m0_js_ajax_error)
+							.withSuccessHandler(m0_js_resultado_operacion)
+							.m3_13_gs_novedades_actualizar_reporte_paso_2(data);
+
+						m0_js_loading({
+							tipo: "COMPUESTO_ACTUALIZACION",
+							texto:
+								"Por favor espere mientras se sube al servidor la base de datos actualizada",
+							valor: false,
+						});
+					}
+				})
+				.m3_13_gs_novedades_actualizar_reporte_paso_1();
+			m0_js_loading({
+				tipo: "COMPUESTO_CREACION",
+				titulo: "ACTUALIZACIÓN REPORTE CONSOLIDADO DE NOVEDADES TH",
+				texto: "Por favor espere mientras se descargan los datos del servidor",
+				valor: false,
+			});
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m3_13_js_novedades_actualizar_reporte",
+				error: e,
+				parametros: {},
+			});
+		}
+	}
+
+	//################################################################################################################################################################################################################
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//SECCION 14 - ELIMINAR NOVEDADES
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//################################################################################################################################################################################################################
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//listener de eventos del DOOM
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	$("#m0_div_panel_principal").on(
+		"submit",
+		"#m3_14_frm_solicitud_consulta",
+		function () {
+			m3_14_js_solicitud_consulta();
+		}
+	);
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_aviso_modal_box").on(
+		"submit",
+		"#m3_14_frm_confirmacion_eliminar_evento",
+		function () {
+			m3_14_js_confirmacion_eliminar_evento();
+		}
+	);
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//funciones javascript
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	/**
+	 * funcion para cargar los objetos de una seccion especifica
+	 *
+	 * @return  {null}
+	 */
+	function m3_js_inicializar_pestaña_m3_14() {
+		try {
+
+			m0_js_log_sesion({
+				id_sesion: ID_SESION,
+				log: "M3 - Eliminar novedades TH",
+				tipo_log: "ACCESO A SECCION"
+			});
+
+			var u = USUARIO;
+			var pos;
+			for (var mod = 0; mod < u.modulos.length; mod++) {
+				if (3 == u.modulos[mod].id_modulo) {
+					pos = mod;
+				}
+			}
+			var param_modulos = {
+				icono: u.modulos[pos].icono,
+				id_modulo: 3,
+				texto_1: u.modulos[pos].modulo,
+				texto_2: "Eliminar novedades TH",
+			};
+			m0_js_menu_arbol(param_modulos);
+			$("#m0_div_panel_secundario").empty();
+
+			var param_formulario = {
+				formulario: "m3_14_frm_solicitud_consulta",
+				campos: [
+					{
+						id_campo: "m3_14_txt_solicitud_consulta_fecha_inicial",
+						nombre_campo: "Fecha inicial...",
+						pattern: "",
+						error: "",
+						required: "required",
+						tipo_campo: "date",
+					},
+					{
+						id_campo: "m3_14_txt_solicitud_consulta_fecha_final",
+						nombre_campo: "Fecha final...",
+						pattern: "",
+						required: "required",
+						error: "",
+						tipo_campo: "date",
+					},
+				],
+			};
+
+			router({
+				tipo_fuente: "VARIABLE",
+				contenido: m0_js_crear_formulario(param_formulario),
+				contenedor: "m3_14_div_consolidado_consulta_novedades",
+				id_privilegio: "3_12",
+			});
+			$("#m3_14_txt_solicitud_consulta_fecha_inicial")
+				.parent()
+				.addClass("is-dirty");
+			$("#m3_14_txt_solicitud_consulta_fecha_final")
+				.parent()
+				.addClass("is-dirty");
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m3_js_inicializar_pestaña_m3_14",
+				error: e,
+				parametros: {},
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Envia los criterios de busquedad al server para iniciar la busquedad
+	 *
+	 * @param   {object}  frm  objecto con los criterios de busquedad
+	 *
+	 * @return  {object}	    objecto con la tabla de resultados de la busqueda
+	 */
+	function m3_14_js_solicitud_consulta() {
+		try {
+			var u = USUARIO;
+			var param_tabla = {
+				criterio: {
+					fecha_inicial: $("#m3_14_txt_solicitud_consulta_fecha_inicial").val(),
+					fecha_final: $("#m3_14_txt_solicitud_consulta_fecha_final").val(),
+					id_usuario: u.id_usuario,
+				},
+				contenedor: "m0_div_panel_secundario",
+			};
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso(
+						"banner",
+						"Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página"
+					);
+				})
+				.withSuccessHandler(m0_js_crear_tabla)
+				.m3_14_gs_solicitud_consulta(param_tabla);
+			$("#m0_div_panel_secundario").html(
+				'<div class="mdl-spinner mdl-spinner--single-color mdl-js-spinner is-active carga_spinner"></div>'
+			);
+			componentHandler.upgradeDom();
+			event.preventDefault();
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m3_1_js_solicitud_consulta",
+				error: e,
+				parametros: {},
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * acciona el procedimiento en gs para eliminar un evento
+	 *
+	 * @param   {number}  param  id del evento
+	 *
+	 * @return  {object}	resultado de la operacion
+	 */
+	function m3_14_eliminar_evento(id_novedad) {
+		try {
+			var contenido = '<div class="div_panel mdl-shadow--3dp">';
+			contenido += '<h4 style="text-align: center;">ELIMINAR EVENTO</h4>';
+			contenido +=
+				"<p>Por favor confirme la eliminación del evento</br>Recuerde que una vez realizada, esta información no se podra recuperar</p>";
+			contenido += m0_js_crear_formulario({
+				formulario: "m3_14_frm_confirmacion_eliminar_evento",
+				campos: [
+					{
+						id_campo: "m3_14_hid_confirmacion_eliminar_evento",
+						tipo_campo: "hidden",
+						value: id_novedad,
+					},
+					{
+						id_campo: "m3_14_sel_confirmacion_eliminar_evento",
+						nombre_campo: "Por favor confirme la eliminación del evento...",
+						required: "required",
+						pattern: "",
+						error: "",
+						tipo_campo: "select",
+					},
+				],
+			});
+			contenido += "</div>";
+			m0_js_aviso("modal_box", contenido);
+			m0_js_poblar_menu({
+				campo: "Por favor confirme la eliminación del evento...",
+				criterio: "",
+				select: "m3_14_sel_confirmacion_eliminar_evento",
+				datos: [
+					{
+						texto: "",
+						valor: "",
+						selected: "selected",
+					},
+					{
+						texto: "SI",
+						valor: "SI",
+						selected: "",
+					},
+					{
+						texto: "NO",
+						valor: "NO",
+						selected: "",
+					},
+				],
+			});
+			$("#m3_14_sel_confirmacion_eliminar_evento")
+				.parent()
+				.addClass("is-dirty");
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m3_14_eliminar_evento_",
+				error: e,
+				parametros: {
+					id_novedad: id_novedad,
+				},
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * se envia el formulario de solicitud de permiso al server
+	 *
+	 * @param   {object}  frm  formulario
+	 *
+	 * @return  {null}
+	 */
+	function m3_14_js_confirmacion_eliminar_evento() {
+		try {
+			if ($("#m3_14_sel_confirmacion_eliminar_evento").val() === "SI") {
+				google.script.run
+					.withFailureHandler(function () {
+						m0_js_aviso(
+							"banner",
+							"Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página"
+						);
+					})
+					.withSuccessHandler(function (r) {
+						if (m0_js_resultado_operacion(r)) {
+							m3_js_inicializar_pestaña_m3_14();
+						}
+					})
+					.m3_gs_eliminar_evento(
+						$("#m3_14_hid_confirmacion_eliminar_evento").val()
+					);
+				m0_js_aviso(
+					"modal_box",
+					"Por favor espere mientras se almacenan los datos"
+				);
+			} else {
+				m0_js_aviso("cierre_modal_box", "");
+			}
+			event.preventDefault();
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m3_14_js_confirmacion_eliminar_evento",
+				error: e,
+				parametros: frm,
+			});
+		}
+	}
+
+	//################################################################################################################################################################################################################
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//SECCION 15 - PERMISOS SINDICALES
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//################################################################################################################################################################################################################
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//listener de eventos del DOOM
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	$("#m0_div_panel_secundario").on(
+		"submit",
+		"#m3_15_frm_registro_p_s",
+		function () {
+			m3_15_js_registro_permiso_sindical(this);
+			event.preventDefault;
+		}
+	);
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//funciones javascript
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	/**
+	 * funcion para cargar los objetos de una seccion especifica
+	 *
+	 * @return  {null}
+	 */
+	function m3_js_inicializar_pestaña_m3_15() {
+		try {
+
+			m0_js_log_sesion({
+				id_sesion: ID_SESION,
+				log: "M3 - Formulario para el registro de Permisos Sindicales",
+				tipo_log: "ACCESO A SECCION"
+			});
+
+			var u = USUARIO;
+			var pos;
+			for (var mod = 0; mod < u.modulos.length; mod++) {
+				if (3 == u.modulos[mod].id_modulo) {
+					pos = mod;
+				}
+			}
+			var param_modulos = {
+				icono: u.modulos[pos].icono,
+				id_modulo: 3,
+				texto_1: u.modulos[pos].modulo,
+				texto_2: "Formulario para el registro de Permisos Sindicales",
+			};
+			m0_js_menu_arbol(param_modulos);
+
+			var param_formulario = {
+				formulario: "m3_15_frm_registro_p_s",
+				campos: [
+					{
+						id_campo: "m3_15_sel_registro_p_s_usuario",
+						nombre_campo: "Seleccione el usuario",
+						required: "required",
+						tipo_campo: "select",
+					},
+					{
+						id_campo: "m3_15_txt_registro_p_s_fecha_inicio",
+						nombre_campo: "Fecha inicio novedad",
+						pattern: "",
+						error: "",
+						required: "required",
+						tipo_campo: "date",
+					},
+					{
+						id_campo: "m3_15_txt_registro_p_s_fecha_fin",
+						nombre_campo: "Fecha fin novedad",
+						pattern: "",
+						error: "",
+						required: "required",
+						tipo_campo: "date",
+					},
+					{
+						id_campo: "m3_15_txt_registro_p_s_detalle",
+						nombre_campo: "Descripción novedad...",
+						required: "",
+						tipo_campo: "textarea",
+					},
+					{
+						id_campo: "m3_15_file_registro_p_s_soporte",
+						nombre_campo: "Soporte permiso...",
+						tipo_campo: "file",
+					},
+				],
+			};
+			router({
+				tipo_fuente: "VARIABLE",
+				contenido: m0_js_crear_formulario(param_formulario),
+				contenedor: "m0_div_panel_secundario",
+				id_privilegio: "3_21",
+			});
+			$("#m3_15_txt_registro_p_s_fecha_inicio").parent().addClass("is-dirty");
+			$("#m3_15_txt_registro_p_s_fecha_fin").parent().addClass("is-dirty");
+			google.script.run
+				.withFailureHandler(m0_js_ajax_error)
+				.withSuccessHandler(m0_js_poblar_menu)
+				.m3_15_gs_poblar_menu_p_s({
+					campo: "Seleccione el usuario",
+					criterio: u.id_regional,
+					select: "m3_15_sel_registro_p_s_usuario",
+					datos: [],
+					mensaje_carga: "Usuarios cargados exitosamente",
+				});
+			m0_js_aviso(
+				"modal_box",
+				"Espere mientras se carga el listado de usuarios activos de la regional"
+			);
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m3_js_inicializar_pestaña_m3_15",
+				error: e,
+				parametros: {},
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Mandamos la informacion correspondiente a la novedad que se quiere registrar en la base (PROGRAMACION AGENTE EN MISION O TRASLADO AGENTE PAC)
+	 *
+	 * @param   {object}  param  objecto con los datos registrados en el formulario
+	 *
+	 * @return  {null}
+	 */
+	function m3_15_js_registro_permiso_sindical(frm) {
+		try {
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso(
+						"banner",
+						"Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página"
+					);
+				})
+				.withSuccessHandler(function (r) {
+					if (m0_js_resultado_operacion(r)) {
+						m3_js_inicializar_pestaña_m3_15();
+					}
+				})
+				.m3_15_gs_registro_permiso_sindical(frm);
+			m0_js_aviso(
+				"modal_box",
+				"Por favor espere mientras se almacenan los datos"
+			);
+			event.preventDefault();
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m3_15_js_registro_permiso_sindical",
+				error: e,
+				parametros: {},
+			});
+		}
+	}
+
+	//################################################################################################################################################################################################################
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//SECCION 16 - MODIFICACION DE VACACIONES
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//################################################################################################################################################################################################################
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//listener de eventos del DOOM
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	$("#m0_div_panel_aviso_modal_box").on(
+		"submit",
+		"#m3_16_frm_m_v_confirmacion_modificacion",
+		function () {
+			m3_16_js_m_v_confirmacion_modificacion(this);
+		}
+	);
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_aviso_modal_box").on(
+		"click",
+		"#m3_16_btn_m_v_salir",
+		function () {
+			m0_js_aviso("cierre_modal_box", "");
+		}
+	);
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//funciones javascript
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	/**
+	 * funcion para cargar los objetos de una seccion especifica
+	 *
+	 * @return  {null}
+	 */
+	function m3_js_inicializar_pestaña_m3_16() {
+		try {
+
+			m0_js_log_sesion({
+				id_sesion: ID_SESION,
+				log: "M3 - Modificación de vacaciones",
+				tipo_log: "ACCESO A SECCION"
+			});
+
+			var u = USUARIO;
+			var pos;
+			for (var mod = 0; mod < u.modulos.length; mod++) {
+				if (3 == u.modulos[mod].id_modulo) {
+					pos = mod;
+				}
+			}
+			var param_modulos = {
+				icono: u.modulos[pos].icono,
+				id_modulo: 3,
+				texto_1: u.modulos[pos].modulo,
+				texto_2: "Modificación de vacaciones",
+			};
+			m0_js_menu_arbol(param_modulos);
+
+			m0_js_loading({
+				tipo: "SIMPLE",
+				contenedor: "m0_div_panel_secundario",
+			});
+
+			google.script.run
+				.withFailureHandler(m0_js_ajax_error)
+				.withSuccessHandler(m0_js_crear_tabla)
+				.m3_16_gs_m_v_mostrar_vacaciones({
+					id_usuario: u.id_usuario,
+					contenedor: "m0_div_panel_secundario",
+				});
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m3_js_inicializar_pestaña_m3_16",
+				error: e,
+				parametros: {},
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Abre la ventana de dialogo de modificacion de vacaciones
+	 *
+	 * @param   {number}  id_novedad  id de la novedad
+	 *
+	 * @return  {null}
+	 */
+	function m3_16_js_m_v_mostrar_form_modificacion(id_novedad) {
+		try {
+			var contenido = '<div class="div_panel mdl-shadow--3dp">';
+			contenido +=
+				'<h4 style="text-align: center;">MODIFICACIÓN DE VACACIONES</h4>';
+			contenido += "<p>Por favor seleccione una nueva fecha de vacaciones:</p>";
+			contenido += m0_js_crear_formulario({
+				formulario: "m3_16_frm_m_v_confirmacion_modificacion",
+				campos: [
+					{
+						tipo_campo: "hidden",
+						id_campo: "m3_16_hid_m_v_id_novedad",
+						value: id_novedad,
+					},
+					{
+						tipo_campo: "date",
+						id_campo: "m3_16_txt_m_v_fecha_vacacion",
+						nombre_campo: "Fecha propuesta...",
+						required: "required",
+						pattern: "",
+						error: "",
+					},
+					{
+						tipo_campo: "textarea",
+						id_campo: "m3_16_txt_m_v_observaciones",
+						nombre_campo: "Observaciones...",
+					},
+				],
+			});
+			contenido += "<hr />";
+			contenido +=
+				'<button id="m3_16_btn_m_v_salir" class="mdl-button mdl-js-button mdl-button--accent" >CERRAR VENTANA<i class="material-icons">meeting_room</i></button>';
+			contenido += "<br/>";
+			contenido += "</div>";
+			m0_js_aviso("modal_box", contenido);
+
+			$("#m3_16_txt_m_v_fecha_vacacion").parent().addClass("is-dirty");
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m3_16_m_v_mostrar_form_modificacion",
+				error: e,
+				parametros: {},
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * se envia el formulario de solicitud de permiso al server
+	 *
+	 * @param   {object}  frm  formulario
+	 *
+	 * @return  {null}
+	 */
+	function m3_16_js_m_v_confirmacion_modificacion(frm) {
+		try {
+			google.script.run
+				.withFailureHandler(m0_js_ajax_error)
+				.withSuccessHandler(function (r) {
+					if (m0_js_resultado_operacion(r)) {
+						m0_js_aviso("cierre_modal_box", "");
+					}
+				})
+				.m3_16_gs_m_v_confirmacion_modificacion(frm);
+			m0_js_aviso(
+				"modal_box",
+				"Por favor espere mientras se almacenan los datos"
+			);
+
+			event.preventDefault();
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m3_16_js_m_v_confirmacion_modificacion",
+				error: e,
+				parametros: frm,
+			});
+		}
+	}
+
+	//################################################################################################################################################################################################################
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//RUTINAS PROGRAMADAS O ALTERNAS
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//################################################################################################################################################################################################################
+
+	/**
+	 * Mandamos la informacion correspondiente a la novedad que se quiere registrar en la base (PROGRAMACION AGENTE EN MISION O TRASLADO AGENTE PAC)
+	 *
+	 * @param   {object}  param  objecto con los datos registrados en el formulario
+	 *
+	 * @return  {null}
+	 */
+	function m3_js_eliminar_evento(id_evento) {
+		try {
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso(
+						"banner",
+						"Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página"
+					);
+				})
+				.withSuccessHandler(function (r) {
+					m0_js_cargar_inicio_modulo(3);
+					m0_js_resultado_operacion(r);
+					router({
+						tipo_fuente: "ARCHIVO",
+						filename: "vista/m3/index_m3_10",
+						contenedor: "m0_div_panel_principal",
+						id_privilegio: "3_9",
+					});
+				})
+				.m3_gs_eliminar_evento(id_evento);
+			m0_js_aviso(
+				"modal_box",
+				"Por favor espere mientras se elimina el evento"
+			);
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m3_js_eliminar_evento",
+				error: e,
+				parametros: {
+					id_evento: id_evento,
+				},
+			});
+		}
+	}
+</script>

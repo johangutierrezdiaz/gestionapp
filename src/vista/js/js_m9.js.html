@@ -1,0 +1,2470 @@
+<script>
+	//################################################################################################################################################################################################################
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//INICIALIZACION DE VARIABLES GLOBALES
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//################################################################################################################################################################################################################
+
+	BD_PE = {
+		SINCRONIZADO: false
+	};
+
+	m9_js_inicializacion_bd();
+
+	function m9_js_inicializacion_bd() {
+		try {
+
+			google.script.run
+				.withFailureHandler(function (e) {
+					BD_PE.SINCRONIZADO = false;
+					BD.SINCRONIZADO = false;
+					BD.ULTIMA_SINCRONIZACION = new Date()
+					m0_js_actualizacion_panel_bd()
+					m0_js_registrar_error({
+						gs: "m9_gs_inicializacion_bd",
+						funcion: "m9_js_inicializacion_bd",
+						error: { message: e.name + " : " + e.message + " / Error en sincronización de BD (M9)", name: "AJAX" },
+						parametros: {}
+					});
+				})
+				.withSuccessHandler(m9_js_inicializacion_bd_crear_BD_PE)
+				.m9_gs_inicializacion_bd();
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m9_js_inicializacion_bd",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Crea la base BD_PE a partir de los datos descargados del servidor 
+	 *
+	 * @param   {object}  r  objeto con todos los datos desacargados del server
+	 *
+	 * @return  {null}          
+	 */
+	function m9_js_inicializacion_bd_crear_BD_PE(r) {
+		try {
+
+			var u = USUARIO;
+
+			//TABLA USUARIO
+			var elementos = {
+				registros: 0,
+				datos: []
+			};
+			for (var j = 0; j < r.oficina.registros; j++) {
+				for (var i = 0; i < r.usuario.registros; i++) {
+					if (r.oficina.datos[j].id_oficina == r.usuario.datos[i].id_oficina) {
+						var rango = {
+							"id_usuario": r.usuario.datos[i].id_usuario,
+							"usuario": r.usuario.datos[i].usuario,
+							"correo": r.usuario.datos[i].correo,
+							"nombre": r.usuario.datos[i].nombre,
+							"cargo": r.usuario.datos[i].cargo,
+							"rol": r.usuario.datos[i].rol,
+							"area": r.usuario.datos[i].area,
+							"oficina": r.oficina.datos[j].oficina
+						};
+						elementos.datos.push(rango);
+						elementos.registros++;
+					}
+				}
+			}
+			BD_PE.usuario = elementos;
+
+			//TABLA OBJETIVO
+			var elementos = {
+				registros: 0,
+				datos: []
+			};
+			for (j = 0; j < r.objetivo.registros; j++) {
+				var rango = {
+					"id_objetivo": r.objetivo.datos[j].id_objetivo,
+					"objetivo": r.objetivo.datos[j].objetivo_estrategico,
+					"objetivo_estrategico_nacional": r.objetivo.datos[j].objetivo_estrategico_nacional,
+					"id_autor": r.objetivo.datos[j].id_autor,
+					"fecha_creacion": r.objetivo.datos[j].fecha_creacion,
+					"activo": r.objetivo.datos[j].activo,
+					"area": r.objetivo.datos[j].area
+				};
+				for (i = 0; i < r.usuario.registros; i++) {
+					if (r.usuario.datos[i].id_usuario == r.objetivo.datos[j].id_autor) {
+						rango.nombre_autor = r.usuario.datos[i].nombre
+					}
+				}
+				elementos.datos.push(rango);
+				elementos.registros++;
+			}
+			BD_PE.objetivo = elementos;
+
+			//TABLA ESTRATEGIA
+			var elementos = {
+				registros: 0,
+				datos: []
+			};
+			for (j = 0; j < r.estrategia.registros; j++) {
+				var rango = {
+					"id_estrategia": r.estrategia.datos[j].id_estrategia,
+					"estrategia": r.estrategia.datos[j].estrategia,
+					"id_autor": r.estrategia.datos[j].id_autor,
+					"fecha_creacion": r.estrategia.datos[j].fecha_creacion,
+					"desarrollo_estrategia": r.estrategia.datos[j].desarrollo_estrategia,
+					"activo": r.estrategia.datos[j].activo,
+				};
+				for (i = 0; i < r.usuario.registros; i++) {
+					if (r.usuario.datos[i].id_usuario == r.estrategia.datos[j].id_autor) {
+						rango.nombre_autor = r.usuario.datos[i].nombre
+					}
+				}
+				elementos.datos.push(rango);
+				elementos.registros++;
+			}
+			BD_PE.estrategia = elementos;
+
+			//TABLA INDICADOR
+			var elementos = {
+				registros: 0,
+				datos: []
+			};
+			for (j = 0; j < r.indicador.registros; j++) {
+				var rango = {
+					"id_indicador": r.indicador.datos[j].id_indicador,
+					"indicador": r.indicador.datos[j].indicador,
+					"id_autor": r.indicador.datos[j].id_autor,
+					"fecha_creacion": r.indicador.datos[j].fecha_creacion,
+					"desarrollo_indicador": r.indicador.datos[j].desarrollo_indicador,
+					"activo": r.indicador.datos[j].activo
+				};
+				for (i = 0; i < r.usuario.registros; i++) {
+					if (r.usuario.datos[i].id_usuario == r.indicador.datos[j].id_autor) {
+						rango.nombre_autor = r.usuario.datos[i].nombre
+					}
+				}
+				elementos.datos.push(rango);
+				elementos.registros++;
+			}
+			BD_PE.indicador = elementos;
+
+			//TABLA PLAN ESTRATEGICO
+			var elementos = {
+				registros: 0,
+				datos: []
+			};
+			for (j = 0; j < r.plan_estrategico.registros; j++) {
+				var rango = {
+					"id_pe": r.plan_estrategico.datos[j].id_pe,
+					"id_objetivo": r.plan_estrategico.datos[j].id_objetivo,
+					"id_estrategia": r.plan_estrategico.datos[j].id_estrategia,
+					"id_indicador": r.plan_estrategico.datos[j].id_indicador,
+					"meta": r.plan_estrategico.datos[j].meta,
+					"periodicidad": r.plan_estrategico.datos[j].periodicidad,
+					"fecha_inicio": r.plan_estrategico.datos[j].fecha_inicio,
+					"fecha_fin": r.plan_estrategico.datos[j].fecha_fin,
+					"id_usuario_lider_pe": r.plan_estrategico.datos[j].id_usuario_lider_pe,
+					"area": r.plan_estrategico.datos[j].area,
+					"conclusiones": r.plan_estrategico.datos[j].conclusiones,
+					"estado": r.plan_estrategico.datos[j].estado
+				};
+				for (i = 0; i < r.usuario.registros; i++) {
+					if (r.usuario.datos[i].id_usuario == r.plan_estrategico.datos[j].id_usuario_lider_pe) {
+						rango.usuario_lider_pe = r.usuario.datos[i].nombre
+					}
+				}
+				for (i = 0; i < r.objetivo.registros; i++) {
+					if (r.objetivo.datos[i].id_objetivo == r.plan_estrategico.datos[j].id_objetivo) {
+						rango.objetivo = r.objetivo.datos[i].objetivo_estrategico
+					}
+				}
+				for (i = 0; i < r.estrategia.registros; i++) {
+					if (r.estrategia.datos[i].id_estrategia == r.plan_estrategico.datos[j].id_estrategia) {
+						rango.estrategia = r.estrategia.datos[i].estrategia
+					}
+				}
+				for (i = 0; i < r.indicador.registros; i++) {
+					if (r.indicador.datos[i].id_indicador == r.plan_estrategico.datos[j].id_indicador) {
+						rango.indicador = r.indicador.datos[i].indicador
+					}
+				}
+				elementos.datos.push(rango);
+				elementos.registros++;
+			}
+			BD_PE.plan_estrategico = elementos;
+
+			//TABLA SEGUIMIENTO PLAN ESTRATEGICO
+			var elementos = {
+				registros: 0,
+				datos: []
+			};
+			for (j = 0; j < r.seguimiento_pe.registros; j++) {
+				var rango = {
+					"id_seguimiento": r.seguimiento_pe.datos[j].id_seguimiento,
+					"id_pe": r.seguimiento_pe.datos[j].id_pe,
+					"valor_avance_indicador": r.seguimiento_pe.datos[j].valor_avance_indicador,
+					"id_usuario_avance": r.seguimiento_pe.datos[j].id_usuario_avance,
+					"fecha_seguimiento": r.seguimiento_pe.datos[j].fecha_seguimiento,
+					"observaciones_lider_estrategia": r.seguimiento_pe.datos[j].observaciones_lider_estrategia,
+					"observaciones_seguimiento": r.seguimiento_pe.datos[j].observaciones_seguimiento,
+					"periodo_avance_indicador": r.seguimiento_pe.datos[j].periodo_avance_indicador,
+					"tipo_valor_avance_indicador": r.seguimiento_pe.datos[j].tipo_valor_avance_indicador,
+				};
+				for (i = 0; i < r.usuario.registros; i++) {
+					if (r.usuario.datos[i].id_usuario == r.seguimiento_pe.datos[j].id_usuario_avance) {
+						rango.usuario_avance = r.usuario.datos[i].nombre
+					}
+				}
+				for (var k = 0; k < r.plan_estrategico.registros; k++) {
+					if (r.plan_estrategico.datos[k].id_pe === r.seguimiento_pe.datos[j].id_pe) {
+						rango.id_objetivo = r.plan_estrategico.datos[k].id_objetivo;
+						rango.id_estrategia = r.plan_estrategico.datos[k].id_estrategia;
+						rango.id_indicador = r.plan_estrategico.datos[k].id_indicador;
+					}
+				}
+				for (i = 0; i < r.objetivo.registros; i++) {
+					if (r.objetivo.datos[i].id_objetivo === rango.id_objetivo) {
+						rango.objetivo = r.objetivo.datos[i].objetivo_estrategico
+					}
+				}
+				for (i = 0; i < r.estrategia.registros; i++) {
+					if (r.estrategia.datos[i].id_estrategia === rango.id_estrategia) {
+						rango.estrategia = r.estrategia.datos[i].estrategia
+					}
+				}
+				for (i = 0; i < r.indicador.registros; i++) {
+					if (r.indicador.datos[i].id_indicador === rango.id_indicador) {
+						rango.indicador = r.indicador.datos[i].indicador
+					}
+				}
+				elementos.datos.push(rango);
+				elementos.registros++;
+			}
+			BD_PE.seguimiento_pe = elementos;
+
+			BD_PE.SINCRONIZADO = true;
+			BD.SINCRONIZADO = true;
+			BD.ULTIMA_SINCRONIZACION = new Date()
+			m0_js_actualizacion_panel_bd()
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m9_js_inicializacion_bd_crear_BD_PE",
+				error: e,
+				parametros: r
+			});
+		}
+	}
+
+
+	//################################################################################################################################################################################################################
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//SECCION 9 - PLANEACION ESTRATEGICA
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//################################################################################################################################################################################################################
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//listener de eventos del DOOM
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_aviso_modal_box").on("click", "#m9_1_creacion_pe_salir", function () {
+		m0_js_aviso("cierre_modal_box", "");
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_secundario").on("click", "#m9_1_creacion_pe_volver_pantalla_inicial", function () {
+		$("#m0_div_panel_secundario").empty();
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_aviso_modal_box").on("submit", "#m9_1_frm_creacion_pe_nuevo_objetivo", function () {
+		try {
+
+			BD_PE.SINCRONIZADO = false;
+			google.script.run
+				.withFailureHandler(function (e) {
+					m0_js_registrar_error({
+						gs: "m9_1_gs_creacion_pe_crear_objetivo",
+						funcion: "submit / m9_1_frm_creacion_pe_nuevo_objetivo",
+						error: { message: e.name + " : " + e.message, name: "AJAX" },
+						parametros: {}
+					});
+				})
+				.withSuccessHandler(function (r) {
+					if (m0_js_resultado_operacion(r)) {
+
+						google.script.run
+							.withFailureHandler(function (e) {
+								BD_PE.SINCRONIZADO = false;
+								BD.SINCRONIZADO = false;
+								BD.ULTIMA_SINCRONIZACION = new Date()
+								m0_js_actualizacion_panel_bd()
+								m0_js_registrar_error({
+									gs: "m9_gs_inicializacion_bd",
+									funcion: "submit / m9_1_frm_creacion_pe_nuevo_objetivo",
+									error: { message: e.name + " : " + e.message + " / Error en sincronización de BD (M9)", name: "AJAX" },
+									parametros: {}
+								});
+							})
+							.withSuccessHandler(function (res) {
+								if (m0_js_resultado_operacion(res)) {
+									m9_js_inicializacion_bd_crear_BD_PE(res)
+									m9_1_js_creacion_pe_actualizar_tablas()
+								}
+							})
+							.m9_gs_inicializacion_bd();
+						m0_js_aviso("modal_box", "Por favor espere unos segundos mientras se actualiza las bases de Objetivos, Estrategias e Indicadores");
+
+					}
+				})
+				.m9_1_gs_creacion_pe_crear_objetivo(this);
+
+			m0_js_aviso("modal_box", "Por favor espere mientras guardan los datos");
+
+			event.preventDefault();
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "submit / m9_1_frm_creacion_pe_nuevo_objetivo",
+				error: e,
+				parametros: {}
+			});
+		}
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_aviso_modal_box").on("submit", "#m9_1_frm_creacion_pe_nuevo_indicador", function () {
+		try {
+
+			BD_PE.SINCRONIZADO = false;
+			google.script.run
+				.withFailureHandler(function (e) {
+					m0_js_registrar_error({
+						gs: "m9_1_gs_creacion_pe_crear_indicador",
+						funcion: "submit / m9_1_frm_creacion_pe_nuevo_indicador",
+						error: { message: e.name + " : " + e.message, name: "AJAX" },
+						parametros: {}
+					});
+				})
+				.withSuccessHandler(function (r) {
+					if (m0_js_resultado_operacion(r)) {
+
+						google.script.run
+							.withFailureHandler(function (e) {
+								BD_PE.SINCRONIZADO = false;
+								BD.SINCRONIZADO = false;
+								BD.ULTIMA_SINCRONIZACION = new Date()
+								m0_js_actualizacion_panel_bd()
+								m0_js_registrar_error({
+									gs: "m9_gs_inicializacion_bd",
+									funcion: "submit / m9_1_frm_creacion_pe_nuevo_indicador",
+									error: { message: e.name + " : " + e.message + " / Error en sincronización de BD  (M9)", name: "AJAX" },
+									parametros: {}
+								});
+							})
+							.withSuccessHandler(function (res) {
+								if (m0_js_resultado_operacion(res)) {
+									m9_js_inicializacion_bd_crear_BD_PE(res)
+									m9_1_js_creacion_pe_actualizar_tablas()
+								}
+							})
+							.m9_gs_inicializacion_bd();
+						m0_js_aviso("modal_box", "Por favor espere unos segundos mientras se actualiza las bases de Objetivos, Estrategias e Indicadores");
+
+					}
+				})
+				.m9_1_gs_creacion_pe_crear_indicador(this);
+
+			m0_js_aviso("modal_box", "Por favor espere mientras guardan los datos");
+
+			event.preventDefault();
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "submit / m9_1_frm_creacion_pe_nuevo_indicador",
+				error: e,
+				parametros: {}
+			});
+		}
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_aviso_modal_box").on("submit", "#m9_1_frm_creacion_pe_nueva_estrategia", function () {
+		try {
+
+			if ($("#m9_1_txt_creacion_pe_nueva_estrategia_operacion").val() === "INSERCION") {
+				var sw = $("#m9_1_chk_creacion_pe_nueva_estrategia_construir_pe").is(':checked');
+			} else {
+				var sw = false;
+			}
+
+			BD_PE.SINCRONIZADO = false;
+			google.script.run
+				.withFailureHandler(function (e) {
+					m0_js_registrar_error({
+						gs: "m9_1_gs_creacion_pe_crear_indicador",
+						funcion: "submit / m9_1_frm_creacion_pe_nueva_estrategia",
+						error: { message: e.name + " : " + e.message, name: "AJAX" },
+						parametros: {}
+					});
+				})
+				.withSuccessHandler(function (r) {
+					if (m0_js_resultado_operacion(r)) {
+
+						google.script.run
+							.withFailureHandler(function (e) {
+								BD_PE.SINCRONIZADO = false;
+								BD.SINCRONIZADO = false;
+								BD.ULTIMA_SINCRONIZACION = new Date()
+								m0_js_actualizacion_panel_bd()
+								m0_js_registrar_error({
+									gs: "m9_gs_inicializacion_bd",
+									funcion: "submit / m9_1_frm_creacion_pe_nueva_estrategia",
+									error: { message: e.name + " : " + e.message + " / Error en sincronización de BD  (M9)", name: "AJAX" },
+									parametros: {}
+								});
+							})
+							.withSuccessHandler(function (res) {
+								if (m0_js_resultado_operacion(res)) {
+									m9_js_inicializacion_bd_crear_BD_PE(res)
+									m9_1_js_creacion_pe_actualizar_tablas()
+
+									if (sw) {
+										m9_1_js_a_creacion_pe_frm_creacion_pe(r.id_estrategia)
+									}
+
+								}
+							})
+							.m9_gs_inicializacion_bd();
+
+						m0_js_aviso("modal_box", "Por favor espere unos segundos mientras se actualiza las bases de Objetivos, Estrategias e Indicadores");
+
+					}
+				})
+				.m9_1_gs_creacion_pe_crear_estrategia(this);
+
+			m0_js_aviso("modal_box", "Por favor espere mientras guardan los datos");
+
+			event.preventDefault();
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "submit / m9_1_frm_creacion_pe_nueva_estrategia",
+				error: e,
+				parametros: {}
+			});
+		}
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_secundario").on("submit", "#m9_1_frm_creacion_pe_pe", function () {
+		try {
+
+			BD_PE.SINCRONIZADO = false;
+			google.script.run
+				.withFailureHandler(function (e) {
+					m0_js_registrar_error({
+						gs: "m9_1_gs_creacion_pe_crear_pe",
+						funcion: "submit / m9_1_frm_creacion_pe_pe",
+						error: { message: e.name + " : " + e.message, name: "AJAX" },
+						parametros: {}
+					});
+				})
+				.withSuccessHandler(function (r) {
+					if (m0_js_resultado_operacion(r)) {
+
+						google.script.run
+							.withFailureHandler(function (e) {
+								BD_PE.SINCRONIZADO = false;
+								BD.SINCRONIZADO = false;
+								BD.ULTIMA_SINCRONIZACION = new Date()
+								m0_js_actualizacion_panel_bd()
+								m0_js_registrar_error({
+									gs: "m9_gs_inicializacion_bd",
+									funcion: "submit / m9_1_frm_creacion_pe_pe",
+									error: { message: e.name + " : " + e.message + " / Error en sincronización de BD (M9)", name: "AJAX" },
+									parametros: {}
+								});
+							})
+							.withSuccessHandler(function (res) {
+								if (m0_js_resultado_operacion(r)) {
+									m9_js_inicializacion_bd_crear_BD_PE(res)
+									m9_1_js_creacion_pe_actualizar_tablas()
+								}
+							})
+							.m9_gs_inicializacion_bd();
+						$("#m0_div_panel_secundario").empty();
+						m0_js_aviso("modal_box", "Por favor espere unos segundos mientras se actualiza las bases de Objetivos, Estrategias e Indicadores");
+
+					}
+				})
+				.m9_1_gs_creacion_pe_crear_pe(this);
+
+			m0_js_aviso("modal_box", "Por favor espere mientras guardan los datos");
+
+			event.preventDefault();
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "submit / m9_1_frm_creacion_pe_pe",
+				error: e,
+				parametros: {}
+			});
+		}
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_secundario").on("submit", "#m9_1_frm_creacion_pe_seguimiento_pe", function () {
+		try {
+
+			var sw = true;
+			if ($("#m9_1_sel_creacion_pe_seguimiento_pe_tipo_registro").val() === "AVANCE ESTRATEGIA" && $("#m9_1_txt_creacion_pe_seguimiento_pe_observaciones_responsable").val() === "") {
+				sw = false;
+				$("#m9_1_txt_creacion_pe_seguimiento_pe_observaciones_responsable").parent().addClass('is-invalid');
+				m0_js_aviso("snackbar", "Si selecciono que el registro de seguimiento correspondía a <<AVANCE ESTRATEGIA>>, es necesario que llene el campo <<Observaciones Responsable Estrategia>>")
+			}
+			if ($("#m9_1_sel_creacion_pe_seguimiento_pe_tipo_registro").val() === "CIERRE DEL PERIODO" && ($("#m9_1_txt_creacion_pe_seguimiento_pe_periodo").val() === "") || ($("#m9_1_txt_creacion_pe_seguimiento_pe_valor_indicador").val() === "")) {
+				sw = false;
+				$("#m9_1_txt_creacion_pe_seguimiento_pe_periodo").parent().addClass('is-invalid');
+				$("#m9_1_txt_creacion_pe_seguimiento_pe_valor_indicador").parent().addClass('is-invalid');
+				m0_js_aviso("snackbar", "Si selecciono que el registro de seguimiento correspondía a <<CIERRE DEL PERIODO>>, es necesario que llene el campo <<Valor Indicador>> y <<Periodo>>")
+			}
+			if ($("#m9_1_sel_creacion_pe_seguimiento_pe_tipo_registro").val() === "CIERRE ESTRATEGIA" && $("#m9_1_txt_creacion_pe_seguimiento_pe_conclusiones").val() === "") {
+				sw = false;
+				$("#m9_1_txt_creacion_pe_seguimiento_pe_conclusiones").parent().addClass('is-invalid');
+				m0_js_aviso("snackbar", "Si selecciono que el registro de seguimiento correspondía a <<CIERRE ESTRATEGIA>>, es necesario que llene el campo <<Conclusiones ejecución de Estrategia>>")
+			}
+
+			if (sw) {
+				BD_PE.SINCRONIZADO = false;
+				google.script.run
+					.withFailureHandler(function (e) {
+						m0_js_registrar_error({
+							gs: "m9_1_gs_creacion_pe_crear_seguimiento_pe",
+							funcion: "submit / m9_1_frm_creacion_pe_seguimiento_pe",
+							error: { message: e.name + " : " + e.message, name: "AJAX" },
+							parametros: {}
+						});
+					})
+					.withSuccessHandler(function (r) {
+						if (m0_js_resultado_operacion(r)) {
+
+							google.script.run
+								.withFailureHandler(function (e) {
+									BD_PE.SINCRONIZADO = false;
+									BD.SINCRONIZADO = false;
+									BD.ULTIMA_SINCRONIZACION = new Date()
+									m0_js_actualizacion_panel_bd()
+									m0_js_registrar_error({
+										gs: "m9_gs_inicializacion_bd",
+										funcion: "submit / m9_1_frm_creacion_pe_seguimiento_pe",
+										error: { message: e.name + " : " + e.message + " / Error en sincronización de BD (M9)", name: "AJAX" },
+										parametros: {}
+									});
+								})
+								.withSuccessHandler(function (res) {
+									if (m0_js_resultado_operacion(r)) {
+										m9_js_inicializacion_bd_crear_BD_PE(res)
+										m9_1_js_a_creacion_pe_seguimiento_pe(r.id_pe)
+										m9_1_js_creacion_pe_actualizar_tablas()
+									}
+								})
+								.m9_gs_inicializacion_bd();
+
+							m0_js_aviso("modal_box", "Por favor espere unos segundos mientras se actualiza las bases de Objetivos, Estrategias e Indicadores");
+
+						}
+					})
+					.m9_1_gs_creacion_pe_crear_seguimiento_pe(this);
+
+				m0_js_aviso("modal_box", "Por favor espere mientras guardan los datos");
+
+			}
+
+			event.preventDefault();
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "submit / m9_1_frm_creacion_pe_seguimiento_pe",
+				error: e,
+				parametros: {}
+			});
+		}
+	});
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_aviso_modal_box").on("submit", "#m9_1_frm_creacion_pe_seguimiento_pe_observaciones", function () {
+		try {
+
+			BD_PE.SINCRONIZADO = false;
+			google.script.run
+				.withFailureHandler(function (e) {
+					m0_js_registrar_error({
+						gs: "m9_1_gs_creacion_pe_observaciones_seguimiento_pe",
+						funcion: "submit / m9_1_frm_creacion_pe_seguimiento_pe_observaciones",
+						error: { message: e.name + " : " + e.message, name: "AJAX" },
+						parametros: {}
+					});
+				})
+				.withSuccessHandler(function (r) {
+					if (m0_js_resultado_operacion(r)) {
+
+						google.script.run
+							.withFailureHandler(function (e) {
+								BD_PE.SINCRONIZADO = false;
+								BD.SINCRONIZADO = false;
+								BD.ULTIMA_SINCRONIZACION = new Date()
+								m0_js_actualizacion_panel_bd()
+								m0_js_registrar_error({
+									gs: "m9_gs_inicializacion_bd",
+									funcion: "submit / m9_1_frm_creacion_pe_seguimiento_pe_observaciones",
+									error: { message: e.name + " : " + e.message + " / Error en sincronización de BD  (M9)", name: "AJAX" },
+									parametros: {}
+								});
+							})
+							.withSuccessHandler(function (res) {
+								if (m0_js_resultado_operacion(res)) {
+									m9_js_inicializacion_bd_crear_BD_PE(res)
+									m9_1_js_a_creacion_pe_seguimiento_pe(r.id_pe)
+									m9_1_js_creacion_pe_actualizar_tablas()
+								}
+							})
+							.m9_gs_inicializacion_bd();
+						m0_js_aviso("modal_box", "Por favor espere unos segundos mientras se actualiza las bases de Objetivos, Estrategias e Indicadores");
+
+					}
+				})
+				.m9_1_gs_creacion_pe_observaciones_seguimiento_pe(this);
+
+			m0_js_aviso("modal_box", "Por favor espere mientras guardan los datos");
+
+			event.preventDefault();
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "submit / m9_1_frm_creacion_pe_seguimiento_pe_observaciones",
+				error: e,
+				parametros: {}
+			});
+		}
+	});
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//funciones javascript
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	/**
+	 * funcion para cargar los objetos de una seccion especifica
+	 *
+	 * @return  {null}  
+	 */
+	function m9_js_inicializar_pestaña_m9_1() {
+		try {
+
+			m0_js_log_sesion({
+				id_sesion: ID_SESION,
+				log: "M9 - Registrar información",
+				tipo_log: "ACCESO A SECCION"
+			});
+
+			var u = USUARIO;
+			var pos;
+			for (var mod = 0; mod < u.modulos.length; mod++) {
+				if (9 == u.modulos[mod].id_modulo) {
+					pos = mod;
+				}
+			}
+			var param_modulos = {
+				icono: u.modulos[pos].icono,
+				id_modulo: 9,
+				texto_1: u.modulos[pos].modulo,
+				texto_2: "Registrar información"
+			};
+			m0_js_menu_arbol(param_modulos);
+
+			$("#m9_1_div_creacion_pe_accordion").accordion({
+				heightStyle: "content"
+			});
+
+
+			m9_1_js_creacion_pe_actualizar_tablas()
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m9_js_inicializar_pestaña_m9_1",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Funcion que actualiza las tablas de objetivos, estrategias e indicadores
+	 *
+	 * @return  {null}          
+	 */
+	function m9_1_js_creacion_pe_actualizar_tablas() {
+		try {
+
+			var datos = [];
+			for (var j = 0; j < BD_PE.objetivo.registros; j++) {
+				var fila = [];
+				fila.push(BD_PE.objetivo.datos[j].id_objetivo);
+				fila.push(BD_PE.objetivo.datos[j].objetivo);
+				fila.push(BD_PE.objetivo.datos[j].objetivo_estrategico_nacional);
+				fila.push(BD_PE.objetivo.datos[j].nombre_autor);
+				fila.push(BD_PE.objetivo.datos[j].area);
+				fila.push(BD_PE.objetivo.datos[j].fecha_creacion)
+				fila.push('<a href="#m0_div_panel_secundario" id="m9_1_a_creacion_pe_ver_pe_objetivo_' + BD_PE.objetivo.datos[j].id_objetivo + '" class="mdl-button mdl-js-button mdl-button--icon mdl-button--colored" onclick=m9_1_js_a_creacion_pe_frm_pe_objetivo("' + BD_PE.objetivo.datos[j].id_objetivo + '")><i class="material-icons">trending_up</i></a><div class="mdl-tooltip" data-mdl-for="m9_1_a_creacion_pe_ver_pe_objetivo_' + BD_PE.objetivo.datos[j].id_objetivo + '">Haga clic aquí si desea ver el Plan Estratégico creado para alcanzar este Objetivo Estratégico </div>');
+				var sw_eliminacion = true;
+				var sw_edicion = true;
+				if (BD_PE.objetivo.datos[j].id_autor === USUARIO.id_usuario) {
+					for (var k = 0; k < BD_PE.plan_estrategico.registros; k++) {
+						if (BD_PE.objetivo.datos[j].id_objetivo === BD_PE.plan_estrategico.datos[k].id_objetivo) {
+							sw_eliminacion = false;
+							if (BD_PE.objetivo.datos[j].id_autor !== BD_PE.plan_estrategico.datos[k].id_usuario_lider_pe) {
+								sw_edicion = false;
+							}
+						}
+					}
+				} else {
+					sw_eliminacion = false;
+					sw_edicion = false;
+				}
+				if (sw_edicion) {
+					fila.push('<a href="#" id="m9_1_a_creacion_pe_editar_pe_objetivo_' + BD_PE.objetivo.datos[j].id_objetivo + '" class="mdl-button mdl-js-button mdl-button--icon mdl-button--colored" onclick=m9_1_js_a_creacion_pe_frm_creacion_objetivo("' + BD_PE.objetivo.datos[j].id_objetivo + '")><i class="material-icons">edit</i></a><div class="mdl-tooltip" data-mdl-for="m9_1_a_creacion_pe_editar_pe_objetivo_' + BD_PE.objetivo.datos[j].id_objetivo + '">Haga clic aquí si desea editar este Objetivo Estratégico </div>');
+				} else {
+					fila.push("");
+				}
+				if (sw_eliminacion) {
+					fila.push('<a href="#" id="m9_1_a_creacion_pe_eliminar_objetivo_' + BD_PE.objetivo.datos[j].id_objetivo + '" class="mdl-button mdl-js-button mdl-button--icon mdl-button--colored" onclick=m9_1_js_creacion_pe_eliminar_objetivo("' + BD_PE.objetivo.datos[j].id_objetivo + '")><i class="material-icons">delete</i></a><div class="mdl-tooltip" data-mdl-for="m9_1_a_creacion_pe_eliminar_objetivo_' + BD_PE.objetivo.datos[j].id_objetivo + '">Haga clic aquí si desea eliminar este Objetivo Estratégico </div>');
+				} else {
+					fila.push("");
+				}
+				datos.push(fila)
+			}
+			m0_js_crear_tabla({
+				contenedor: "m9_1_div_creacion_pe_base_objectivos",
+				titulos: ["ID", "OBJETIVO ESTRATÉGICO", "ARTICULACIÓN OBJETIVO ESTRATÉGICO NACIONAL", "AUTOR", "AREA", "FECHA CREACIÓN", "", "", ""],
+				datos: datos
+			})
+
+			//tabla indicadores
+			var datos = [];
+			for (j = 0; j < BD_PE.indicador.registros; j++) {
+				var fila = [];
+				fila.push(BD_PE.indicador.datos[j].id_indicador);
+				fila.push(BD_PE.indicador.datos[j].indicador);
+				fila.push(BD_PE.indicador.datos[j].desarrollo_indicador);
+				fila.push(BD_PE.indicador.datos[j].nombre_autor);
+				fila.push(BD_PE.indicador.datos[j].fecha_creacion)
+				sw_eliminacion = true;
+				sw_edicion = true;
+				if (BD_PE.indicador.datos[j].id_autor === USUARIO.id_usuario) {
+					for (k = 0; k < BD_PE.plan_estrategico.registros; k++) {
+						if (BD_PE.indicador.datos[j].id_indicador === BD_PE.plan_estrategico.datos[k].id_indicador) {
+							sw_eliminacion = false;
+							if (BD_PE.indicador.datos[j].id_autor !== BD_PE.plan_estrategico.datos[k].id_usuario_lider_pe) {
+								sw_edicion = false;
+							}
+						}
+					}
+				} else {
+					sw_eliminacion = false;
+					sw_edicion = false;
+				}
+				if (sw_edicion) {
+					fila.push('<a href="#" id="m9_1_a_creacion_pe_editar_pe_indicador_' + BD_PE.indicador.datos[j].id_indicador + '" class="mdl-button mdl-js-button mdl-button--icon mdl-button--colored" onclick=m9_1_js_a_creacion_pe_frm_creacion_indicador("' + BD_PE.indicador.datos[j].id_indicador + '")><i class="material-icons">edit</i></a><div class="mdl-tooltip" data-mdl-for="m9_1_a_creacion_pe_editar_pe_indicador_' + BD_PE.indicador.datos[j].id_indicador + '">Haga clic aquí si desea editar este Indicador </div>');
+				} else {
+					fila.push("");
+				}
+				if (sw_eliminacion) {
+					fila.push('<a href="#" id="m9_1_a_creacion_pe_eliminar_indicador_' + BD_PE.indicador.datos[j].id_indicador + '" class="mdl-button mdl-js-button mdl-button--icon mdl-button--colored" onclick=m9_1_js_creacion_pe_eliminar_indicador("' + BD_PE.indicador.datos[j].id_indicador + '")><i class="material-icons">delete</i></a><div class="mdl-tooltip" data-mdl-for="m9_1_a_creacion_pe_eliminar_indicador_' + BD_PE.indicador.datos[j].id_indicador + '">Haga clic aquí si desea eliminar este Indicador</div>');
+				} else {
+					fila.push("");
+				}
+				datos.push(fila)
+			}
+			m0_js_crear_tabla({
+				contenedor: "m9_1_div_creacion_pe_base_indicadores",
+				titulos: ["ID", "INDICADOR", "DESARROLLO INDICADOR", "AUTOR", "FECHA CREACIÓN", "", ""],
+				datos: datos
+			})
+
+			//tabla estrategias 
+			var datos = [];
+			for (j = 0; j < BD_PE.estrategia.registros; j++) {
+				var fila = [];
+				fila.push(BD_PE.estrategia.datos[j].id_estrategia);
+				fila.push(BD_PE.estrategia.datos[j].estrategia);
+				fila.push(BD_PE.estrategia.datos[j].desarrollo_estrategia);
+				fila.push(BD_PE.estrategia.datos[j].nombre_autor);
+				fila.push(BD_PE.estrategia.datos[j].fecha_creacion)
+				fila.push('<a href="#m0_div_panel_secundario" id="m9_1_a_creacion_pe_usar_estrategia_' + BD_PE.estrategia.datos[j].id_estrategia + '" class="mdl-button mdl-js-button mdl-button--icon mdl-button--colored" onclick=m9_1_js_a_creacion_pe_frm_creacion_pe("' + BD_PE.estrategia.datos[j].id_estrategia + '")><i class="material-icons">book</i></a><div class="mdl-tooltip" data-mdl-for="m9_1_a_creacion_pe_usar_estrategia_' + BD_PE.estrategia.datos[j].id_estrategia + '">Haga clic aquí si desea usar esta estrategia para la construcción de su Plan Estratégico</div>');
+				sw_eliminacion = true;
+				sw_edicion = true;
+				if (BD_PE.estrategia.datos[j].id_autor === USUARIO.id_usuario) {
+					for (k = 0; k < BD_PE.plan_estrategico.registros; k++) {
+						if (BD_PE.estrategia.datos[j].id_estrategia === BD_PE.plan_estrategico.datos[k].id_estrategia) {
+							sw_eliminacion = false;
+							if (BD_PE.estrategia.datos[j].id_autor !== BD_PE.plan_estrategico.datos[k].id_usuario_lider_pe) {
+								sw_edicion = false;
+							}
+						}
+					}
+				} else {
+					sw_eliminacion = false;
+					sw_edicion = false;
+				}
+				if (sw_edicion) {
+					fila.push('<a href="#" id="m9_1_a_creacion_pe_editar_estrategia_' + BD_PE.estrategia.datos[j].id_estrategia + '" class="mdl-button mdl-js-button mdl-button--icon mdl-button--colored" onclick=m9_1_js_a_creacion_pe_frm_creacion_estrategia("' + BD_PE.estrategia.datos[j].id_estrategia + '")><i class="material-icons">edit</i></a><div class="mdl-tooltip" data-mdl-for="m9_1_a_creacion_pe_editar_estrategia_' + BD_PE.estrategia.datos[j].id_estrategia + '">Haga clic aquí si desea editar esta estrategia</div>');
+				} else {
+					fila.push("");
+				}
+				if (sw_eliminacion) {
+					fila.push('<a href="#" id="m9_1_a_creacion_pe_eliminar_estrategia_' + BD_PE.estrategia.datos[j].id_estrategia + '" class="mdl-button mdl-js-button mdl-button--icon mdl-button--colored" onclick=m9_1_js_creacion_pe_eliminar_estrategia("' + BD_PE.estrategia.datos[j].id_estrategia + '")><i class="material-icons">delete</i></a><div class="mdl-tooltip" data-mdl-for="m9_1_a_creacion_pe_eliminar_estrategia_' + BD_PE.estrategia.datos[j].id_estrategia + '">Haga clic aquí si desea eliminar esta Estrategia</div>');
+				} else {
+					fila.push("");
+				}
+				datos.push(fila)
+			}
+			m0_js_crear_tabla({
+				contenedor: "m9_1_div_creacion_pe_base_estrategias",
+				titulos: ["ID", "ESTRATEGIA", "DESARROLLO ESTRATEGIA", "AUTOR", "FECHA CREACIÓN", "", "", ""],
+				datos: datos
+			})
+
+
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m9_1_js_creacion_pe_actualizar_tablas",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+	/**
+	 * Abre la ventana de dialogo para crear el nuevo objetivo
+	 *
+	 *
+	 * @return  {null}          
+	 */
+	function m9_1_js_a_creacion_pe_frm_creacion_objetivo(id_objetivo) {
+		try {
+
+			if (id_objetivo == 0) {
+				var operacion = "INSERCION";
+			} else {
+				var operacion = "EDICION";
+			}
+
+			var contenido = '<div class="div_panel mdl-shadow--3dp">';
+			contenido += '<h4 style="text-align: center;">CREACIÓN DE NUEVO OBJETIVO ESTRATÉGICO</h4>';
+			contenido += m0_js_crear_formulario({
+				formulario: "m9_1_frm_creacion_pe_nuevo_objetivo",
+				campos: [{
+					tipo_campo: "hidden",
+					id_campo: "m9_1_hid_creacion_pe_nuevo_objetivo_operacion",
+					value: operacion
+				}, {
+					tipo_campo: "text",
+					id_campo: "m9_1_txt_creacion_pe_nuevo_objetivo_objetivo",
+					nombre_campo: "Objetivo",
+					value: "",
+					required: "required",
+					pattern: "",
+					error: "Valor no valido"
+				}, {
+					tipo_campo: "select",
+					id_campo: "m9_1_sel_creacion_pe_nuevo_objetivo_estrategico_nacional",
+					nombre_campo: "Articulación Objetivo Estratégico Nacional",
+					value: "",
+					required: "required",
+					pattern: "",
+					error: "Valor no valido"
+				}, {
+					tipo_campo: "hidden",
+					id_campo: "m9_1_hid_creacion_pe_nuevo_objetivo_id_objetivo",
+					value: id_objetivo
+				}]
+			});
+
+			contenido += '<hr />';
+			contenido += '<button id="m9_1_creacion_pe_salir" class="mdl-button mdl-js-button mdl-button--accent" >CERRAR VENTANA<i class="material-icons">meeting_room</i></button>';
+			contenido += '<br/>';
+			contenido += '</div>';
+			m0_js_aviso("modal_box", contenido);
+			componentHandler.upgradeDom();
+
+			var opciones = [{
+				texto: "",
+				valor: "",
+				selected: "selected"
+			}, {
+				texto: "Incrementar en los usuarios el nivel de recordación de la marca COLPENSIONES como sinónimo de confianza para depositar los aportes y ahorros para la protección y ahorros para la protección hoy y mañana.",
+				valor: "Incrementar en los usuarios el nivel de recordación de la marca COLPENSIONES como sinónimo de confianza para depositar los aportes y ahorros para la protección y ahorros para la protección hoy y mañana.",
+				selected: ""
+			}, {
+				texto: "Fortalecer la implementación de la política publica de protección a la vejez, a través de la administración efectiva del RPM y servicios sociales complementarios",
+				valor: "Fortalecer la implementación de la política publica de protección a la vejez, a través de la administración efectiva del RPM y servicios sociales complementarios",
+				selected: ""
+			}, {
+				texto: "Incrementar la cobertura y el ahorro en los BEPS",
+				valor: "Incrementar la cobertura y el ahorro en los BEPS",
+				selected: ""
+			}, {
+				texto: "Asegurar la sostenibilidad financiera de la administradora ",
+				valor: "Asegurar la sostenibilidad financiera de la administradora ",
+				selected: ""
+			}, {
+				texto: "Optimizar la gestión financiera del RPM y BEPS",
+				valor: "Optimizar la gestión financiera del RPM y BEPS",
+				selected: ""
+			}, {
+				texto: "Implementar mejores prácticas de gestión, con enfoque en procesos y riesgos para responder a los cambios en el entorno y a las expectativas de las partes interesadas.",
+				valor: "Implementar mejores prácticas de gestión, con enfoque en procesos y riesgos para responder a los cambios en el entorno y a las expectativas de las partes interesadas.",
+				selected: ""
+			}, {
+				texto: "Promover la transformación digital en la gestión institucional para hacer mas eficientes los procesos, tramites y servicios.",
+				valor: "Promover la transformación digital en la gestión institucional para hacer mas eficientes los procesos, tramites y servicios.",
+				selected: ""
+			}, {
+				texto: "Ser reconocida como una de las mejores empresas para trabajar.",
+				valor: "Ser reconocida como una de las mejores empresas para trabajar.",
+				selected: ""
+			}, {
+				texto: "Transformar la cultura organizacional hacia un enfoque de servicio, innovación y creatividad ",
+				valor: "Transformar la cultura organizacional hacia un enfoque de servicio, innovación y creatividad ",
+				selected: ""
+			}];
+			m0_js_poblar_menu({
+				select: "m9_1_sel_creacion_pe_nuevo_objetivo_estrategico_nacional",
+				datos: opciones
+			})
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m9_1_js_a_creacion_pe_frm_creacion_objetivo",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+	/**
+	 * Abre la ventana de dialogo para crear el nuevo indicador
+	 *
+	 *
+	 * @return  {null}          
+	 */
+	function m9_1_js_a_creacion_pe_frm_creacion_indicador(id_indicador) {
+		try {
+
+			if (id_indicador == 0) {
+				var operacion = "INSERCION";
+			} else {
+				var operacion = "EDICION";
+			}
+
+			var contenido = '<div class="div_panel mdl-shadow--3dp">';
+			contenido += '<h4 style="text-align: center;">CREACIÓN DE NUEVO INDICADOR</h4>';
+			contenido += m0_js_crear_formulario({
+				formulario: "m9_1_frm_creacion_pe_nuevo_indicador",
+				campos: [{
+					tipo_campo: "hidden",
+					id_campo: "m9_1_hid_creacion_pe_nuevo_indicador_operacion",
+					value: operacion
+				}, {
+					tipo_campo: "text",
+					id_campo: "m9_1_txt_creacion_pe_nuevo_indicador",
+					nombre_campo: "Nombre Indicador",
+					value: "",
+					required: "required",
+					pattern: "",
+					error: "Valor no valido"
+				}, {
+					tipo_campo: "textarea",
+					id_campo: "m9_1_txt_creacion_pe_nuevo_indicador_desarrollo",
+					nombre_campo: "Descripción Indicador",
+					required: "required",
+					value: ""
+				}, {
+					tipo_campo: "hidden",
+					id_campo: "m9_1_hid_creacion_pe_nuevo_indicador_id_indicador",
+					value: id_indicador
+				}]
+			});
+
+			contenido += '<hr />';
+			contenido += '<button id="m9_1_creacion_pe_salir" class="mdl-button mdl-js-button mdl-button--accent" >CERRAR VENTANA<i class="material-icons">meeting_room</i></button>';
+			contenido += '<br/>';
+			contenido += '</div>';
+			m0_js_aviso("modal_box", contenido);
+			componentHandler.upgradeDom();
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m9_1_js_a_creacion_pe_frm_creacion_indicador",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+	/**
+	 * Abre la ventana de dialogo para crear el nuevo indicador
+	 *
+	 *
+	 * @return  {null}          
+	 */
+	function m9_1_js_a_creacion_pe_frm_creacion_estrategia(id_estrategia) {
+		try {
+
+			if (id_estrategia == 0) {
+				var operacion = "INSERCION";
+				var contenido = '<div class="div_panel mdl-shadow--3dp">';
+				contenido += '<h4 style="text-align: center;">CREACIÓN DE NUEVA ESTRATEGIA</h4>';
+				contenido += m0_js_crear_formulario({
+					formulario: "m9_1_frm_creacion_pe_nueva_estrategia",
+					campos: [{
+						tipo_campo: "hidden",
+						id_campo: "m9_1_txt_creacion_pe_nueva_estrategia_operacion",
+						value: operacion
+					}, {
+						tipo_campo: "text",
+						id_campo: "m9_1_txt_creacion_pe_nueva_estrategia",
+						nombre_campo: "Nombre Estrategia",
+						value: "",
+						required: "required",
+						pattern: "",
+						error: "Valor no valido"
+					}, {
+						tipo_campo: "textarea",
+						id_campo: "m9_1_txt_creacion_pe_nueva_estrategia_desarrollo",
+						nombre_campo: "Descripción Estrategia",
+						required: "required",
+						value: ""
+					}, {
+						tipo_campo: "icon_checkbox",
+						id_campo: "m9_1_chk_creacion_pe_nueva_estrategia_construir_pe",
+						nombre_campo: "Desarrollar línea estratégica a partir de esta estrategia",
+						checked: false,
+						value: "CONTRUIR_PLAN_ESTRATEGICO",
+						icono: "timeline"
+					}, {
+						tipo_campo: "hidden",
+						id_campo: "m9_1_txt_creacion_pe_nueva_estrategia_id_estrategia",
+						value: id_estrategia
+					}]
+				});
+
+			} else {
+				var operacion = "EDICION";
+				var contenido = '<div class="div_panel mdl-shadow--3dp">';
+				contenido += '<h4 style="text-align: center;">CREACIÓN DE NUEVA ESTRATEGIA</h4>';
+				contenido += m0_js_crear_formulario({
+					formulario: "m9_1_frm_creacion_pe_nueva_estrategia",
+					campos: [{
+						tipo_campo: "hidden",
+						id_campo: "m9_1_txt_creacion_pe_nueva_estrategia_operacion",
+						value: operacion
+					}, {
+						tipo_campo: "text",
+						id_campo: "m9_1_txt_creacion_pe_nueva_estrategia",
+						nombre_campo: "Nombre Estrategia",
+						value: "",
+						required: "required",
+						pattern: "",
+						error: "Valor no valido"
+					}, {
+						tipo_campo: "textarea",
+						id_campo: "m9_1_txt_creacion_pe_nueva_estrategia_desarrollo",
+						nombre_campo: "Descripción Estrategia",
+						required: "required",
+						value: ""
+					}, {
+						tipo_campo: "hidden",
+						id_campo: "m9_1_txt_creacion_pe_nueva_estrategia_id_estrategia",
+						value: id_estrategia
+					}]
+				});
+
+			}
+
+			contenido += '<hr />';
+			contenido += '<button id="m9_1_creacion_pe_salir" class="mdl-button mdl-js-button mdl-button--accent" >CERRAR VENTANA<i class="material-icons">meeting_room</i></button>';
+			contenido += '<br/>';
+			contenido += '</div>';
+			m0_js_aviso("modal_box", contenido);
+			componentHandler.upgradeDom();
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m9_1_js_a_creacion_pe_frm_creacion_estrategia",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+	/**
+	 * Formulario para la edicion de un plan estrategico
+	 *
+	 * @param   {string}  id_pe			id del plan estrategico
+	 *
+	 * @return  {null}  
+	 */
+	function m9_1_js_a_creacion_pe_edicion_pe(id_pe) {
+		try {
+
+			var pos_pe = "";
+			for (var j = 0; j < BD_PE.plan_estrategico.registros; j++) {
+				if (BD_PE.plan_estrategico.datos[j].id_pe === id_pe) {
+					pos_pe = j;
+				}
+			}
+
+			var contenido = '<div class="div_panel mdl-shadow--3dp">';
+			contenido += '<h4 style="text-align: center;">EDICIÓN PLAN ESTRATÉGICO</h4>';
+			contenido += '<hr/>';
+			contenido += '<h5><b><i class="material-icons">keyboard_arrow_right</i>Estrategia seleccionada:</b>' + BD_PE.plan_estrategico.datos[pos_pe].estrategia + '</h5>';
+			contenido += '<hr/>';
+			contenido += m0_js_crear_formulario({
+				formulario: "m9_1_frm_creacion_pe_pe",
+				campos: [{
+					tipo_campo: "hidden",
+					id_campo: "m9_1_hid_creacion_pe_pe_id_pe",
+					value: BD_PE.plan_estrategico.datos[pos_pe].id_pe
+				}, {
+					tipo_campo: "fieldset_inicio",
+					legend: "Selección de Objetivo Estratégico e Indicador:"
+				}, {
+					tipo_campo: "select",
+					id_campo: "m9_1_sel_creacion_pe_pe_objetivo",
+					nombre_campo: "Objetivo Estratégico",
+					required: "required"
+				}, {
+					tipo_campo: "select",
+					id_campo: "m9_1_sel_creacion_pe_pe_indicador",
+					nombre_campo: "Indicador",
+					required: "required"
+				}, {
+					tipo_campo: "fieldset_fin",
+				}, {
+					tipo_campo: "text",
+					id_campo: "m9_1_txt_creacion_pe_pe_meta",
+					nombre_campo: "Meta",
+					value: BD_PE.plan_estrategico.datos[pos_pe].meta,
+					required: "required",
+					pattern: "",
+					error: "Valor no valido"
+				}, {
+					tipo_campo: "text",
+					id_campo: "m9_1_txt_creacion_pe_pe_periodicidad",
+					nombre_campo: "Periodicidad",
+					value: BD_PE.plan_estrategico.datos[pos_pe].periodicidad,
+					required: "required",
+					pattern: "",
+					error: "Valor no valido"
+				}, {
+					tipo_campo: "fieldset_inicio",
+					legend: "Determine las nuevas fechas de Inicio y Finalización de este Plan Estratégico"
+				}, {
+					tipo_campo: "label",
+					label: "<b>Fecha Inicial Reportada:</b>" + BD_PE.plan_estrategico.datos[pos_pe].fecha_inicio + " <b> / Fecha Final Reportada:</b> " + BD_PE.plan_estrategico.datos[pos_pe].fecha_fin
+				}, {
+					tipo_campo: "date",
+					id_campo: "m9_1_txt_creacion_pe_pe_fecha_inicio",
+					nombre_campo: "Fecha de Inicio Estrategia:",
+					value: "",
+					required: "required",
+					pattern: "",
+					error: "Valor no valido"
+				}, {
+					tipo_campo: "date",
+					id_campo: "m9_1_txt_creacion_pe_pe_fecha_fin",
+					nombre_campo: "Fecha de Finalización Estrategia:",
+					value: "",
+					required: "required",
+					pattern: "",
+					error: "Valor no valido"
+				}, {
+					tipo_campo: "fieldset_fin",
+				}, {
+					tipo_campo: "hidden",
+					id_campo: "m9_1_hid_creacion_pe_pe_id_estrategia",
+					value: BD_PE.plan_estrategico.datos[pos_pe].id_estrategia
+				}, {
+					tipo_campo: "hidden",
+					id_campo: "m9_1_hid_creacion_pe_pe_operacion",
+					value: "EDICION"
+				}]
+			});
+			contenido += '<hr />';
+			contenido += '<button id="m9_1_creacion_pe_volver_pantalla_inicial" class="mdl-button mdl-js-button mdl-button--accent" >CERRAR VENTANA<i class="material-icons">meeting_room</i></button>';
+			contenido += '<br/>';
+			contenido += '</div>';
+
+			router({
+				tipo_fuente: "VARIABLE",
+				contenido: contenido,
+				contenedor: "m0_div_panel_secundario",
+				id_privilegio: "9_0"
+			});
+
+			$("#m9_1_txt_creacion_pe_pe_fecha_inicio").parent().addClass('is-dirty');
+			$("#m9_1_txt_creacion_pe_pe_fecha_fin").parent().addClass('is-dirty');
+			$("#m9_1_sel_creacion_pe_pe_objetivo").focus();
+
+			var opciones_objetivo = [{
+				texto: "",
+				valor: "",
+				selected: ""
+			}];
+			for (var j = 0; j < BD_PE.objetivo.registros; j++) {
+				if (BD_PE.objetivo.datos[j].activo == 1) {
+					var fila = {
+						texto: BD_PE.objetivo.datos[j].objetivo,
+						valor: BD_PE.objetivo.datos[j].id_objetivo,
+						selected: ""
+					}
+					opciones_objetivo.push(fila)
+				}
+			}
+			m0_js_poblar_menu({
+				select: "m9_1_sel_creacion_pe_pe_objetivo",
+				datos: opciones_objetivo
+			})
+
+			var opciones_indicador = [{
+				texto: "",
+				valor: "",
+				selected: "selected"
+			}];
+			for (j = 0; j < BD_PE.indicador.registros; j++) {
+				if (BD_PE.indicador.datos[j].activo == 1) {
+					var fila = {
+						texto: BD_PE.indicador.datos[j].indicador,
+						valor: BD_PE.indicador.datos[j].id_indicador,
+						selected: ""
+					}
+					opciones_indicador.push(fila)
+				}
+			}
+			m0_js_poblar_menu({
+				select: "m9_1_sel_creacion_pe_pe_indicador",
+				datos: opciones_indicador
+			})
+
+			$("#m9_1_sel_creacion_pe_pe_objetivo").val(BD_PE.plan_estrategico.datos[pos_pe].id_objetivo)
+			$("#m9_1_sel_creacion_pe_pe_indicador").val(BD_PE.plan_estrategico.datos[pos_pe].id_indicador)
+
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m9_1_js_a_creacion_pe_edicion_pe",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+	/**
+	 * formulario para la creacion de un nuevo plan estrategico
+	 *
+	 * @param   {string}  id_estrategia  id de la estrategia 
+	 * 
+	 * @return  {null}          
+	 */
+	function m9_1_js_a_creacion_pe_frm_creacion_pe(id_estrategia) {
+		try {
+
+			var estrategia = "";
+			for (var i = 0; i < BD_PE.estrategia.registros; i++) {
+				if (BD_PE.estrategia.datos[i].id_estrategia === id_estrategia) {
+					estrategia = BD_PE.estrategia.datos[i].estrategia;
+				}
+			}
+
+			var contenido = '<div class="div_panel mdl-shadow--3dp">';
+			contenido += '<h4 style="text-align: center;">CREACIÓN PLAN ESTRATÉGICO</h4>';
+			contenido += '<hr/>';
+			contenido += '<h5><b><i class="material-icons">keyboard_arrow_right</i>Estrategia seleccionada:</b>' + estrategia + '</h5>';
+			contenido += '<hr/>';
+			contenido += m0_js_crear_formulario({
+				formulario: "m9_1_frm_creacion_pe_pe",
+				campos: [{
+					tipo_campo: "hidden",
+					id_campo: "m9_1_hid_creacion_pe_pe_id_estrategia",
+					value: id_estrategia
+				}, {
+					tipo_campo: "fieldset_inicio",
+					legend: "Selección de Objetivo Estratégico e Indicador:"
+				}, {
+					tipo_campo: "select",
+					id_campo: "m9_1_sel_creacion_pe_pe_objetivo",
+					nombre_campo: "Objetivo Estratégico",
+					required: "required"
+				}, {
+					tipo_campo: "select",
+					id_campo: "m9_1_sel_creacion_pe_pe_indicador",
+					nombre_campo: "Indicador",
+					required: "required"
+				}, {
+					tipo_campo: "fieldset_fin",
+				}, {
+					tipo_campo: "text",
+					id_campo: "m9_1_txt_creacion_pe_pe_meta",
+					nombre_campo: "Meta",
+					value: "",
+					required: "required",
+					pattern: "",
+					error: "Valor no valido"
+				}, {
+					tipo_campo: "text",
+					id_campo: "m9_1_txt_creacion_pe_pe_periodicidad",
+					nombre_campo: "Periodicidad",
+					value: "",
+					required: "required",
+					pattern: "",
+					error: "Valor no valido"
+				}, {
+					tipo_campo: "date",
+					id_campo: "m9_1_txt_creacion_pe_pe_fecha_inicio",
+					nombre_campo: "Fecha de Inicio Estrategia:",
+					value: "",
+					required: "required",
+					pattern: "",
+					error: "Valor no valido"
+				}, {
+					tipo_campo: "date",
+					id_campo: "m9_1_txt_creacion_pe_pe_fecha_fin",
+					nombre_campo: "Fecha de Finalización Estrategia:",
+					value: "",
+					required: "required",
+					pattern: "",
+					error: "Valor no valido"
+				}, {
+					tipo_campo: "hidden",
+					id_campo: "m9_1_hid_creacion_pe_pe_operacion",
+					value: "INSERCION"
+				}]
+			});
+			contenido += '<hr />';
+			contenido += '<button id="m9_1_creacion_pe_volver_pantalla_inicial" class="mdl-button mdl-js-button mdl-button--accent" >CERRAR VENTANA<i class="material-icons">meeting_room</i></button>';
+			contenido += '<br/>';
+			contenido += '</div>';
+
+			router({
+				tipo_fuente: "VARIABLE",
+				contenido: contenido,
+				contenedor: "m0_div_panel_secundario",
+				id_privilegio: "9_0"
+			});
+
+			$("#m9_1_txt_creacion_pe_pe_fecha_inicio").parent().addClass('is-dirty');
+			$("#m9_1_txt_creacion_pe_pe_fecha_fin").parent().addClass('is-dirty');
+			$("#m9_1_sel_creacion_pe_pe_objetivo").focus();
+
+			var opciones_objetivo = [{
+				texto: "",
+				valor: "",
+				selected: "selected"
+			}];
+
+			for (var j = 0; j < BD_PE.objetivo.registros; j++) {
+				if (BD_PE.objetivo.datos[j].activo == 1 && BD_PE.objetivo.datos[j].area === "SERVICIO AL CIUDADANO") {
+					var fila = {
+						texto: "SERVICIO AL CIUDADANO/ " + BD_PE.objetivo.datos[j].objetivo,
+						valor: BD_PE.objetivo.datos[j].id_objetivo,
+						selected: ""
+					}
+					opciones_objetivo.push(fila)
+				}
+			}
+
+			for (var j = 0; j < BD_PE.objetivo.registros; j++) {
+				if (BD_PE.objetivo.datos[j].activo == 1 && BD_PE.objetivo.datos[j].area === "DEFENSA JUDICIAL") {
+					var fila = {
+						texto: "DEFENSA JUDICIAL/ " + BD_PE.objetivo.datos[j].objetivo,
+						valor: BD_PE.objetivo.datos[j].id_objetivo,
+						selected: ""
+					}
+					opciones_objetivo.push(fila)
+				}
+			}
+
+			for (var j = 0; j < BD_PE.objetivo.registros; j++) {
+				if (BD_PE.objetivo.datos[j].activo == 1 && BD_PE.objetivo.datos[j].area === "COMERCIAL RPM") {
+					var fila = {
+						texto: "COMERCIAL RPM/ " + BD_PE.objetivo.datos[j].objetivo,
+						valor: BD_PE.objetivo.datos[j].id_objetivo,
+						selected: ""
+					}
+					opciones_objetivo.push(fila)
+				}
+			}
+
+			for (var j = 0; j < BD_PE.objetivo.registros; j++) {
+				if (BD_PE.objetivo.datos[j].activo == 1 && BD_PE.objetivo.datos[j].area === "MERCADEO") {
+					var fila = {
+						texto: "MERCADEO/ " + BD_PE.objetivo.datos[j].objetivo,
+						valor: BD_PE.objetivo.datos[j].id_objetivo,
+						selected: ""
+					}
+					opciones_objetivo.push(fila)
+				}
+			}
+
+			for (var j = 0; j < BD_PE.objetivo.registros; j++) {
+				if (BD_PE.objetivo.datos[j].activo == 1 && BD_PE.objetivo.datos[j].area === "COMERCIAL BEPS") {
+					var fila = {
+						texto: "COMERCIAL BEPS/ " + BD_PE.objetivo.datos[j].objetivo,
+						valor: BD_PE.objetivo.datos[j].id_objetivo,
+						selected: ""
+					}
+					opciones_objetivo.push(fila)
+				}
+			}
+
+			for (var j = 0; j < BD_PE.objetivo.registros; j++) {
+				if (BD_PE.objetivo.datos[j].activo == 1 && BD_PE.objetivo.datos[j].area === "ADMINISTRATIVA") {
+					var fila = {
+						texto: "ADMINISTRATIVA/ " + BD_PE.objetivo.datos[j].objetivo,
+						valor: BD_PE.objetivo.datos[j].id_objetivo,
+						selected: ""
+					}
+					opciones_objetivo.push(fila)
+				}
+			}
+
+			for (var j = 0; j < BD_PE.objetivo.registros; j++) {
+				if (BD_PE.objetivo.datos[j].activo == 1 && BD_PE.objetivo.datos[j].area === "TALENTO HUMANO") {
+					var fila = {
+						texto: "TALENTO HUMANO/ " + BD_PE.objetivo.datos[j].objetivo,
+						valor: BD_PE.objetivo.datos[j].id_objetivo,
+						selected: ""
+					}
+					opciones_objetivo.push(fila)
+				}
+			}
+
+			for (var j = 0; j < BD_PE.objetivo.registros; j++) {
+				if (BD_PE.objetivo.datos[j].activo == 1 && BD_PE.objetivo.datos[j].area === "SERVICIOS GENERALES") {
+					var fila = {
+						texto: "SERVICIOS GENERALES/ " + BD_PE.objetivo.datos[j].objetivo,
+						valor: BD_PE.objetivo.datos[j].id_objetivo,
+						selected: ""
+					}
+					opciones_objetivo.push(fila)
+				}
+			}
+
+			for (var j = 0; j < BD_PE.objetivo.registros; j++) {
+				if (BD_PE.objetivo.datos[j].activo == 1 && BD_PE.objetivo.datos[j].area === "ADMINISTRATIVA BEPS") {
+					var fila = {
+						texto: "ADMINISTRATIVA BEPS/ " + BD_PE.objetivo.datos[j].objetivo,
+						valor: BD_PE.objetivo.datos[j].id_objetivo,
+						selected: ""
+					}
+					opciones_objetivo.push(fila)
+				}
+			}
+
+			console.log(opciones_objetivo)
+			m0_js_poblar_menu({
+				select: "m9_1_sel_creacion_pe_pe_objetivo",
+				datos: opciones_objetivo
+			})
+
+			var opciones_indicador = [{
+				texto: "",
+				valor: "",
+				selected: "selected"
+			}];
+			for (j = 0; j < BD_PE.indicador.registros; j++) {
+				if (BD_PE.indicador.datos[j].activo == 1) {
+					var fila = {
+						texto: BD_PE.indicador.datos[j].indicador,
+						valor: BD_PE.indicador.datos[j].id_indicador,
+						selected: ""
+					}
+					opciones_indicador.push(fila)
+				}
+			}
+			m0_js_poblar_menu({
+				select: "m9_1_sel_creacion_pe_pe_indicador",
+				datos: opciones_indicador
+			})
+
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m9_1_js_a_creacion_pe_frm_creacion_estrategia",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * funcion para la eliminacion de objetivo estrategico
+	 *
+	 * @param   {string}  param  id del objetivo estrategico a eliminar 
+	 *
+	 * @return  {null}          
+	 */
+	function m9_1_js_creacion_pe_eliminar_objetivo(id_objetivo) {
+		try {
+
+			BD_PE.SINCRONIZADO = false;
+			google.script.run
+				.withFailureHandler(function (e) {
+					m0_js_registrar_error({
+						gs: "m9_1_gs_creacion_pe_eliminar_objetivo",
+						funcion: "m9_1_js_creacion_pe_eliminar_objetivo",
+						error: { message: e.name + " : " + e.message, name: "AJAX" },
+						parametros: {}
+					});
+				})
+				.withSuccessHandler(function (r) {
+					if (m0_js_resultado_operacion(r)) {
+
+						google.script.run
+							.withFailureHandler(function (e) {
+								BD_PE.SINCRONIZADO = false;
+								BD.SINCRONIZADO = false;
+								BD.ULTIMA_SINCRONIZACION = new Date()
+								m0_js_actualizacion_panel_bd()
+								m0_js_registrar_error({
+									gs: "m9_gs_inicializacion_bd",
+									funcion: "m9_1_js_creacion_pe_eliminar_objetivo",
+									error: { message: e.name + " : " + e.message + " / Error en sincronización de BD (M9)", name: "AJAX" },
+									parametros: {}
+								});
+							})
+							.withSuccessHandler(function (res) {
+								if (m0_js_resultado_operacion(res)) {
+									m9_js_inicializacion_bd_crear_BD_PE(res)
+									m9_1_js_creacion_pe_actualizar_tablas()
+								}
+							})
+							.m9_gs_inicializacion_bd();
+						m0_js_aviso("modal_box", "Por favor espere unos segundos mientras se actualiza las bases de Objetivos, Estrategias e Indicadores");
+
+					}
+				})
+				.m9_1_gs_creacion_pe_eliminar_objetivo(id_objetivo);
+
+			m0_js_aviso("modal_box", "Por favor espere mientras guardan las modificaciones");
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m9_1_js_creacion_pe_eliminar_objetivo",
+				error: e,
+				parametros: id_objetivo
+			});
+		}
+	}
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * funcion para la eliminacion del indicador
+	 *
+	 * @param   {string}  param  id del indicador
+	 *
+	 * @return  {null}          
+	 */
+	function m9_1_js_creacion_pe_eliminar_indicador(id_indicador) {
+		try {
+
+			BD_PE.SINCRONIZADO = false;
+			google.script.run
+				.withFailureHandler(function (e) {
+					m0_js_registrar_error({
+						gs: "m9_1_gs_creacion_pe_crear_objetivo",
+						funcion: "m9_1_js_creacion_pe_eliminar_indicador",
+						error: { message: e.name + " : " + e.message, name: "AJAX" },
+						parametros: {}
+					});
+				})
+				.withSuccessHandler(function (r) {
+					if (m0_js_resultado_operacion(r)) {
+
+						google.script.run
+							.withFailureHandler(function (e) {
+								BD_PE.SINCRONIZADO = false;
+								BD.SINCRONIZADO = false;
+								BD.ULTIMA_SINCRONIZACION = new Date()
+								m0_js_actualizacion_panel_bd()
+								m0_js_registrar_error({
+									gs: "m9_gs_inicializacion_bd",
+									funcion: "m9_1_js_creacion_pe_eliminar_indicador",
+									error: { message: e.name + " : " + e.message + " / Error en sincronización de BD (M9)", name: "AJAX" },
+									parametros: {}
+								});
+							})
+							.withSuccessHandler(function (res) {
+								if (m0_js_resultado_operacion(res)) {
+									m9_js_inicializacion_bd_crear_BD_PE(res)
+									m9_1_js_creacion_pe_actualizar_tablas()
+								}
+							})
+							.m9_gs_inicializacion_bd();
+						m0_js_aviso("modal_box", "Por favor espere unos segundos mientras se actualiza las bases de Objetivos, Estrategias e Indicadores");
+					}
+				})
+				.m9_1_gs_creacion_pe_eliminar_indicador(id_indicador);
+
+			m0_js_aviso("modal_box", "Por favor espere mientras guardan las modificaciones");
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m9_1_js_creacion_pe_eliminar_indicador",
+				error: e,
+				parametros: id_indicador
+			});
+		}
+	}
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * funcion para la eliminacion de la estrategia
+	 *
+	 * @param   {string}  param  id de la estrategia
+	 *
+	 * @return  {null}          
+	 */
+	function m9_1_js_creacion_pe_eliminar_estrategia(id_estrategia) {
+		try {
+
+			BD_PE.SINCRONIZADO = false;
+			google.script.run
+				.withFailureHandler(function (e) {
+					m0_js_registrar_error({
+						gs: "m9_1_gs_creacion_pe_eliminar_estrategia",
+						funcion: "m9_1_js_creacion_pe_eliminar_estrategia",
+						error: { message: e.name + " : " + e.message, name: "AJAX" },
+						parametros: {}
+					});
+				})
+				.withSuccessHandler(function (r) {
+					if (m0_js_resultado_operacion(r)) {
+
+						google.script.run
+							.withFailureHandler(function (e) {
+								BD_PE.SINCRONIZADO = false;
+								BD.SINCRONIZADO = false;
+								BD.ULTIMA_SINCRONIZACION = new Date()
+								m0_js_actualizacion_panel_bd()
+								m0_js_registrar_error({
+									gs: "m9_gs_inicializacion_bd",
+									funcion: "m9_1_js_creacion_pe_eliminar_estrategia",
+									error: { message: e.name + " : " + e.message + " / Error en sincronización de BD (M9)", name: "AJAX" },
+									parametros: {}
+								});
+							})
+							.withSuccessHandler(function (res) {
+								if (m0_js_resultado_operacion(res)) {
+									m9_js_inicializacion_bd_crear_BD_PE(res)
+									m9_1_js_creacion_pe_actualizar_tablas()
+								}
+							})
+							.m9_gs_inicializacion_bd();
+						m0_js_aviso("modal_box", "Por favor espere unos segundos mientras se actualiza las bases de Objetivos, Estrategias e Indicadores");
+
+					}
+				})
+				.m9_1_gs_creacion_pe_eliminar_estrategia(id_estrategia);
+
+			m0_js_aviso("modal_box", "Por favor espere mientras guardan las modificaciones");
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m9_1_js_creacion_pe_eliminar_estrategia",
+				error: e,
+				parametros: id_estrategia
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Funcion para mostrar el plan estrategico del Objetivo seleccionado en la tabla superior
+	 *
+	 * @param   {string}  id_objetivo  id del objetivo estrategico
+	 *
+	 * @return  {null}
+	 */
+	function m9_1_js_a_creacion_pe_frm_pe_objetivo(id_objetivo) {
+		try {
+
+			var r = {
+				exito: true,
+			}
+
+			var objetivo = '';
+			for (var j = 0; j < BD_PE.objetivo.registros; j++) {
+				if (BD_PE.objetivo.datos[j].id_objetivo === id_objetivo) {
+					objetivo = BD_PE.objetivo.datos[j].objetivo;
+				}
+			}
+
+			var contenido = '<div class="div_panel mdl-shadow--3dp">';
+			contenido += '<h4 style="text-align: center;">CONSOLIDADO PLANES ESTRATÉGICO</h4>';
+			contenido += '<br/>';
+			contenido += '<hr/>';
+			contenido += '<h5><b><i class="material-icons">keyboard_arrow_right</i>Objetivo seleccionado:</b>' + objetivo + '</h5>';
+			contenido += '<hr/>';
+			contenido += '<div id="m9_1_div_creacion_pe_consulta_pe_objetivo"></div>';
+			contenido += '<br/>';
+			router({
+				tipo_fuente: "VARIABLE",
+				contenido: contenido,
+				contenedor: "m0_div_panel_secundario",
+				id_privilegio: "9_0"
+			});
+
+			var datos = [];
+			for (j = 0; j < BD_PE.plan_estrategico.registros; j++) {
+				if (BD_PE.plan_estrategico.datos[j].id_objetivo === id_objetivo) {
+					var fila = []
+					fila.push(BD_PE.plan_estrategico.datos[j].id_pe);
+					fila.push(BD_PE.plan_estrategico.datos[j].estrategia);
+					fila.push(BD_PE.plan_estrategico.datos[j].indicador);
+					fila.push(BD_PE.plan_estrategico.datos[j].meta);
+					fila.push(BD_PE.plan_estrategico.datos[j].periodicidad);
+					fila.push(BD_PE.plan_estrategico.datos[j].fecha_inicio);
+					fila.push(BD_PE.plan_estrategico.datos[j].fecha_fin);
+					fila.push(BD_PE.plan_estrategico.datos[j].usuario_lider_pe);
+					fila.push(BD_PE.plan_estrategico.datos[j].area);
+					fila.push(BD_PE.plan_estrategico.datos[j].estado);
+					fila.push(BD_PE.plan_estrategico.datos[j].conclusiones);
+					fila.push('<a href="#" id="m9_1_a_creacion_pe_seguimiento_pe_' + BD_PE.plan_estrategico.datos[j].id_pe + '" class="mdl-button mdl-js-button mdl-button--icon mdl-button--colored" onclick=m9_1_js_a_creacion_pe_seguimiento_pe("' + BD_PE.plan_estrategico.datos[j].id_pe + '")><i class="material-icons">trending_up</i></a><div class="mdl-tooltip" data-mdl-for="m9_1_a_creacion_pe_seguimiento_pe_' + BD_PE.plan_estrategico.datos[j].id_pe + '">Haga clic aquí si desea realizar seguimiento a esta línea estratégica</div>');
+					if (BD_PE.plan_estrategico.datos[j].estado !== "FINALIZADO") {
+						var sw = true;
+						if (BD_PE.plan_estrategico.datos[j].id_usuario_lider_pe === USUARIO.id_usuario) {
+							fila.push('<a href="#" id="m9_1_a_creacion_pe_edicion_pe_' + BD_PE.plan_estrategico.datos[j].id_pe + '" class="mdl-button mdl-js-button mdl-button--icon mdl-button--colored" onclick=m9_1_js_a_creacion_pe_edicion_pe("' + BD_PE.plan_estrategico.datos[j].id_pe + '")><i class="material-icons">edit</i></a><div class="mdl-tooltip" data-mdl-for="m9_1_a_creacion_pe_edicion_pe_' + BD_PE.plan_estrategico.datos[j].id_pe + '">Haga clic aquí si desea realizar la edición de este Plan Estratégico</div>');
+							for (var k = 0; k < BD_PE.seguimiento_pe.registros; k++) {
+								if (BD_PE.plan_estrategico.datos[j].id_pe === BD_PE.seguimiento_pe.datos[k].id_pe) {
+									sw = false;
+								}
+							}
+						} else {
+							fila.push("")
+							sw = false;
+						}
+						if (sw) {
+							fila.push('<a href="#" id="m9_1_a_creacion_pe_eliminacion_pe_' + BD_PE.plan_estrategico.datos[j].id_pe + '" class="mdl-button mdl-js-button mdl-button--icon mdl-button--colored" onclick=m9_1_js_a_creacion_pe_eliminacion_pe("' + BD_PE.plan_estrategico.datos[j].id_pe + '")><i class="material-icons">delete</i></a><div class="mdl-tooltip" data-mdl-for="m9_1_a_creacion_pe_eliminacion_pe_' + BD_PE.plan_estrategico.datos[j].id_pe + '">Haga clic aquí si desea eliminar esta línea estratégica</div>');
+						} else {
+							fila.push("");
+						}
+					} else {
+						fila.push("");
+						fila.push("");
+					}
+					datos.push(fila)
+				}
+			}
+			m0_js_crear_tabla({
+				contenedor: "m9_1_div_creacion_pe_consulta_pe_objetivo",
+				titulos: ["ID PLAN ESTRATÉGICO", "ESTRATEGIA", "INDICADOR", "META", "PERIODICIDAD", "FECHA INICIO ESTRATEGIA", "FECHA FIN ESTRATEGIA", "RESPONSABLE ESTRATEGIA", "AREA", "ESTADO", "CONCLUSIONES", "", "", ""],
+				datos: datos
+			})
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m9_1_js_a_creacion_pe_frm_pe_objetivo",
+				error: e,
+				parametros: id_objetivo
+			});
+		}
+	}
+
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Funcion para mostrar el seguimiento a la linea estrategica seleccionada en la pantalla anterior / 
+	 *
+	 * @param   {string}  id_pe  id del plan estrategico
+	 *
+	 * @return  {null}
+	 */
+	function m9_1_js_a_creacion_pe_seguimiento_pe(id_pe) {
+		try {
+
+			var r = {
+				exito: true,
+			}
+			var datos_estrategia = {
+				id_estrategia: "",
+				estrategia: "",
+				objetivo: "",
+				indicador: "",
+				valor_actual_indicador: "",
+				meta: "",
+				fecha_inicio: "",
+				fecha_fin: "",
+				responsable: "",
+				area: "",
+				conclusiones: "",
+				valor_final_indicador: "",
+				periodo_corte: ""
+			}
+			for (var j = 0; j < BD_PE.plan_estrategico.registros; j++) {
+				if (BD_PE.plan_estrategico.datos[j].id_pe === id_pe) {
+					datos_estrategia.id_estrategia = BD_PE.plan_estrategico.datos[j].id_estrategia;
+					datos_estrategia.estrategia = BD_PE.plan_estrategico.datos[j].estrategia;
+					datos_estrategia.objetivo = BD_PE.plan_estrategico.datos[j].objetivo;
+					datos_estrategia.id_objetivo = BD_PE.plan_estrategico.datos[j].id_objetivo;
+					datos_estrategia.indicador = BD_PE.plan_estrategico.datos[j].indicador;
+					datos_estrategia.valor_actual_indicador = BD_PE.plan_estrategico.datos[j].valor_actual_indicador;
+					datos_estrategia.meta = BD_PE.plan_estrategico.datos[j].meta;
+					datos_estrategia.periodicidad = BD_PE.plan_estrategico.datos[j].periodicidad;
+					datos_estrategia.fecha_inicio = BD_PE.plan_estrategico.datos[j].fecha_inicio;
+					datos_estrategia.fecha_fin = BD_PE.plan_estrategico.datos[j].fecha_fin;
+					datos_estrategia.responsable = BD_PE.plan_estrategico.datos[j].usuario_lider_pe;
+					datos_estrategia.area = BD_PE.plan_estrategico.datos[j].area;
+					datos_estrategia.conclusiones = BD_PE.plan_estrategico.datos[j].conclusiones;
+					datos_estrategia.estado = BD_PE.plan_estrategico.datos[j].estado;
+				}
+			}
+			var contenido = '<hr/>';
+			contenido += '<h4><i class="material-icons">keyboard_arrow_right</i>Datos Línea Estratégica:</h4>';
+			contenido += '<hr/>';
+			contenido += '<h5><i class="material-icons">keyboard_arrow_right</i><strong>Objetivo Estratégico : </strong>' + datos_estrategia.objetivo + '</h5>';
+			contenido += '<h5><i class="material-icons">subdirectory_arrow_right</i><strong>Estrategia : </strong>' + datos_estrategia.estrategia + '</h5>';
+			contenido += '<h5><i class="material-icons">subdirectory_arrow_right</i><strong>Indicador : </strong>' + datos_estrategia.indicador + '</h5>';
+			contenido += '<br/>';
+			contenido += '<button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" onclick=m9_1_js_a_creacion_pe_frm_pe_objetivo("' + datos_estrategia.id_objetivo + '")>';
+			contenido += '<i class="material-icons">arrow_back</i> Volver a los Planes Estratégicos';
+			contenido += '</button>';
+
+
+			contenido += '<hr/>';
+			contenido += '<hr/>';
+			contenido += '<h4><i class="material-icons">keyboard_arrow_right</i>Datos Estrategia:</h4>';
+			contenido += '<hr/>';
+			contenido += '<div class="mdl-grid">';
+			contenido += '<div class="mdl-cell mdl-cell--6-col">';
+			contenido += '<ul>';
+			contenido += '<li><strong>Id Estrategia: </strong>' + datos_estrategia.id_estrategia + '</li>';
+			contenido += '<li><strong>Fecha Inicio Estrategia : </strong>' + datos_estrategia.fecha_inicio + '</li>';
+			contenido += '<li><strong>Fecha Fin Estrategia : </strong>' + datos_estrategia.fecha_fin + '</li>';
+			contenido += '<li><strong>Responsable : </strong>' + datos_estrategia.responsable + '</li>';
+			contenido += '<li><strong>Área : </strong>' + datos_estrategia.area + '</li>';
+			contenido += '</ul>';
+			contenido += '</div>';
+			contenido += '<div class="mdl-cell mdl-cell--6-col">';
+			contenido += '<ul>';
+			contenido += '<li><strong>Estado Estrategia: </strong>' + datos_estrategia.estado + '</li>';
+			contenido += '<li><strong>Meta : </strong>' + datos_estrategia.meta + '</li>';
+			contenido += '<li><strong>Periodicidad : </strong>' + datos_estrategia.periodicidad + '</li>';
+			contenido += '<li><strong>Conclusiones : </strong>' + datos_estrategia.conclusiones + '</li>';
+			contenido += '</ul>';
+			contenido += '</div>';
+			contenido += '</div>';
+
+			contenido += '<div id="m9_1_div_creacion_pe_consulta_seguimiento_pe"></div>';
+
+			if (datos_estrategia.estado !== "FINALIZADO") {
+				contenido += '<div class="alineado_derecha">';
+				contenido += '<a id="m9_1_a_creacion_pe_nuevo_seguimiento_pe" class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored"  onclick=m9_1_js_creacion_pe_nuevo_seguimiento("' + id_pe + '")>';
+				contenido += '<i class="material-icons">add_comment</i>';
+				contenido += '</a>';
+				contenido += '</div>';
+				contenido += '<div class="mdl-tooltip" for="m9_1_a_creacion_pe_nuevo_seguimiento_pe">Por favor haga clic aquí para registrar un nuevo seguimiento a esta línea estratégica</div>';
+			}
+			contenido += '<br/>';
+			contenido += '<br/>';
+
+			router({
+				tipo_fuente: "VARIABLE",
+				contenido: contenido,
+				contenedor: "m0_div_panel_secundario",
+				id_privilegio: "9_0"
+			});
+
+			m9_1_js_a_creacion_pe_seguimiento_pe_tabla(id_pe)
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m9_1_js_a_creacion_pe_seguimiento_pe",
+				error: e,
+				parametros: id_pe
+			});
+		}
+	}
+
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Funcion para mostrar el seguimiento a la linea estrategica seleccionada en la pantalla anterior / creacion exclusivamente de la tabla
+	 *
+	 * @param   {string}  id_pe  id del plan estrategico
+	 *
+	 * @return  {null}
+	 */
+	function m9_1_js_a_creacion_pe_seguimiento_pe_tabla(id_pe) {
+		try {
+
+			var datos = [];
+
+			for (j = 0; j < BD_PE.seguimiento_pe.registros; j++) {
+				if (BD_PE.seguimiento_pe.datos[j].id_pe === id_pe) {
+					var fila = []
+					fila.push(BD_PE.seguimiento_pe.datos[j].id_seguimiento);
+					fila.push(BD_PE.seguimiento_pe.datos[j].valor_avance_indicador);
+					fila.push(BD_PE.seguimiento_pe.datos[j].tipo_valor_avance_indicador);
+					fila.push(BD_PE.seguimiento_pe.datos[j].periodo_avance_indicador);
+					fila.push(BD_PE.seguimiento_pe.datos[j].fecha_seguimiento);
+					fila.push(BD_PE.seguimiento_pe.datos[j].observaciones_lider_estrategia);
+					fila.push(BD_PE.seguimiento_pe.datos[j].observaciones_seguimiento);
+					fila.push(BD_PE.seguimiento_pe.datos[j].usuario_avance);
+					var sw = true;
+					if (BD_PE.seguimiento_pe.datos[j].id_usuario_avance == USUARIO.id_usuario) {
+						for (var i = 0; i < BD_PE.plan_estrategico.registros; i++) {
+							if (BD_PE.plan_estrategico.datos[i].id_pe === id_pe && BD_PE.plan_estrategico.datos[i].estado === "FINALIZADO") {
+								sw = false
+							}
+						}
+					} else {
+						sw = false;
+					}
+					if (sw && (BD_PE.seguimiento_pe.datos[j].tipo_valor_avance_indicador !== "MODIFICACION PLAN ESTRATEGICO")) {
+						fila.push('<a href="#" id="m9_1_a_creacion_pe_observaciones_seguimiento_pe_' + BD_PE.seguimiento_pe.datos[j].id_seguimiento + '" class="mdl-button mdl-js-button mdl-button--icon mdl-button--colored" onclick=m9_1_js_creacion_pe_observaciones_seguimiento("' + BD_PE.seguimiento_pe.datos[j].id_seguimiento + '")><i class="material-icons">chat</i></a><div class="mdl-tooltip" data-mdl-for="m9_1_a_creacion_pe_observaciones_seguimiento_pe_' + BD_PE.seguimiento_pe.datos[j].id_seguimiento + '">Haga clic aquí si desea registrar observaciones del seguimiento al Plan Estratégico </div>');
+						fila.push('<a href="#" id="m9_1_a_creacion_pe_eliminar_seguimiento_pe_' + BD_PE.seguimiento_pe.datos[j].id_seguimiento + '" class="mdl-button mdl-js-button mdl-button--icon mdl-button--colored" onclick=m9_1_js_creacion_pe_eliminar_seguimiento_pe("' + BD_PE.seguimiento_pe.datos[j].id_seguimiento + '")><i class="material-icons">delete</i></a><div class="mdl-tooltip" data-mdl-for="m9_1_a_creacion_pe_eliminar_seguimiento_pe_' + BD_PE.seguimiento_pe.datos[j].id_seguimiento + '">Haga clic aquí si desea eliminar este reporte de seguimiento de Plan Estratégico </div>');
+					} else {
+						fila.push("");
+						fila.push("");
+					}
+					datos.push(fila)
+				}
+			}
+			m0_js_crear_tabla({
+				contenedor: "m9_1_div_creacion_pe_consulta_seguimiento_pe",
+				titulos: ["ID", "VALOR INDICADOR", "TIPO DE SEGUIMIENTO", "PERIODO DE REPORTE DEL SEGUIMIENTO", "FECHA SEGUIMIENTO", "OBSERVACIONES RESPONSABLE ESTRATEGIA", "OBSERVACIONES SEGUIMIENTO", "USUARIO QUIEN REGISTRO SEGUIMIENTO", "", ""],
+				datos: datos
+			})
+
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m9_1_js_a_creacion_pe_seguimiento_pe_tabla",
+				error: e,
+				parametros: id_pe
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+	/**
+	 * Abre la ventana de dialogo para crear un nuevo registro de seguimiento
+	 *
+	 *
+	 * @return  {null}          
+	 */
+	function m9_1_js_creacion_pe_nuevo_seguimiento(id_pe) {
+		try {
+
+			var estrategia = "";
+			for (var i = 0; i < BD_PE.plan_estrategico.registros; i++) {
+				if (BD_PE.plan_estrategico.datos[i].id_estrategia === id_pe) {
+					estrategia = BD_PE.plan_estrategico.datos[i].estrategia;
+				}
+			}
+
+			var contenido = '<div class="div_panel mdl-shadow--3dp">';
+			contenido += '<h4 style="text-align: center;">NUEVO REGISTRO DE SEGUIMIENTO PLAN ESTRATEGICO</h4>';
+			contenido += '<hr/>';
+			contenido += '<p><b>Estrategia seleccionada:</b>' + estrategia + '</p>';
+			contenido += '<hr/>';
+			contenido += m0_js_crear_formulario({
+				formulario: "m9_1_frm_creacion_pe_seguimiento_pe",
+				campos: [{
+					tipo_campo: "hidden",
+					id_campo: "m9_1_hid_creacion_pe_seguimiento_pe_id_pe",
+					value: id_pe
+				}, {
+					tipo_campo: "fieldset_inicio",
+					legend: "Seguimiento Plan Estratégico:"
+				}, {
+					tipo_campo: "select",
+					id_campo: "m9_1_sel_creacion_pe_seguimiento_pe_tipo_registro",
+					nombre_campo: "Tipo de seguimiento a registrar",
+					required: "required"
+				}, {
+					tipo_campo: "textarea",
+					id_campo: "m9_1_txt_creacion_pe_seguimiento_pe_observaciones_responsable",
+					nombre_campo: "Observaciones Responsable Estrategia",
+					required: "",
+					value: ""
+				}, {
+					tipo_campo: "fieldset_fin",
+				}, {
+					tipo_campo: "fieldset_inicio",
+					legend: "Si selecciono que este registro de seguimiento corresponde al corte del periodo, por favor llenar este campo"
+				}, {
+					tipo_campo: "text",
+					id_campo: "m9_1_txt_creacion_pe_seguimiento_pe_valor_indicador",
+					nombre_campo: "Valor Indicador",
+					value: "",
+					required: "",
+					pattern: "",
+					error: "Valor no valido"
+				}, {
+					tipo_campo: "text",
+					id_campo: "m9_1_txt_creacion_pe_seguimiento_pe_periodo",
+					nombre_campo: "Periodo",
+					value: "",
+					required: "",
+					pattern: "",
+					error: "Valor no valido"
+				}, {
+					tipo_campo: "fieldset_fin",
+				}, {
+					tipo_campo: "fieldset_inicio",
+					legend: "Si selecciono que este registro de seguimiento corresponde al cierre de la estrategia, por favor llenar este campo:"
+				}, {
+					tipo_campo: "textarea",
+					id_campo: "m9_1_txt_creacion_pe_seguimiento_pe_conclusiones",
+					nombre_campo: "Conclusiones ejecución de Estrategia",
+					value: "",
+					required: "",
+					pattern: "",
+					error: "Valor no valido"
+				}, {
+					tipo_campo: "fieldset_fin",
+				}]
+			});
+			contenido += '<hr />';
+			contenido += '<button  class="mdl-button mdl-js-button mdl-button--accent"  onclick=m9_1_js_a_creacion_pe_seguimiento_pe("' + id_pe + '")>CERRAR VENTANA<i class="material-icons">meeting_room</i></button>';
+			contenido += '<br/>';
+			contenido += '</div>';
+
+			router({
+				tipo_fuente: "VARIABLE",
+				contenido: contenido,
+				contenedor: "m9_1_div_creacion_pe_consulta_seguimiento_pe",
+				id_privilegio: "9_0"
+			});
+
+			var opciones = [{
+				texto: "",
+				valor: "",
+				selected: "selected"
+			}, {
+				texto: "AVANCE ESTRATEGIA",
+				valor: "AVANCE ESTRATEGIA",
+				selected: ""
+			}, {
+				texto: "CIERRE DEL PERIODO",
+				valor: "CIERRE DEL PERIODO",
+				selected: ""
+			}, {
+				texto: "CIERRE ESTRATEGIA",
+				valor: "CIERRE ESTRATEGIA",
+				selected: ""
+			}];
+			m0_js_poblar_menu({
+				select: "m9_1_sel_creacion_pe_seguimiento_pe_tipo_registro",
+				datos: opciones
+			})
+
+			$("#m9_1_sel_creacion_pe_seguimiento_pe_tipo_registro").focus()
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m9_1_js_creacion_pe_nuevo_seguimiento",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * funcion para la eliminacion de un seguimiento
+	 *
+	 * @param   {string}  param  id de seguimiento pe
+	 *
+	 * @return  {null}          
+	 */
+	function m9_1_js_creacion_pe_eliminar_seguimiento_pe(id_seguimiento) {
+		try {
+
+			BD_PE.SINCRONIZADO = false;
+			google.script.run
+				.withFailureHandler(function (e) {
+					m0_js_registrar_error({
+						gs: "m9_1_gs_creacion_pe_eliminar_estrategia",
+						funcion: "m9_1_js_creacion_pe_eliminar_seguimiento_pe",
+						error: { message: e.name + " : " + e.message, name: "AJAX" },
+						parametros: {}
+					});
+				})
+				.withSuccessHandler(function (r) {
+					if (m0_js_resultado_operacion(r)) {
+
+						google.script.run
+							.withFailureHandler(function (e) {
+								BD_PE.SINCRONIZADO = false;
+								BD.SINCRONIZADO = false;
+								BD.ULTIMA_SINCRONIZACION = new Date()
+								m0_js_actualizacion_panel_bd()
+								m0_js_registrar_error({
+									gs: "m9_gs_inicializacion_bd",
+									funcion: "m9_1_js_creacion_pe_eliminar_seguimiento_pe",
+									error: { message: e.name + " : " + e.message + " / Error en sincronización de BD (M9)", name: "AJAX" },
+									parametros: {}
+								});
+							})
+							.withSuccessHandler(function (res) {
+								if (m0_js_resultado_operacion(res)) {
+									m9_js_inicializacion_bd_crear_BD_PE(res)
+									m9_1_js_a_creacion_pe_seguimiento_pe(r.id_pe)
+									m9_1_js_creacion_pe_actualizar_tablas()
+								}
+							})
+							.m9_gs_inicializacion_bd();
+						m0_js_aviso("modal_box", "Por favor espere unos segundos mientras se actualiza las bases de Objetivos, Estrategias e Indicadores");
+
+					}
+				})
+				.m9_1_gs_creacion_pe_eliminar_seguimiento_pe(id_seguimiento);
+
+			m0_js_aviso("modal_box", "Por favor espere mientras guardan las modificaciones");
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m9_1_js_creacion_pe_eliminar_seguimiento_pe",
+				error: e,
+				parametros: id_seguimiento
+			});
+		}
+	}
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+	/**
+	 * Abre la ventana de dialogo para crear un nuevo observacion registro de seguimiento
+	 *
+	 * @param   {string}  id_seguimiento  id de seguimiento pe
+	 * 
+	 * @return  {null}          
+	 */
+	function m9_1_js_creacion_pe_observaciones_seguimiento(id_seguimiento) {
+		try {
+
+			var contenido = '<div class="div_panel mdl-shadow--3dp">';
+			contenido += '<h4 style="text-align: center;">NUEVO REGISTRO DE SEGUIMIENTO PLAN ESTRATEGICO</h4>';
+			contenido += '<hr/>';
+			contenido += m0_js_crear_formulario({
+				formulario: "m9_1_frm_creacion_pe_seguimiento_pe_observaciones",
+				campos: [{
+					tipo_campo: "hidden",
+					id_campo: "m9_1_hid_creacion_pe_seguimiento_pe_id_seguimiento",
+					value: id_seguimiento
+				}, {
+					tipo_campo: "textarea",
+					id_campo: "m9_1_txt_creacion_pe_seguimiento_pe_observaciones_seguimiento",
+					nombre_campo: "Observaciones Reunión de Seguimiento",
+					required: "required",
+					value: ""
+				}]
+			});
+			contenido += '<hr />';
+			contenido += '<button id="m9_1_creacion_pe_salir" class="mdl-button mdl-js-button mdl-button--accent" >CERRAR VENTANA<i class="material-icons">meeting_room</i></button>';
+			contenido += '<br/>';
+			contenido += '</div>';
+
+			m0_js_aviso("modal_box", contenido);
+			componentHandler.upgradeDom();
+
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m9_1_js_creacion_pe_observaciones_seguimiento",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * funcion para la eliminacion de un Plan Estrategico
+	 *
+	 * @param   {string}  id_pe  id de la estrategia
+	 *
+	 * @return  {null}          
+	 */
+	function m9_1_js_a_creacion_pe_eliminacion_pe(id_pe) {
+		try {
+
+			BD_PE.SINCRONIZADO = false;
+			google.script.run
+				.withFailureHandler(function (e) {
+					m0_js_registrar_error({
+						gs: "m9_1_gs_a_creacion_pe_eliminacion_pe",
+						funcion: "m9_1_js_a_creacion_pe_eliminacion_pe",
+						error: { message: e.name + " : " + e.message, name: "AJAX" },
+						parametros: {}
+					});
+				})
+				.withSuccessHandler(function (r) {
+					if (m0_js_resultado_operacion(r)) {
+
+						google.script.run
+							.withFailureHandler(function (e) {
+								BD_PE.SINCRONIZADO = false;
+								BD.SINCRONIZADO = false;
+								BD.ULTIMA_SINCRONIZACION = new Date()
+								m0_js_actualizacion_panel_bd()
+								m0_js_registrar_error({
+									gs: "m9_gs_inicializacion_bd",
+									funcion: "m9_1_js_a_creacion_pe_eliminacion_pe",
+									error: { message: e.name + " : " + e.message + " / Error en sincronización de BD (M9)", name: "AJAX" },
+									parametros: {}
+								});
+							})
+							.withSuccessHandler(function (res) {
+								if (m0_js_resultado_operacion(res)) {
+									m9_js_inicializacion_bd_crear_BD_PE(res)
+									m9_1_js_a_creacion_pe_frm_pe_objetivo(r.id_objetivo)
+								}
+							})
+							.m9_gs_inicializacion_bd();
+						m0_js_aviso("modal_box", "Por favor espere unos segundos mientras se actualiza las bases de Objetivos, Estrategias e Indicadores");
+
+					}
+				})
+				.m9_1_gs_a_creacion_pe_eliminacion_pe(id_pe);
+
+			m0_js_aviso("modal_box", "Por favor espere mientras guardan las modificaciones");
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m9_1_js_a_creacion_pe_eliminacion_pe",
+				error: e,
+				parametros: id_pe
+			});
+		}
+	}
+
+
+	//################################################################################################################################################################################################################
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//SECCION 2 - REPORTES CONSOLIDADOS
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//################################################################################################################################################################################################################
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//listener de eventos del DOOM
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//funciones javascript
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	/**
+	 * funcion para cargar los objetos de una seccion especifica
+	 *
+	 * @return  {null}  
+	 */
+	function m9_js_inicializar_pestaña_m9_2() {
+		try {
+
+			m0_js_log_sesion({
+				id_sesion: ID_SESION,
+				log: "M9 - Reportes consolidados",
+				tipo_log: "ACCESO A SECCION"
+			});
+
+			var u = USUARIO;
+			var pos;
+			for (var mod = 0; mod < u.modulos.length; mod++) {
+				if (9 == u.modulos[mod].id_modulo) {
+					pos = mod;
+				}
+			}
+			var param_modulos = {
+				icono: u.modulos[pos].icono,
+				id_modulo: 9,
+				texto_1: u.modulos[pos].modulo,
+				texto_2: "Reportes consolidados"
+			};
+			m0_js_menu_arbol(param_modulos);
+
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página")
+				})
+				.withSuccessHandler(function (r) {
+					m0_js_aviso("snackbar", r.mensaje);
+					if (r.exito) {
+						$("#m9_2_div_consolidado_pe").html(r.contenido)
+						componentHandler.upgradeDom();
+					} else {
+						$("#m9_2_div_consolidado_pe").html("");
+						m0_js_aviso("banner", r.mensaje);
+					}
+				})
+				.m9_2_gs_cargar_reportes(u.id_regional);
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m9_js_inicializar_pestaña_m9_2",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * [descripcion funcion]
+	 *
+	 * @param   {object}  param  [descripcion objeto]
+	 *
+	 * @return  {null}          
+	 */
+	function m9_2_js_actualizar_pe() {
+		try {
+
+			m0_js_loading({
+				tipo: "COMPUESTO_CREACION",
+				titulo: "ACTUALIZACIÓN REPORTE",
+				texto: "Por favor espere mientras se descargan los datos del servidor",
+				valor: false
+			})
+			var data = [];
+
+			for (var j = 0; j < BD_PE.plan_estrategico.registros; j++) {
+				var fila = []
+				fila.push(BD_PE.plan_estrategico.datos[j].id_pe)
+				fila.push(BD_PE.plan_estrategico.datos[j].id_objetivo)
+				fila.push(BD_PE.plan_estrategico.datos[j].objetivo)
+				fila.push(BD_PE.plan_estrategico.datos[j].id_estrategia)
+				fila.push(BD_PE.plan_estrategico.datos[j].estrategia)
+				fila.push(BD_PE.plan_estrategico.datos[j].id_indicador)
+				fila.push(BD_PE.plan_estrategico.datos[j].indicador)
+				fila.push(BD_PE.plan_estrategico.datos[j].meta)
+				fila.push(BD_PE.plan_estrategico.datos[j].periodicidad)
+				fila.push(BD_PE.plan_estrategico.datos[j].fecha_inicio)
+				fila.push(BD_PE.plan_estrategico.datos[j].fecha_fin)
+				fila.push(BD_PE.plan_estrategico.datos[j].usuario_lider_pe)
+				fila.push(BD_PE.plan_estrategico.datos[j].area)
+				fila.push(BD_PE.plan_estrategico.datos[j].conclusiones)
+				fila.push(BD_PE.plan_estrategico.datos[j].estado)
+
+				data.push(fila)
+				m0_js_loading({
+					tipo: "COMPUESTO_ACTUALIZACION",
+					texto: "",
+					valor: ((j / BD_PE.plan_estrategico.registros) * 100)
+				});
+			}
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página")
+				})
+				.withSuccessHandler(m0_js_resultado_operacion)
+				.m9_2_gs_actualizar_pe(data);
+
+			m0_js_loading({
+				tipo: "COMPUESTO_ACTUALIZACION",
+				texto: "Por favor espere mientras se sube al servidor la base de datos actualizada",
+				valor: false
+			})
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m9_2_js_actualizar_pe",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+
+
+
+</script>

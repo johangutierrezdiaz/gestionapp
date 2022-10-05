@@ -1,0 +1,1327 @@
+<script>
+	/**---------------------------------------MODULO ADMINISTRACION APP----------------------------------------------------------------------------------- */
+
+	//################################################################################################################################################################################################################
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//SECCION 1 - ADMON USUARIOS
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//################################################################################################################################################################################################################
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//listener de eventos del DOOM
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	$("#m0_div_panel_principal").on("click", "#m1_btn_buscar", function () {
+		m1_js_cargar_usuarios();
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_principal").on("click", "#m1_btn_nuevo_usuario", function () {
+		m1_js_manipular_usuarios(-1, "INSERTAR");
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_principal").on("click", "#m1_btn_editar_usuario", function () {
+		m1_js_manipular_usuarios($(this).attr("data-id_usuario"), "EDITAR");
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_secundario").on("submit", "#m1_frm_manipular_usuarios", function () {
+		m1_js_manipular_usuarios_guardar(this);
+	});
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//funciones javascript
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	* funcion para cargar los objetos de una seccion especifica
+	*
+	* @return  {null}
+	*/
+	function m1_js_inicializar_pestaña_m1_1() {
+		try {
+
+			m0_js_log_sesion({
+				id_sesion: ID_SESION,
+				log: "M1 - Admon Usuarios",
+				tipo_log: "ACCESO A SECCION"
+			});
+
+			var u = USUARIO;
+			var pos;
+			for (var mod = 0; mod < u.modulos.length; mod++) {
+				if (1 == u.modulos[mod].id_modulo) {
+					pos = mod;
+				}
+			}
+			var param_modulos = {
+				icono: u.modulos[pos].icono,
+				id_modulo: 1,
+				texto_1: u.modulos[pos].modulo,
+				texto_2: "Admon Usuarios"
+			};
+			m0_js_menu_arbol(param_modulos);
+			m0_js_poblar_menu({
+				campo: "Seleccione un cargo",
+				criterio: "",
+				select: "m1_1_sel_criterio_cargo",
+				datos: LISTADO_CARGOS
+			});
+			m0_js_poblar_menu({
+				campo: "Seleccione un rol",
+				criterio: "",
+				select: "m1_1_sel_criterio_rol",
+				datos: LISTADO_ROLES
+			});
+			m0_js_poblar_menu({
+				campo: "Seleccione un área",
+				criterio: "",
+				select: "m1_1_sel_criterio_area",
+				datos: LISTADO_AREAS
+			});
+			var param_select = {
+				campo: "Seleccione una oficina",
+				criterio: u.id_regional,
+				select: "m1_sel_criterio_oficina",
+				datos: [],
+				mensaje_carga: "Oficinas cargadas exitosamente"
+			}
+			$("#m1_sel_criterio_oficina").parent().addClass('is-dirty');
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página")
+				})
+				.withSuccessHandler(m0_js_poblar_menu)
+				.m1_gs_inicializar_busqueda_usuarios(param_select);
+			m0_js_aviso("modal_box", "Espere mientras se carga el listado de oficinas");
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m1_js_inicializar_pestaña_m1_1",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+
+	/**
+	 * funcion para cargar los usuarios del sistema
+	 *
+	* @return  {null}
+	*/
+	function m1_js_cargar_usuarios() {
+		try {
+
+			var u = USUARIO;
+			var param_tabla = {
+				contenedor: "m1_div_consolidado_panel",
+				criterio: {
+					cargo: $("#m1_1_sel_criterio_cargo").val(),
+					id_oficina: $("#m1_sel_criterio_oficina").val(),
+					rol: $("#m1_1_sel_criterio_rol").val(),
+					area: $("#m1_1_sel_criterio_area").val()
+				}
+			};
+			$("#m0_div_panel_secundario").empty();
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página");
+				})
+				.withSuccessHandler(m1_js_cargar_tabla)
+				.m1_gs_cargar_usuarios_app(param_tabla);
+			$("#m1_div_consolidado_panel").html('<div class="mdl-spinner mdl-spinner--single-color mdl-js-spinner is-active carga_spinner"></div>');
+			componentHandler.upgradeDom();
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m1_js_cargar_usuarios",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	* Cargamos la tabla con el listado de usuarios
+	*
+	* @param   {object}  param_tabla  objecto con toda la informacion para construir la tabla
+	*
+	* @return  {null}
+	*/
+	function m1_js_cargar_tabla(param_tabla) {
+		try {
+
+			var u = USUARIO;
+			for (var j = 0; j < param_tabla.usuarios.registros; j++) {
+				var oficina = "";
+				var id_regional = "";
+				for (var i = 0; i < param_tabla.oficinas.registros; i++) {
+					if (param_tabla.usuarios.datos[j].id_oficina === param_tabla.oficinas.datos[i].id_oficina) {
+						oficina = param_tabla.oficinas.datos[i].oficina;
+						id_regional = param_tabla.oficinas.datos[i].id_regional;
+					}
+				}
+				if (m0_js_verificar_acceso("0_1")) {
+					var fila = [];
+					fila.push(param_tabla.usuarios.datos[j].id_usuario);
+					fila.push(param_tabla.usuarios.datos[j].usuario);
+					fila.push(param_tabla.usuarios.datos[j].nombre);
+					fila.push(param_tabla.usuarios.datos[j].correo);
+					fila.push(oficina);
+					fila.push(param_tabla.usuarios.datos[j].cargo);
+					fila.push(param_tabla.usuarios.datos[j].rol);
+					fila.push(param_tabla.usuarios.datos[j].area);
+					if (param_tabla.usuarios.datos[j].activo == 1) {
+						activo = "SI";
+					} else {
+						activo = "NO";
+					}
+					fila.push(activo);
+					fila.push('<a href="#m0_div_panel_secundario" id="m1_btn_editar_usuario" data-id_usuario="' + param_tabla.usuarios.datos[j].id_usuario + '" class="mdl-button mdl-js-button mdl-button--icon mdl-button--colored" ><i class="material-icons">edit</i></a>');
+					param_tabla.datos.push(fila);
+				} else {
+					if (id_regional === u.id_regional) {
+						var fila = [];
+						fila.push(param_tabla.usuarios.datos[j].id_usuario);
+						fila.push(param_tabla.usuarios.datos[j].usuario);
+						fila.push(param_tabla.usuarios.datos[j].nombre);
+						fila.push(param_tabla.usuarios.datos[j].correo);
+						fila.push(oficina);
+						fila.push(param_tabla.usuarios.datos[j].cargo);
+						fila.push(param_tabla.usuarios.datos[j].rol);
+						fila.push(param_tabla.usuarios.datos[j].area);
+						if (param_tabla.usuarios.datos[j].activo == 1) {
+							activo = "SI";
+						} else {
+							activo = "NO";
+						}
+						fila.push(activo);
+						fila.push('<a href="#m0_div_panel_secundario" id="m1_btn_editar_usuario" data-id_usuario="' + param_tabla.usuarios.datos[j].id_usuario + '" class="mdl-button mdl-js-button mdl-button--icon mdl-button--colored" ><i class="material-icons">edit</i></a>');
+						param_tabla.datos.push(fila);
+					}
+				}
+			}
+			m0_js_crear_tabla(param_tabla);
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m1_js_cargar_tabla",
+				error: e,
+				parametros: param_tabla
+			});
+		}
+	}
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	* gestiona la adicion, edicion e inactivacion de usuarios de la app
+	*
+	* @param   {number}  id_usuario  id usuario
+	* @param   {string}  operacion   oeracion a realizar: "INSERTAR" y "EDITAR"
+	*
+	* @return  {Object}              objecto con la informacion para la generacion del formulario
+	*/
+	function m1_js_manipular_usuarios(id_usuario, operacion) {
+		try {
+
+			if (m0_js_verificar_acceso("1_1")) {
+				var contenido = '<div class="div_panel mdl-shadow--3dp">';
+				if (operacion === "INSERTAR") {
+					contenido += "<h4>INSERTAR USUARIO</h4>";
+					contenido += "<p>Ingresar información para el nuevo usuario</p>";
+				} else {
+					contenido += "<h4>EDITAR USUARIO</h4>";
+					contenido += "<p>Editar información del usuario</p>";
+				}
+				var param_formulario = {
+					formulario: "m1_frm_manipular_usuarios",
+					campos: [{
+						id_campo: "m1_hid_id_usuario",
+						tipo_campo: "hidden"
+					}, {
+						id_campo: "m1_hid_operacion",
+						tipo_campo: "hidden"
+					}, {
+						id_campo: "m1_txt_usuario",
+						nombre_campo: "Usuario...",
+						pattern: "",
+						error: "",
+						required: "required",
+						tipo_campo: "text",
+					}, {
+						id_campo: "m1_txt_nombre",
+						nombre_campo: "Nombre...",
+						pattern: "",
+						required: "required",
+						error: "",
+						tipo_campo: "text",
+					}, {
+						id_campo: "m1_txt_mail",
+						nombre_campo: "Digite un Correo electronico valido...",
+						required: "required",
+						pattern: "",
+						error: "",
+						tipo_campo: "email",
+					}, {
+						id_campo: "m1_sel_cargo",
+						nombre_campo: "Seleccione un cargo...",
+						required: "required",
+						tipo_campo: "select",
+					}, {
+						id_campo: "m1_sel_rol",
+						nombre_campo: "Seleccione un rol...",
+						required: "required",
+						tipo_campo: "select",
+					}, {
+						id_campo: "m1_sel_area",
+						nombre_campo: "Seleccione un área...",
+						required: "required",
+						tipo_campo: "select",
+					}, {
+						id_campo: "m1_sel_oficina",
+						nombre_campo: "Seleccione una oficina...",
+						required: "required",
+						tipo_campo: "select",
+					}, {
+						id_campo: "m1_chk_usuario_activo",
+						nombre_campo: "Activar o inactivar usuario",
+						tipo_campo: "checkbox",
+						checked: "checked"
+					},]
+				};
+				contenido += m0_js_crear_formulario(param_formulario);
+				contenido += '</div>';
+				router({
+					tipo_fuente: "VARIABLE",
+					contenido: contenido,
+					contenedor: "m0_div_panel_secundario",
+					id_privilegio: "1_1"
+				});
+				$("#m1_hid_operacion").val("INSERCION");
+				$("#m1_chk_usuario_activo").val("si");
+				m0_js_poblar_menu({
+					campo: "Seleccione un cargo",
+					criterio: "",
+					select: "m1_sel_cargo",
+					datos: LISTADO_CARGOS
+				});
+				m0_js_poblar_menu({
+					campo: "Seleccione un rol",
+					criterio: "",
+					select: "m1_sel_rol",
+					datos: LISTADO_ROLES
+				});
+				m0_js_poblar_menu({
+					campo: "Seleccione un área",
+					criterio: "",
+					select: "m1_sel_area",
+					datos: LISTADO_AREAS
+				});
+				var u = USUARIO;
+				var param_select = {
+					campo: "Seleccione una oficina",
+					criterio: u.id_regional,
+					select: "m1_sel_oficina",
+					datos: []
+				}
+				google.script.run
+					.withFailureHandler(function () {
+						m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página");
+					})
+					.withSuccessHandler(m0_js_poblar_menu)
+					.m1_gs_manipular_usuarios_llenar_formulario_oficinas(param_select);
+				if (operacion === "EDITAR") {
+					$("#m1_hid_operacion").val("EDICION");
+					google.script.run
+						.withFailureHandler(function () {
+							m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página");
+						})
+						.withSuccessHandler(m1_js_manipular_usuarios_llenar_formulario)
+						.m1_gs_manipular_usuarios_llenar_formulario(id_usuario);
+				}
+			} else {
+				m0_js_aviso("banner", "Usted no cuenta con los permisos necesarios para realizar esta acción")
+			}
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m1_js_manipular_usuarios",
+				error: e,
+				parametros: {
+					"id_usuario": id_usuario,
+					"operacion": operacion
+				}
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	* cargamos en el formulario la informacion del usuario , funciona de mano con m1_js_manipular_usuario
+	*
+	 * @param   {object}  info_usuario  objecto con la informacion del usuario
+		*
+	 * @return  {null}
+		*/
+	function m1_js_manipular_usuarios_llenar_formulario(info_usuario) {
+		try {
+
+			$("#m1_hid_id_usuario").val(info_usuario.id_usuario);
+			$("#m1_txt_usuario").val(info_usuario.usuario).parent().addClass('is-dirty');
+			$("#m1_txt_nombre").val(info_usuario.nombre).parent().addClass('is-dirty');
+			$("#m1_txt_mail").val(info_usuario.correo).parent().addClass('is-dirty');
+			$("#m1_sel_cargo").val(info_usuario.cargo);
+			$("#m1_sel_rol").val(info_usuario.rol);
+			$("#m1_sel_area").val(info_usuario.area);
+			$("#m1_sel_oficina").val(info_usuario.id_oficina);
+			if (info_usuario.activo === 1) {
+				$("#m1_chk_usuario_activo").prop('checked', true).parent().addClass('is-checked');
+			} else {
+				$("#m1_chk_usuario_activo").prop('checked', false).parent().removeClass('is-checked');
+			}
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m1_js_manipular_usuarios_llenar_formulario",
+				error: e,
+				parametros: info_usuario
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	* se encarga de enviar el formulario al server para su uso
+	*
+	 * @param   {object}  frm  formulario
+		*
+	 * @return  {null}
+		*/
+	function m1_js_manipular_usuarios_guardar(frm) {
+		try {
+
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página")
+				})
+				.withSuccessHandler(m1_js_manipular_usuarios_guardar_resultado)
+				.m1_gs_manipular_usuarios_guardar(frm);
+			m0_js_aviso("modal_box", "Por favor espere mientras se almacenan los datos");
+			event.preventDefault();
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m1_js_manipular_usuarios_guardar",
+				error: e,
+				parametros: frm
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	* funcion para mostrar los resultados del proceso de guardar la informacion en m1_js_manipular_usuarios_guardar
+	*
+	 * @param   {object}  param_resultado  objecto con los datos de respuesta del proceso ""
+		*
+	 * @return  {null}
+		*/
+	function m1_js_manipular_usuarios_guardar_resultado(param_resultado) {
+		try {
+
+			m0_js_aviso("aviso_modal_box", param_resultado.mensaje);
+			if (param_resultado.exito) {
+				m1_js_cargar_usuarios();
+			}
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m1_js_manipular_usuarios_guardar_resultado",
+				error: e,
+				parametros: param_resultado
+			});
+		}
+	}
+
+
+
+	//################################################################################################################################################################################################################
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//SECCION 2 - ADMON PRIVILEGIOS
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//################################################################################################################################################################################################################
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//listener de eventos del DOOM
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	$("#m0_div_panel_principal").on("click", "#m1_2_btn_buscar", function () {
+		m1_2_js_cargar_usuarios();
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_principal").on("click", "#m1_2_btn_privilegios", function () {
+		m1_2_js_administrar_privilegios_cargar_paso_1();
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_secundario").on("click", "[id*='m1_2_chk_privilegio_usuario_']", function () {
+		m1_js_modificar_privilegio(this)
+	});
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//funciones javascript
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	/**
+	 * funcion para cargar los objetos de una seccion especifica
+	 *
+	 * @return  {null}
+	 */
+	function m1_js_inicializar_pestaña_m1_2() {
+		try {
+
+			m0_js_log_sesion({
+				id_sesion: ID_SESION,
+				log: "M1 - Admon Privilegios",
+				tipo_log: "ACCESO A SECCION"
+			});
+
+			var u = USUARIO;
+			var pos;
+			for (var mod = 0; mod < u.modulos.length; mod++) {
+				if (1 == u.modulos[mod].id_modulo) {
+					pos = mod;
+				}
+			}
+			var param_modulos = {
+				icono: u.modulos[pos].icono,
+				id_modulo: 1,
+				texto_1: u.modulos[pos].modulo,
+				texto_2: "Admon Privilegios"
+			};
+			m0_js_menu_arbol(param_modulos);
+			m0_js_poblar_menu({
+				campo: "Seleccione un cargo",
+				criterio: "",
+				select: "m1_2_sel_criterio_cargo",
+				datos: LISTADO_CARGOS,
+			});
+			m0_js_poblar_menu({
+				campo: "Seleccione un rol",
+				criterio: "",
+				select: "m1_2_sel_criterio_rol",
+				datos: LISTADO_ROLES
+			});
+			m0_js_poblar_menu({
+				campo: "Seleccione un área",
+				criterio: "",
+				select: "m1_2_sel_criterio_area",
+				datos: LISTADO_AREAS
+			});
+			var param_select = {
+				campo: "Seleccione una oficina",
+				criterio: u.id_regional,
+				select: "m1_2_sel_criterio_oficina",
+				datos: [],
+				mensaje_carga: "Oficinas cargadas exitosamente"
+			}
+			$("#m1_2_sel_criterio_oficina").parent().addClass('is-dirty');
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página")
+				})
+				.withSuccessHandler(m0_js_poblar_menu)
+				.m1_gs_inicializar_busqueda_usuarios(param_select);
+			m0_js_aviso("modal_box", "Espere mientras se carga el listado de oficinas");
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m1_js_inicializar_pestaña_m1_2",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	* funcion para cargar los usuarios del sistema
+	*
+	 * @return  {null}
+		*/
+	function m1_2_js_cargar_usuarios() {
+		try {
+
+			var u = USUARIO;
+			var param_tabla = {
+				contenedor: "m1_2_div_consolidado_panel",
+				criterio: {
+					cargo: $("#m1_2_sel_criterio_cargo").val(),
+					rol: $("#m1_2_sel_criterio_rol").val(),
+					id_oficina: $("#m1_2_sel_criterio_oficina").val(),
+					area: $("#m1_2_sel_criterio_area").val()
+				}
+			};
+			$("#m0_div_panel_secundario").empty();
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página");
+				})
+				.withSuccessHandler(m1_2_js_cargar_tabla)
+				.m1_2_gs_cargar_usuarios(param_tabla);
+			$("#m1_2_div_privilegios").show();
+			$("#m1_2_div_consolidado_panel").html('<div class="mdl-spinner mdl-spinner--single-color mdl-js-spinner is-active carga_spinner"></div>');
+			componentHandler.upgradeDom();
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m1_2_js_cargar_usuarios",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Cargamos la tabla con el listado de usuarios
+	 *
+	 * @param   {object}  param_tabla  objecto con toda la informacion para construir la tabla
+	 *
+	 * @return  {null}
+	 */
+	function m1_2_js_cargar_tabla(param_tabla) {
+		try {
+
+			var u = USUARIO;
+			for (var j = 0; j < param_tabla.usuarios.registros; j++) {
+				var oficina = "";
+				var id_regional = "";
+				for (var i = 0; i < param_tabla.oficinas.registros; i++) {
+					if (param_tabla.usuarios.datos[j].id_oficina === param_tabla.oficinas.datos[i].id_oficina) {
+						oficina = param_tabla.oficinas.datos[i].oficina;
+						id_regional = param_tabla.oficinas.datos[i].id_regional;
+					}
+				}
+				if (m0_js_verificar_acceso("0_1")) {
+					var fila = [];
+					fila.push(param_tabla.usuarios.datos[j].id_usuario);
+					fila.push(param_tabla.usuarios.datos[j].usuario);
+					fila.push(param_tabla.usuarios.datos[j].nombre);
+					fila.push(param_tabla.usuarios.datos[j].correo);
+					fila.push(oficina);
+					fila.push(param_tabla.usuarios.datos[j].cargo);
+					fila.push(param_tabla.usuarios.datos[j].rol);
+					fila.push(param_tabla.usuarios.datos[j].area);
+					var chk_item = '<label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" for="m1_2_chk_id_usuario_' + param_tabla.usuarios.datos[j].id_usuario + '">';
+					chk_item += '<input type="checkbox" id="m1_2_chk_id_usuario_' + param_tabla.usuarios.datos[j].id_usuario + '" name="m1_2_chk_id_usuario_' + param_tabla.usuarios.datos[j].id_usuario + '" class="mdl-checkbox__input" value="' + param_tabla.usuarios.datos[j].id_usuario + '" data-usuario="' + param_tabla.usuarios.datos[j].usuario + '">';
+					chk_item += '</label>';
+					fila.push(chk_item);
+					param_tabla.datos.push(fila);
+				} else {
+					if (id_regional === u.id_regional) {
+						var fila = [];
+						fila.push(param_tabla.usuarios.datos[j].id_usuario);
+						fila.push(param_tabla.usuarios.datos[j].usuario);
+						fila.push(param_tabla.usuarios.datos[j].nombre);
+						fila.push(param_tabla.usuarios.datos[j].correo);
+						fila.push(oficina);
+						fila.push(param_tabla.usuarios.datos[j].cargo);
+						fila.push(param_tabla.usuarios.datos[j].rol);
+						fila.push(param_tabla.usuarios.datos[j].area);
+						var chk_item = '<label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" for="m1_2_chk_id_usuario_' + param_tabla.usuarios.datos[j].id_usuario + '">';
+						chk_item += '<input type="checkbox" id="m1_2_chk_id_usuario_' + param_tabla.usuarios.datos[j].id_usuario + '" name="m1_2_chk_id_usuario_' + param_tabla.usuarios.datos[j].id_usuario + '" class="mdl-checkbox__input" value="' + param_tabla.usuarios.datos[j].id_usuario + '" data-usuario="' + param_tabla.usuarios.datos[j].usuario + '">';
+						chk_item += '</label>';
+						fila.push(chk_item);
+						param_tabla.datos.push(fila);
+					}
+				}
+			}
+			m0_js_crear_tabla(param_tabla);
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m1_js_cargar_tabla",
+				error: e,
+				parametros: param_tabla
+			});
+		}
+	}
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	* selecciona los usuarios a los cuales se les revisara sus privilegios
+	*
+	 * @return  {null}
+		*/
+	function m1_2_js_administrar_privilegios_cargar_paso_1() {
+		try {
+
+			var param = {
+				usuarios: []
+			};
+			var rango;
+			$("[id*='m1_2_chk_id_usuario_']").each(function () {
+				if ($(this).is(":checked")) {
+					rango = {
+						id_usuario: $(this).val(),
+						usuario: $(this).attr("data-usuario")
+					}
+					param.usuarios.push(rango);
+				}
+			});
+			if (param.usuarios.length === 0) {
+				m0_js_aviso("snackbar", "Se debe seleccionar por lo menos un usuario para visualizar sus privilegios")
+			} else {
+				google.script.run
+					.withFailureHandler(function () {
+						m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página");
+					})
+					.withSuccessHandler(m1_2_js_administrar_privilegios_cargar_paso_2)
+					.m1_2_gs_administrar_privilegios_cargar(param);
+				$("#m0_div_panel_secundario").html('<div class="mdl-spinner mdl-spinner--single-color mdl-js-spinner is-active carga_spinner"></div>');
+				componentHandler.upgradeDom();
+			}
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m1_2_js_administrar_privilegios_cargar_paso_1",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	* selecciona los usuarios a los cuales se les revisara sus privilegios
+	*
+	 * @return  {null}
+		*/
+	function m1_2_js_administrar_privilegios_cargar_paso_2(param) {
+		try {
+
+			var chk_item;
+			titulos = [];
+			datos = [];
+			titulos.push("MODULO");
+			titulos.push("PRIVILEGIO");
+			for (var j = 0; j < param.usuarios.length; j++) {
+				titulos.push(param.usuarios[j].usuario);
+			}
+			for (var j_modulos = 0; j_modulos < param.modulos.length; j_modulos++) {
+				for (var j_privilegios = 0; j_privilegios < param.privilegios.length; j_privilegios++) {
+					if (param.modulos[j_modulos].id_modulo === param.privilegios[j_privilegios].id_modulo) {
+						var fila = [];
+						fila.push(param.modulos[j_modulos].modulo);
+						fila.push(param.privilegios[j_privilegios].privilegio);
+						for (var j_usuarios = 0; j_usuarios < param.usuarios.length; j_usuarios++) {
+							sw = false;
+							for (var j_privilegios_usuario = 0; j_privilegios_usuario < param.privilegios_usuario.length; j_privilegios_usuario++) {
+								if (param.privilegios_usuario[j_privilegios_usuario].id_usuario == param.usuarios[j_usuarios].id_usuario && param.privilegios_usuario[j_privilegios_usuario].id_privilegio == param.privilegios[j_privilegios].id_privilegio) {
+									sw = true;
+								}
+							}
+							if (sw) {
+								chk_item = '';
+								chk_item += '<label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="m1_2_chk_privilegio_usuario_' + param.privilegios[j_privilegios].id_privilegio + '_' + param.usuarios[j_usuarios].id_usuario + '">';
+								chk_item += '<input type="checkbox" id="m1_2_chk_privilegio_usuario_' + param.privilegios[j_privilegios].id_privilegio + '_' + param.usuarios[j_usuarios].id_usuario + '" name="m1_2_chk_privilegio_usuario_' + param.privilegios[j_privilegios].id_privilegio + '_' + param.usuarios[j_usuarios].id_usuario + '" class="mdl-switch__input" data-id_usuario="' + param.usuarios[j_usuarios].id_usuario + '" data-id_privilegio="' + param.privilegios[j_privilegios].id_privilegio + '" checked >';
+								chk_item += '</label>';
+							} else {
+								chk_item = '';
+								chk_item += '<label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="m1_2_chk_privilegio_usuario_' + param.privilegios[j_privilegios].id_privilegio + '_' + param.usuarios[j_usuarios].id_usuario + '">';
+								chk_item += '<input type="checkbox" id="m1_2_chk_privilegio_usuario_' + param.privilegios[j_privilegios].id_privilegio + '_' + param.usuarios[j_usuarios].id_usuario + '" name="m1_2_chk_privilegio_usuario_' + param.privilegios[j_privilegios].id_privilegio + '_' + param.usuarios[j_usuarios].id_usuario + '" class="mdl-switch__input" data-id_usuario="' + param.usuarios[j_usuarios].id_usuario + '" data-id_privilegio="' + param.privilegios[j_privilegios].id_privilegio + '" >';
+								chk_item += '</label>';
+							}
+							fila.push(chk_item);
+						}
+						datos.push(fila);
+					}
+				}
+			}
+			m0_js_crear_tabla({
+				contenedor: "m0_div_panel_secundario",
+				titulos: titulos,
+				datos: datos
+			});
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m1_2_js_administrar_privilegios_cargar_paso_2",
+				error: e,
+				parametros: param
+			});
+		}
+	}
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	* modifica el privilegio de determinado usuario
+	*
+	 * @param   {object}  chk  objecto check con la informacion del usuario a quien se le modificara el privilegio
+				*
+	 * @return  {object}       resultado de la modificacion
+				*/
+	function m1_js_modificar_privilegio(chk) {
+		try {
+
+			var estado = false;
+			if ($(chk).is(":checked")) {
+				estado = true;
+			}
+			var param = {
+				id_check: $(chk).attr("id"),
+				id_usuario: $(chk).attr("data-id_usuario"),
+				id_privilegio: $(chk).attr("data-id_privilegio"),
+				estado: estado
+			};
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página")
+				})
+				.withSuccessHandler(function (mensaje) {
+					m0_js_aviso("aviso_modal_box", mensaje);
+				})
+				.m1_gs_modificar_privilegio(param);
+			m0_js_aviso("modal_box", "Por favor espere mientras se almacenan los datos")
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m1_js_modificar_privilegio",
+				error: e,
+				parametros: chk
+			});
+		}
+	}
+
+
+	//################################################################################################################################################################################################################
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//SECCION 3 - ADMON OFICINAS
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//################################################################################################################################################################################################################
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//listener de eventos del DOOM
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	$("#m0_div_panel_principal").on("click", "#m1_3_btn_nueva_oficina", function () {
+		m1_3_js_manipular_oficinas(-1, "INSERTAR");
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_principal").on("click", "#m1_3_btn_editar_oficina", function () {
+		m1_3_js_manipular_oficinas($(this).attr("data-id_oficina"), "EDITAR");
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_secundario").on("submit", "#m1_3_frm_manipular_oficinas", function () {
+		m1_3_js_manipular_oficinas_guardar(this);
+	});
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//funciones javascript
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+
+	/**
+	 * funcion para cargar los objetos de una seccion especifica
+	 *
+	* @return  {null}
+	*/
+	function m1_js_inicializar_pestaña_m1_3() {
+		try {
+
+			m0_js_log_sesion({
+				id_sesion: ID_SESION,
+				log: "M1 - Admon Oficinas",
+				tipo_log: "ACCESO A SECCION"
+			});
+
+			var u = USUARIO;
+			var pos;
+			for (var mod = 0; mod < u.modulos.length; mod++) {
+				if (1 == u.modulos[mod].id_modulo) {
+					pos = mod;
+				}
+			}
+			var param_modulos = {
+				icono: u.modulos[pos].icono,
+				id_modulo: 1,
+				texto_1: u.modulos[pos].modulo,
+				texto_2: "Admon Oficinas"
+			};
+			m0_js_menu_arbol(param_modulos);
+			var param_tabla = {
+				contenedor: "m1_3_div_consolidado_panel",
+				criterio: {
+					id_regional: u.id_regional
+				}
+			};
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página")
+				})
+				.withSuccessHandler(m0_js_crear_tabla)
+				.m1_3_gs_listar_oficinas(param_tabla);
+			$("#m1_3_div_consolidado_panel").html('<div class="mdl-spinner mdl-spinner--single-color mdl-js-spinner is-active carga_spinner"></div>');
+			componentHandler.upgradeDom();
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m1_js_inicializar_pestaña_m1_3",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	* gestiona la adicion, edicion e inactivacion de usuarios de la app
+	*
+	 * @param   {number}  id_usuario  id usuario
+	 * @param   {string}  operacion   oeracion a realizar: "INSERTAR" y "EDITAR"
+				*
+	 * @return  {Object}              objecto con la informacion para la generacion del formulario
+				*/
+	function m1_3_js_manipular_oficinas(id_oficina, operacion) {
+		try {
+
+			var u = USUARIO;
+			if (m0_js_verificar_acceso("1_3")) {
+				var contenido = '<div class="div_panel mdl-shadow--3dp">';
+				if (operacion === "INSERTAR") {
+					contenido += "<h4>CREAR OFICINA</h4>";
+					contenido += "<p>Ingresar información para la nueva oficina</p>";
+				} else {
+					contenido += "<h4>EDITAR OFICINA</h4>";
+					contenido += "<p>Editar información de la oficina</p>";
+				}
+				var param_formulario = {
+					formulario: "m1_3_frm_manipular_oficinas",
+					campos: [{
+						id_campo: "m1_3_hid_id_oficina",
+						tipo_campo: "hidden"
+					}, {
+						id_campo: "m1_3_hid_operacion",
+						tipo_campo: "hidden"
+					}, {
+						id_campo: "m1_3_hid_id_regional",
+						tipo_campo: "hidden"
+					}, {
+						id_campo: "m1_3_sel_tipo_oficina",
+						nombre_campo: "Seleccione un tipo de oficina...",
+						required: "required",
+						tipo_campo: "select",
+					}, {
+						id_campo: "m1_3_txt_oficina",
+						nombre_campo: "Oficina...",
+						pattern: "",
+						error: "",
+						required: "required",
+						tipo_campo: "text",
+					}, {
+						id_campo: "m1_3_chk_oficina_activa",
+						nombre_campo: "Activar o inactivar oficina",
+						tipo_campo: "checkbox",
+						checked: "checked"
+					}],
+				};
+				contenido += m0_js_crear_formulario(param_formulario);
+				contenido += '</div>';
+				router({
+					tipo_fuente: "VARIABLE",
+					contenido: contenido,
+					contenedor: "m0_div_panel_secundario",
+					id_privilegio: "1_3"
+				});
+				m0_js_poblar_menu({
+					campo: "Seleccione un tipo de oficina",
+					criterio: "",
+					select: "m1_3_sel_tipo_oficina",
+					datos: LISTADO_TIPO_OFICINAS
+				});
+				$("#m1_3_hid_id_regional").val(u.id_regional);
+				$("#m1_3_hid_operacion").val("INSERCION");
+				$("#m1_3_chk_oficina_activa").val("si");
+				if (operacion === "EDITAR") {
+					$("#m1_3_hid_operacion").val("EDICION");
+					google.script.run
+						.withFailureHandler(function () {
+							m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página");
+						})
+						.withSuccessHandler(m1_3_js_manipular_oficinas_llenar_formulario)
+						.m1_gs_manipular_oficinas_llenar_formulario(id_oficina);
+				}
+			} else {
+				m0_js_aviso("banner", "Usted no cuenta con los permisos necesarios para realizar esta acción")
+			}
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m1_3_js_manipular_oficinas",
+				error: e,
+				parametros: {
+					"id_oficina": id_oficina,
+					"operacion": operacion
+				}
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	* cargamos en el formulario la informacion de la oficina , funciona de mano con m1_3_js_manipular_oficinas
+	*
+	 * @param   {object}  info_oficina  objecto con la informacion del usuario
+				*
+	 * @return  {null}
+				*/
+	function m1_3_js_manipular_oficinas_llenar_formulario(info_oficina) {
+		try {
+
+			$("#m1_3_hid_id_oficina").val(info_oficina.id_oficina);
+			$("#m1_3_hid_id_regional").val(info_oficina.id_regional);
+			$("#m1_3_hid_id_regional").val(info_oficina.id_regional);
+			$("#m1_3_sel_tipo_oficina").val(info_oficina.tipo_oficina);
+			if (info_oficina.activo === 1) {
+				$("#m1_3_chk_oficina_activa").prop('checked', true).parent().addClass('is-checked');
+			} else {
+				$("#m1_3_chk_oficina_activa").prop('checked', false).parent().removeClass('is-checked');
+			}
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m1_3_js_manipular_oficinas_llenar_formulario",
+				error: e,
+				parametros: info_oficina
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	* se encarga de enviar el formulario al server para su uso
+	*
+	 * @param   {object}  frm  formulario
+				*
+	 * @return  {null}
+				*/
+	function m1_3_js_manipular_oficinas_guardar(frm) {
+		try {
+
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página")
+				})
+				.withSuccessHandler(m1_3_js_manipular_oficinas_guardar_resultado)
+				.m1_3_gs_manipular_oficinas_guardar(frm);
+			m0_js_aviso("modal_box", "Por favor espere mientras se almacenan los datos");
+			event.preventDefault();
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m1_3_js_manipular_oficinas_guardar",
+				error: e,
+				parametros: frm
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	* funcion para mostrar los resultados del proceso de guardar la informacion en m1_js_manipular_usuarios_guardar
+	*
+	 * @param   {object}  param_resultado  objecto con los datos de respuesta del proceso ""
+				*
+	 * @return  {null}
+				*/
+	function m1_3_js_manipular_oficinas_guardar_resultado(param_resultado) {
+		try {
+
+			m0_js_aviso("aviso_modal_box", param_resultado.mensaje);
+			if (param_resultado.exito) {
+				var u = USUARIO;
+				var param_tabla = {
+					contenedor: "m1_3_div_consolidado_panel",
+					criterio: {
+						id_regional: u.id_regional
+					}
+				};
+				$("#m0_div_panel_secundario").empty();
+				google.script.run
+					.withFailureHandler(function () {
+						m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página")
+					})
+					.withSuccessHandler(m0_js_crear_tabla)
+					.m1_3_gs_listar_oficinas(param_tabla);
+				$("#m1_3_div_consolidado_panel").html('<div class="mdl-spinner mdl-spinner--single-color mdl-js-spinner is-active carga_spinner"></div>');
+				componentHandler.upgradeDom();
+			}
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m1_3_js_manipular_oficinas_guardar_resultado",
+				error: e,
+				parametros: param_resultado
+			});
+		}
+	}
+
+
+	//################################################################################################################################################################################################################
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//SECCION 4 - DELEGACION DE OFICINAS
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//################################################################################################################################################################################################################
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//listener de eventos del DOOM
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	$("#m0_div_panel_principal").on("click", "#m1_4_btn_delegar_usuario", function () {
+		m1_4_js_delegar_oficina($(this).attr("data-id_usuario"), $(this).attr("data-usuario"), $(this).attr("data-id_oficina_base"), $(this).attr("data-id_oficina_alterna"));
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_secundario").on("submit", "#m1_4_frm_delegar_oficinas", function () {
+		m1_4_js_delegar_oficina_guardar(this);
+	});
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//funciones javascript
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+
+	/**
+	 * funcion para cargar los objetos de una seccion especifica
+	 *
+	* @return  {null}
+	*/
+	function m1_js_inicializar_pestaña_m1_4() {
+		try {
+
+			m0_js_log_sesion({
+				id_sesion: ID_SESION,
+				log: "M1 - Delegar oficina",
+				tipo_log: "ACCESO A SECCION"
+			});
+
+			var u = USUARIO;
+			var pos;
+			for (var mod = 0; mod < u.modulos.length; mod++) {
+				if (1 == u.modulos[mod].id_modulo) {
+					pos = mod;
+				}
+			}
+			var param_modulos = {
+				icono: u.modulos[pos].icono,
+				id_modulo: 1,
+				texto_1: u.modulos[pos].modulo,
+				texto_2: "Delegar oficina"
+			};
+			m0_js_menu_arbol(param_modulos);
+			var param_tabla = {
+				contenedor: "m1_4_div_consolidado_panel",
+				criterio: {
+					id_regional: u.id_regional
+				}
+			};
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página")
+				})
+				.withSuccessHandler(m0_js_crear_tabla)
+				.m1_4_gs_listar_usuarios(param_tabla);
+			$("#m1_4_div_consolidado_panel").html('<div class="mdl-spinner mdl-spinner--single-color mdl-js-spinner is-active carga_spinner"></div>');
+			componentHandler.upgradeDom();
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m1_js_inicializar_pestaña_m1_4",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	* gestiona la delegacion de oficinas al usuario especifico
+	*
+	 * @param   {number}  id_usuario  id usuario
+				*
+	 * @return  {Object}              objecto con la informacion para la generacion del formulario
+				*/
+	function m1_4_js_delegar_oficina(id_usuario, usuario, id_oficina_base, id_oficina_alterna) {
+		try {
+
+			var u = USUARIO;
+			if (m0_js_verificar_acceso("1_4")) {
+				var contenido = '<div class="div_panel mdl-shadow--3dp">';
+				contenido += "<h4>DELEGAR OFICINA</h4>";
+				contenido += "<p>Por favor seleccione la oficina que se le va a delegar al usuario : <b>" + usuario + "</b></p>";
+				var param_formulario = {
+					formulario: "m1_4_frm_delegar_oficinas",
+					campos: [{
+						id_campo: "m1_4_hid_id_usuario",
+						tipo_campo: "hidden"
+					}, {
+						id_campo: "m1_4_sel_oficina_alterna",
+						nombre_campo: "Seleccione una oficina...",
+						required: "required",
+						tipo_campo: "select",
+					}, {
+						id_campo: "m1_4_txt_fin_delegacion",
+						nombre_campo: "Fin delegación...",
+						pattern: "",
+						error: "",
+						required: "required",
+						tipo_campo: "date",
+					}, {
+						id_campo: "m1_4_chk_oficina_activa",
+						nombre_campo: "Activar o inactivar oficina alterna",
+						tipo_campo: "checkbox",
+						checked: "checked"
+					}],
+				};
+				contenido += m0_js_crear_formulario(param_formulario);
+				contenido += '</div>';
+				router({
+					tipo_fuente: "VARIABLE",
+					contenido: contenido,
+					contenedor: "m0_div_panel_secundario",
+					id_privilegio: "1_4"
+				});
+				$("#m1_4_chk_oficina_activa").val("si");
+				$("#m1_4_hid_id_usuario").val(id_usuario);
+				$("#m1_4_txt_fin_delegacion").parent().addClass('is-dirty')
+				var param_select = {
+					campo: "Seleccione una oficina",
+					criterio: {
+						id_regional: u.id_regional
+					},
+					select: "m1_4_sel_oficina_alterna",
+					datos: []
+				}
+				google.script.run
+					.withFailureHandler(function () {
+						m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página");
+					})
+					.withSuccessHandler(m0_js_poblar_menu)
+					.m1_4_gs_delegar_oficina_llenar_formulario_oficinas(param_select);
+			} else {
+				m0_js_aviso("banner", "Usted no cuenta con los permisos necesarios para realizar esta acción")
+			}
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m1_4_js_delegar_oficina",
+				error: e,
+				parametros: {
+					"id_usuario": id_usuario,
+					"id_oficina": id_oficina,
+					"usuario": usuario
+				}
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	* se encarga de enviar el formulario al server para su uso
+	*
+	 * @param   {object}  frm  formulario
+				*
+	 * @return  {null}
+				*/
+	function m1_4_js_delegar_oficina_guardar(frm) {
+		try {
+			google.script.run
+				.withFailureHandler(function () {
+					m0_js_aviso("banner", "Error en la comunicación con el Servidor. Por favor inténtelo nuevamente o recargue la página")
+				})
+				.withSuccessHandler(function (r) {
+					if (m0_js_resultado_operacion(r)) {
+						m0_js_inicializar_app_paso_1();
+					}
+				})
+				.m1_4_gs_delegar_oficina_guardar(frm);
+			m0_js_aviso("modal_box", "Por favor espere mientras se almacenan los datos");
+			event.preventDefault();
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m3_1_js_solicitud_consulta",
+				error: e,
+				parametros: frm
+			});
+		}
+	}
+</script>

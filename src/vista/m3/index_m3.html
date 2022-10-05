@@ -1,0 +1,79 @@
+<script>
+	/**---------------------------------------MODULO NOVEDADES TH----------------------------------------------------------------------------------- */
+	m0_js_log_sesion({
+		id_sesion: ID_SESION,
+		log: "M3",
+		tipo_log: "ACCESO A MODULO"
+	});
+
+	var param = {
+		id_modulo: 3,
+		secciones: [{
+			nombre_seccion: "Consulta novedades",
+			fuente: "vista/m3/index_m3_1",
+			privilegio: "3_0",
+			descripcion: "Revisión de todas las novedades generadas"
+		}, {
+			nombre_seccion: "Solicitud de permiso",
+			fuente: "vista/m3/index_m3_2",
+			privilegio: "3_1",
+			descripcion: "Formulario para la solicitud de los siguientes tipos de permiso: asistencia a servicios médicos, asuntos personales, calamidad doméstica, estudio, sufragio, desempeño de cargos de forzosa aceptación, matrimonio, lactancia, comisiones sindicales, Permiso especial, entierro de compañeros de trabajo, para prestar servicio militar, maternidad, solicitud propia, paternidad y luto"
+		}, {
+			nombre_seccion: "Autorización permisos",
+			fuente: "vista/m3/index_m3_3",
+			privilegio: "3_2",
+			descripcion: "Sección para la autorización de solicitudes de permisos"
+		}, {
+			nombre_seccion: "Registro de incapacidad",
+			fuente: "vista/m3/index_m3_5",
+			privilegio: "3_4",
+			descripcion: "Formulario para el registro de incapacidades"
+		}, {
+			nombre_seccion: "Licencias",
+			fuente: "vista/m3/index_m3_6",
+			privilegio: "3_5",
+			descripcion: "Formulario para el registro de solicitudes de licencias"
+		}, {
+			nombre_seccion: "Programación vacaciones",
+			fuente: "vista/m3/index_m3_7",
+			privilegio: "3_6",
+			descripcion: "Formulario para la programación de vacaciones"
+		}, {
+			nombre_seccion: "Modificación de vacaciones",
+			fuente: "vista/m3/index_m3_16",
+			privilegio: "3_22",
+			descripcion: "Formulario para solicitar modificación de fecha de vacaciones y fraccionamiento de las mismas"
+		}, {
+			nombre_seccion: "Programación agentes en misión",
+			fuente: "vista/m3/index_m3_11",
+			privilegio: "3_10",
+			descripcion: "Programación de los ingresos y retiros de agentes en misión"
+		}, {
+			nombre_seccion: "Programación aprendices SENA / estudiantes en practica",
+			fuente: "vista/m3/index_m3_12",
+			privilegio: "3_11",
+			descripcion: "Programación de los ingresos y retiros de aprendices SENA o estudiantes en Practica (Programa Estado)"
+		}, {
+			nombre_seccion: "Permisos sindicales",
+			fuente: "vista/m3/index_m3_15",
+			privilegio: "3_21",
+			descripcion: "Formulario para el registro de Permisos Sindicales"
+		}, {
+			nombre_seccion: "Calendario novedades TH",
+			fuente: "vista/m3/index_m3_10",
+			privilegio: "3_9",
+			descripcion: "Visualizacion en el calendario de la regional de todas las novedades registradas en el modulo"
+		}, {
+			nombre_seccion: "Eliminar novedades TH",
+			fuente: "vista/m3/index_m3_14",
+			privilegio: "3_12",
+			descripcion: "Eliminar novedades de la base general de Novedades TH"
+		}, {
+			nombre_seccion: "Reporte general base novedades TH",
+			fuente: "vista/m3/index_m3_13",
+			privilegio: "3_17",
+			descripcion: "Reporte tabular de todas las novedades de Talento Humano reportadas a traves de la herramienta"
+		}]
+	}
+	m0_js_inicializar_modulo(param);
+</script>

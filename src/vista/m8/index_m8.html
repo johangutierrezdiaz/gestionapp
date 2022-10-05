@@ -1,0 +1,29 @@
+<script>
+	/**---------------------------------------MODULO CALIDAD RADICACION----------------------------------------------------------------------------------- */
+	m0_js_log_sesion({
+		id_sesion: ID_SESION,
+		log: "M8",
+		tipo_log: "ACCESO A MODULO"
+	});
+
+	var param = {
+		id_modulo: 8,
+		secciones: [{
+			nombre_seccion: "Registro inconsistencia",
+			fuente: "vista/m8/index_m8_1",
+			privilegio: "8_1",
+			descripcion: "Formulario para el registro de las causas mas comunes por las cuales se Redigitalizan casos en los Pac de la Regional."
+		}, {
+			nombre_seccion: "Registro Quejas y Felicitaciones",
+			fuente: "vista/m8/index_m8_3",
+			privilegio: "8_3",
+			descripcion: "Formulario para el registro de casos correspondientes a Quejas o Felicitaciones."
+		}, {
+			nombre_seccion: "Reportes consolidados del modulo",
+			fuente: "vista/m8/index_m8_2",
+			privilegio: "8_2",
+			descripcion: "Histórico de todas las inconsistencias registradas a través del formulario."
+		}]
+	}
+	m0_js_inicializar_modulo(param);
+</script>

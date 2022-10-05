@@ -1,0 +1,39 @@
+<script>
+	/**---------------------------------------MODULO APERTURA Y CIERRE----------------------------------------------------------------------------------- */
+	m0_js_log_sesion({
+		id_sesion: ID_SESION,
+		log: "M2",
+		tipo_log: "ACCESO A MODULO"
+	});
+
+	var param = {
+		id_modulo: 2,
+		secciones: [{
+			nombre_seccion: "Control de Apertura",
+			fuente: "vista/m2/index_m2_1",
+			privilegio: "2_1",
+			descripcion: "Diligenciar Registro de Novedades en Apertura"
+		}, {
+			nombre_seccion: "Informe de Cierre",
+			fuente: "vista/m2/index_m2_2",
+			privilegio: "2_2",
+			descripcion: "Diligenciar Informe de Cierre"
+		}, {
+			nombre_seccion: "Consulta operación oficinas",
+			fuente: "vista/m2/index_m2_3",
+			privilegio: "2_3",
+			descripcion: "Informe generado a partir de la información combinada de las novedades registradas en la Apertura y durante la Operacion del PAC"
+		}, {
+			nombre_seccion: "Reportes modulo apertura y cierre",
+			fuente: "vista/m2/index_m2_4",
+			privilegio: "2_5",
+			descripcion: "Informe tabular de lo registrado por las oficinas en los informes de apertura y cierre; Novedades en la operación, en el personal y reporte de socializaciones"
+		}, {
+			nombre_seccion: "Banco de conocimientos",
+			fuente: "vista/m2/index_m2_5",
+			privilegio: "2_8",
+			descripcion: "Modulo para el registro, referencia y control de socializaciones de los diferentes instructivos, procedimientos, guías, directrices, etc.  Que se distribuye a los puntos de atención.  "
+		}]
+	}
+	m0_js_inicializar_modulo(param);
+</script>

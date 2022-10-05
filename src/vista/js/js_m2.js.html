@@ -1,0 +1,2208 @@
+<script>
+	/**---------------------------------------MODULO APERTURA Y CIERRE----------------------------------------------------------------------------------- */
+
+	//################################################################################################################################################################################################################
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//SECCION 1 - Acta de Apertura
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//################################################################################################################################################################################################################
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//listener de eventos del DOOM
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	$("#m0_div_panel_principal").on("click", "#m2_1_btn_agregar_novedad_mtto", function () {
+		m2_1_js_registrar_novedad_mtto();
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_principal").on("click", "#m2_1_a_eliminar_novedad_mtto", function () {
+		$(this).closest("li").remove();
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_principal").on("click", "#m2_1_btn_registrar_acta", function () {
+		m2_1_js_registrar_acta();
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_aviso_modal_box").on("submit", "#m2_1_frm_a_p_socializacion", function () {
+		m2_1_js_a_p_socializacion(this);
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_aviso_modal_box").on("submit", "#m2_1_frm_registro_incapacidad", function () {
+		m2_1_js_registro_incapacidad(this);
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_aviso_modal_box").on("click", "#m2_1_btn_a_c_salir", function () {
+		m0_js_aviso("cierre_modal_box", "");
+	});
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//funciones javascript
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	/**
+	 * funcion para cargar los objetos de una seccion especifica
+	 *
+	 * @return  {null}
+	 */
+	function m2_js_inicializar_pestaña_m2_1() {
+		try {
+
+			m0_js_log_sesion({
+				id_sesion: ID_SESION,
+				log: "M2 - Acta de Apertura",
+				tipo_log: "ACCESO A SECCION"
+			});
+
+			var u = USUARIO;
+			var pos;
+			for (var mod = 0; mod < u.modulos.length; mod++) {
+				if (2 == u.modulos[mod].id_modulo) {
+					pos = mod;
+				}
+			}
+			var param_modulos = {
+				icono: u.modulos[pos].icono,
+				id_modulo: 2,
+				texto_1: u.modulos[pos].modulo,
+				texto_2: "Acta de Apertura"
+			};
+			m0_js_menu_arbol(param_modulos);
+
+			if (u.tipo_oficina === "ADMINISTRATIVA REGIONAL" || u.tipo_oficina === "ADMINISTRATIVA NIVEL CENTRAL" || u.oficina_activa == 0) {
+				if (u.oficina_activa == 0) {
+					m0_js_aviso("banner", "Esta oficina se encuentra inactiva");
+					m0_js_aviso("snackbar", "Esta oficina se encuentra inactiva");
+					m0_js_cargar_inicio_modulo(2)
+				} else {
+					m0_js_aviso("banner", "Para este tipo de oficina no se esta habilitado realizar Control de Apertura o Informe de Cierre");
+					m0_js_aviso("snackbar", "Para este tipo de oficina no se esta habilitado realizar Control de Apertura o Informe de Cierre");
+					m0_js_cargar_inicio_modulo(2)
+				}
+			} else {
+				google.script.run
+					.withFailureHandler(function (e) {
+						m0_js_registrar_error({
+							gs: "m2_1_gs_verificar_acta_apertura",
+							funcion: "m2_js_inicializar_pestaña_m2_1",
+							error: { message: e.name + " : " + e.message, name: "AJAX" },
+							parametros: u.id_oficina
+						});
+					})
+					.withSuccessHandler(function (r) {
+						if (r.exito) m0_js_aviso("banner", r.mensaje);
+					})
+					.m2_1_gs_verificar_acta_apertura(u.id_oficina);
+
+				$("#m2_1_div_accordion").accordion({
+					heightStyle: "content"
+				});
+
+				var f_actual = new Date();
+
+				$("#m2_1_titulo").html(obtener_dia_semana(f_actual.getDay()) + ", " + f_actual.getDate() + " de " + obtener_mes(f_actual.getMonth() + 1).toLowerCase() + " de " + f_actual.getFullYear());
+				$("#m2_1_h4_titulo").html("CONTROL DE APERTURA / " + u.oficina);
+
+				var param_tabla = {
+					contenedor: "m2_1_div_personal",
+					criterio: {
+						id_oficina: u.id_oficina,
+					}
+				};
+
+				$("#m2_1_btn_registrar_acta").prop("disabled", true);
+
+				google.script.run
+					.withFailureHandler(function (e) {
+						m0_js_registrar_error({
+							gs: "m2_1_gs_cargar_disponibilidad_funcionarios",
+							funcion: "m2_js_inicializar_pestaña_m2_1",
+							error: { message: e.name + " : " + e.message, name: "AJAX" },
+							parametros: param_tabla
+						});
+					})
+					.withSuccessHandler(function (param) {
+
+            console.log(param)
+
+						var fecha_actual = new Date();
+						fecha_actual.setHours(0, 0, 0, 0);
+						var fecha_inicio;
+						var fecha_fin;
+						var chk_item;
+						var txt_item;
+						var chk_ausencia;
+						var chk_incapacidad;
+						var index_novedad;
+						for (var j = 0; j < param.usuarios.registros; j++) {
+							if (param.usuarios.datos[j].rol.indexOf("PAC") != -1) {
+								var str = String(param.usuarios.datos[j].id_usuario);
+								var id_usuario = str.replace(".", "_")
+								var fila = [];
+								fila.push(param.usuarios.datos[j].usuario);
+								fila.push(param.usuarios.datos[j].nombre);
+								fila.push(param.usuarios.datos[j].cargo);
+								fila.push(param.usuarios.datos[j].rol);
+								index_novedad = "";
+								for (var l = 0; l < param.novedades.registros; l++) {
+									if (param.usuarios.datos[j].id_usuario == param.novedades.datos[l].id_usuario) {
+										index_novedad = l;
+									}
+								}
+								if (index_novedad !== "") {
+
+									var fecha_inicio = new Date(param.novedades.datos[index_novedad].fecha_inicio_novedad);
+									fecha_inicio.setHours(0, 0, 0, 0);
+
+									var fecha_fin = new Date(param.novedades.datos[index_novedad].fecha_fin_novedad);
+									fecha_fin.setHours(0, 0, 0, 0);
+
+									var diff = fecha_fin.getTime() - fecha_inicio.getTime();
+
+									var dias_transcurridos = diff / (1000 * 60 * 60 * 24);
+
+									if (dias_transcurridos >= 1) {
+										chk_item = '';
+										chk_item += '<label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="m2_1_chk_disponibilidad_usuario_' + param.usuarios.datos[j].id_usuario + '">';
+										chk_item += '<input type="checkbox" data-usuario="' + param.usuarios.datos[j].usuario + '" data-id_usuario="' + param.usuarios.datos[j].id_usuario + '" id="m2_1_chk_disponibilidad_usuario_' + param.usuarios.datos[j].id_usuario + '" name="m2_1_chk_disponibilidad_usuario_' + param.usuarios.datos[j].id_usuario + '" class="mdl-switch__input"  data-usuario="' + param.usuarios.datos[j].usuario + '" disabled >';
+										chk_item += '</label>';
+										fila.push(chk_item);
+										txt_item = '';
+										txt_item += '<div class="mdl-textfield mdl-js-textfield">';
+										txt_item += '<textarea class="mdl-textfield__input" rows="2" id="m2_1_txt_novedad_usuario_' + id_usuario + '" name="m2_1_txt_novedad_usuario_' + id_usuario + '" disabled >' + param.novedades.datos[index_novedad].novedad + ' (' + param.novedades.datos[index_novedad].detalle.replace(/<[^>]*>?/g, '') + ') </textarea>';
+										txt_item += '<label class="mdl-textfield__label" for="m2_1_txt_novedad_usuario_' + id_usuario + '" >Novedad...</label>';
+										txt_item += '<span class="mdl-textfield__error">No puede dejar este campo vacío</span>';
+										txt_item += '</div>';
+										fila.push(txt_item);
+										fila.push("");
+									} else {
+										chk_item = '';
+										chk_item += '<label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="m2_1_chk_disponibilidad_usuario_' + param.usuarios.datos[j].id_usuario + '">';
+										chk_item += '<input type="checkbox" data-usuario="' + param.usuarios.datos[j].usuario + '" data-id_usuario="' + param.usuarios.datos[j].id_usuario + '" id="m2_1_chk_disponibilidad_usuario_' + param.usuarios.datos[j].id_usuario + '" name="m2_1_chk_disponibilidad_usuario_' + param.usuarios.datos[j].id_usuario + '" class="mdl-switch__input" data-id_usuario="' + param.usuarios.datos[j].id_usuario + '" data-usuario="' + param.usuarios.datos[j].usuario + '" checked >';
+										chk_item += '</label>';
+										fila.push(chk_item);
+										txt_item = '';
+										txt_item += '<div class="mdl-textfield mdl-js-textfield">';
+										txt_item += '<textarea class="mdl-textfield__input" rows="2" id="m2_1_txt_novedad_usuario_' + id_usuario + '" name="m2_1_txt_novedad_usuario_' + id_usuario + '" >' + param.novedades.datos[index_novedad].novedad + ' de ' + param.novedades.datos[index_novedad].fecha_inicio_novedad + ' a ' + param.novedades.datos[index_novedad].fecha_fin_novedad + ' (' + param.novedades.datos[index_novedad].detalle.replace(/<[^>]*>?/g, '') + ') </textarea>';
+										txt_item += '<label class="mdl-textfield__label" for="m2_1_txt_novedad_usuario_' + id_usuario + '" >Novedad...</label>';
+										txt_item += '<span class="mdl-textfield__error">No puede dejar este campo vacío</span>';
+										txt_item += '</div>';
+										fila.push(txt_item);
+										if (m0_js_verificar_acceso("3_4")) {
+											if (param.usuarios.datos[j].cargo === "AGENTE DE SERVICIO EN MISIÓN" || param.usuarios.datos[j].cargo === "GESTOR DE SERVICIO EN MISIÓN") {
+												fila.push('<a href="#" id="m2_1_a_incapacidad_usuario_' + param.usuarios.datos[j].id_usuario + '" data-nombre_usuario="' + param.usuarios.datos[j].nombre + '" class="mdl-button mdl-js-button mdl-button--icon mdl-button--colored" onclick=m2_1_js_a_p_abrir_frm_incapacidad(' + param.usuarios.datos[j].id_usuario + ')><i class="material-icons">local_hospital</i></a>');
+											} else {
+												fila.push("");
+											}
+										} else {
+											fila.push("")
+										}
+									}
+								} else {
+									chk_item = '';
+									chk_item += '<label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="m2_1_chk_disponibilidad_usuario_' + param.usuarios.datos[j].id_usuario + '">';
+									chk_item += '<input type="checkbox" data-usuario="' + param.usuarios.datos[j].usuario + '"  data-id_usuario="' + param.usuarios.datos[j].id_usuario + '" id="m2_1_chk_disponibilidad_usuario_' + param.usuarios.datos[j].id_usuario + '" name="m2_1_chk_disponibilidad_usuario_' + param.usuarios.datos[j].id_usuario + '" class="mdl-switch__input" data-id_usuario="' + param.usuarios.datos[j].id_usuario + '" data-usuario="' + param.usuarios.datos[j].usuario + '" checked >';
+									chk_item += '</label>';
+									fila.push(chk_item);
+									txt_item = '';
+									txt_item += '<div class="mdl-textfield mdl-js-textfield">';
+									txt_item += '<textarea class="mdl-textfield__input" rows="2" id="m2_1_txt_novedad_usuario_' + id_usuario + '" name="m2_1_txt_novedad_usuario_' + id_usuario + '" ></textarea>';
+									txt_item += '<label class="mdl-textfield__label" for="m2_1_txt_novedad_usuario_' + id_usuario + '" >Novedad...</label>';
+									txt_item += '<span class="mdl-textfield__error">No puede dejar este campo vacío</span>';
+									txt_item += '</div>';
+									fila.push(txt_item);
+									if (m0_js_verificar_acceso("3_4")) {
+										if (param.usuarios.datos[j].cargo === "AGENTE DE SERVICIO COLPENSIONES" || param.usuarios.datos[j].cargo === "GESTOR DE SERVICIO COLPENSIONES") {
+											fila.push('<a href="#" id="m2_1_a_incapacidad_usuario_' + param.usuarios.datos[j].id_usuario + '" data-nombre_usuario="' + param.usuarios.datos[j].nombre + '" class="mdl-button mdl-js-button mdl-button--icon mdl-button--colored" onclick=m2_1_js_a_p_abrir_frm_incapacidad(' + param.usuarios.datos[j].id_usuario + ')><i class="material-icons">local_hospital</i></a>');
+										} else {
+											fila.push("");
+										}
+									} else {
+										fila.push("")
+									}
+								}
+								param.datos.push(fila);
+							}
+
+							m0_js_crear_tabla(param)
+							$("#m2_1_btn_registrar_acta").prop("disabled", false);
+
+						}
+					})
+					.m2_1_gs_cargar_disponibilidad_funcionarios(param_tabla);
+
+
+				m0_js_poblar_menu({
+					campo: "Seleccione un tipo de novedad",
+					criterio: "",
+					select: "m2_1_sel_reporte_mtto",
+					datos: NOVEDADES_APERTURA_Y_CIERRE
+				});
+
+
+				m2_1_js_a_p_mostrar_base_documental();
+
+				/**
+				google.script.run
+					.withFailureHandler(function (e) {
+						m0_js_registrar_error({
+							gs: "m2_1_gs_cargar_planilla_control_ingreso",
+							funcion: "m2_js_inicializar_pestaña_m2_1",
+							error: { message: e.name + " : " + e.message, name: "AJAX" },
+							parametros: u.id_regional
+						});
+					})
+					.withSuccessHandler(function (r) {
+						m0_js_aviso("snackbar", r.mensaje);
+						if (r.exito) {
+							$("#m2_1_div_planilla_control_ingreso").html(r.contenido)
+						} else {
+							$("#m2_1_div_planilla_control_ingreso").html("");
+							m0_js_aviso("banner", r.mensaje);
+						}
+					})
+					.m2_1_gs_cargar_planilla_control_ingreso(u.id_regional);
+					*/
+
+
+			}
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m2_js_inicializar_pestaña_m2_1",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Muestra el formulario de incapacidades dentro del formulario de apertura y cierre
+	 *
+	 * @param   {object}  param  [descripcion objeto]
+	 *
+	 * @return  {null}
+	 */
+	function m2_1_js_a_p_abrir_frm_incapacidad(id_usuario) {
+		try {
+
+			var novedad = $("#m2_1_txt_novedad_usuario_" + id_usuario).val()
+			var nombre_usuario = $("#m2_1_a_incapacidad_usuario_" + id_usuario).attr("data-nombre_usuario")
+			var contenido = '<div class="div_panel mdl-shadow--3dp">';
+			contenido += '<h4 style="text-align: center;">REGISTRAR INCAPACIDAD</h4>';
+			contenido += '<p>Registrar incapacidad a nombre del funcionario : <b>' + nombre_usuario + '</b></p>';
+			contenido += m0_js_crear_formulario({
+				formulario: "m2_1_frm_registro_incapacidad",
+				campos: [{
+					id_campo: "m3_5_sel_registro_incapacidad_usuario",
+					tipo_campo: "hidden",
+					value: id_usuario
+				}, {
+					id_campo: "m3_5_txt_registro_incapacidad_fecha_inicio",
+					nombre_campo: "Fecha inicio novedad",
+					pattern: "",
+					error: "",
+					required: "required",
+					tipo_campo: "date"
+				}, {
+					id_campo: "m3_5_txt_registro_incapacidad_fecha_fin",
+					nombre_campo: "Fecha fin novedad",
+					pattern: "",
+					error: "",
+					required: "required",
+					tipo_campo: "date"
+				}, {
+					id_campo: "m3_5_txt_registro_incapacidad_detalle",
+					nombre_campo: "Descripción novedad...",
+					required: "",
+					tipo_campo: "textarea",
+				}, {
+					id_campo: "m3_5_file_registro_incapacidad_soporte",
+					nombre_campo: "Soporte incapacidad...",
+					tipo_campo: "file",
+				}]
+			});
+			contenido += '<hr />';
+			contenido += '<button id="m2_1_btn_a_c_salir" class="mdl-button mdl-js-button mdl-button--accent" >CERRAR VENTANA<i class="material-icons">meeting_room</i></button>';
+			contenido += '<br/>';
+			contenido += '</div>';
+			m0_js_aviso("modal_box", contenido);
+			$("#m3_5_txt_registro_incapacidad_fecha_inicio").parent().addClass('is-dirty');
+			$("#m3_5_txt_registro_incapacidad_fecha_fin").parent().addClass('is-dirty');
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m2_1_js_a_p_abrir_frm_incapacidad",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+	/**
+	* Mandamos la informacion correspondiente a la novedad de incapacidad que se quiere registrar en la base
+	*
+	 * @param   {object}  param  objecto con los datos registrados en el formulario
+		*
+	 * @return  {null}
+		*/
+	function m2_1_js_registro_incapacidad(frm) {
+		try {
+
+			var u = USUARIO;
+			$("#m2_1_btn_registrar_acta").prop("disabled", true);
+			m0_js_aviso("modal_box", "Espere mientras se guardan los datos")
+
+			google.script.run
+				.withFailureHandler(function (e) {
+					m0_js_registrar_error({
+						gs: "m3_5_gs_registro_incapacidad",
+						funcion: "m2_1_js_registro_incapacidad",
+						error: { message: e.name + " : " + e.message, name: "AJAX" },
+						parametros: frm
+					});
+				})
+				.withSuccessHandler(function (r) {
+					if (m0_js_resultado_operacion(r)) {
+						m0_js_aviso("cierre_modal_box", "");
+						m0_js_loading({
+							tipo: "SIMPLE",
+							contenedor: "m2_1_div_personal"
+						});
+						var param_tabla = {
+							contenedor: "m2_1_div_personal",
+							criterio: {
+								id_oficina: u.id_oficina,
+							}
+						}
+						google.script.run
+							.withFailureHandler(function (e) {
+								m0_js_registrar_error({
+									gs: "m2_1_gs_cargar_disponibilidad_funcionarios",
+									funcion: "m2_1_js_registro_incapacidad",
+									error: { message: e.name + " : " + e.message, name: "AJAX" },
+									parametros: param_tabla
+								});
+							})
+							.withSuccessHandler(function (r) {
+								m0_js_crear_tabla(r)
+								$("#m2_1_btn_registrar_acta").prop("disabled", false);
+							})
+							.m2_1_gs_cargar_disponibilidad_funcionarios(param_tabla);
+					}
+				})
+				.m3_5_gs_registro_incapacidad(frm);
+			m0_js_aviso("modal_box", "Por favor espere mientras se almacenan los datos");
+			event.preventDefault();
+			var u = USUARIO;
+			$("#m2_1_btn_registrar_acta").prop("disabled", true);
+			m0_js_aviso("modal_box", "Espere mientras se guardan los datos")
+
+			google.script.run
+				.withFailureHandler(function (e) {
+					m0_js_registrar_error({
+						gs: "m3_5_gs_registro_incapacidad",
+						funcion: "m2_1_js_registro_incapacidad",
+						error: { message: e.name + " : " + e.message, name: "AJAX" },
+						parametros: frm
+					});
+				})
+				.withSuccessHandler(function (r) {
+					if (m0_js_resultado_operacion(r)) {
+						m0_js_aviso("cierre_modal_box", "");
+						m0_js_loading({
+							tipo: "SIMPLE",
+							contenedor: "m2_1_div_personal"
+						});
+						var param_tabla = {
+							contenedor: "m2_1_div_personal",
+							criterio: {
+								id_oficina: u.id_oficina,
+							}
+						}
+						google.script.run
+							.withFailureHandler(function (e) {
+								m0_js_registrar_error({
+									gs: "m3_5_gs_registro_incapacidad",
+									funcion: "m2_1_js_registro_incapacidad",
+									error: { message: e.name + " : " + e.message, name: "AJAX" },
+									parametros: param_tabla
+								});
+							})
+							.withSuccessHandler(function (param) {
+
+								var fecha_actual = new Date();
+								fecha_actual.setHours(0, 0, 0, 0);
+								var fecha_inicio;
+								var fecha_fin;
+								var chk_item;
+								var txt_item;
+								var chk_ausencia;
+								var chk_incapacidad;
+								var index_novedad;
+
+								for (var j = 0; j < param.usuarios.registros; j++) {
+									if (param.usuarios.datos[j].rol.indexOf("PAC") != -1) {
+										var str = String(param.usuarios.datos[j].id_usuario);
+										var id_usuario = str.replace(".", "_")
+										var fila = [];
+										fila.push(param.usuarios.datos[j].usuario);
+										fila.push(param.usuarios.datos[j].nombre);
+										fila.push(param.usuarios.datos[j].cargo);
+										fila.push(param.usuarios.datos[j].rol);
+										index_novedad = 0;
+										for (var l = 0; l < param.novedades.registros; l++) {
+											if (param.usuarios.datos[j].id_usuario === param.novedades.datos[l].id_usuario) {
+												index_novedad = l;
+											}
+										}
+										if (index_novedad != 0) {
+											var f = param.novedades.datos[index_novedad].fecha_inicio_novedad.split(" ");
+											var fecha_inicio = f[0].split("-");
+
+											var f = param.novedades.datos[index_novedad].fecha_fin_novedad.split(" ");
+											var fecha_fin = f[0].split("-");
+
+											fecha_inicio = new Date(fecha_inicio[0], fecha_inicio[1] - 1, fecha_inicio[2]);
+											fecha_inicio.setHours(0, 0, 0, 0);
+											fecha_fin = new Date(fecha_fin[0], fecha_fin[1] - 1, fecha_fin[2]);
+											fecha_fin.setHours(0, 0, 0, 0);
+											var diff = fecha_fin.getTime() - fecha_inicio.getTime();
+											var dias_transcurridos = diff / (1000 * 60 * 60 * 24);
+											if (dias_transcurridos >= 1) {
+												chk_item = '';
+												chk_item += '<label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="m2_1_chk_disponibilidad_usuario_' + param.usuarios.datos[j].id_usuario + '">';
+												chk_item += '<input type="checkbox" data-usuario="' + param.usuarios.datos[j].usuario + '" data-id_usuario="' + param.usuarios.datos[j].id_usuario + '" id="m2_1_chk_disponibilidad_usuario_' + param.usuarios.datos[j].id_usuario + '" name="m2_1_chk_disponibilidad_usuario_' + param.usuarios.datos[j].id_usuario + '" class="mdl-switch__input"  data-usuario="' + param.usuarios.datos[j].usuario + '" disabled >';
+												chk_item += '</label>';
+												fila.push(chk_item);
+												txt_item = '';
+												txt_item += '<div class="mdl-textfield mdl-js-textfield">';
+												txt_item += '<textarea class="mdl-textfield__input" rows="2" id="m2_1_txt_novedad_usuario_' + id_usuario + '" name="m2_1_txt_novedad_usuario_' + id_usuario + '" disabled >' + param.novedades.datos[0].novedad + ' (' + param.novedades.datos[0].detalle.replace(/<[^>]*>?/g, '') + ') </textarea>';
+												txt_item += '<label class="mdl-textfield__label" for="m2_1_txt_novedad_usuario_' + id_usuario + '" >Novedad...</label>';
+												txt_item += '<span class="mdl-textfield__error">No puede dejar este campo vacío</span>';
+												txt_item += '</div>';
+												fila.push(txt_item);
+												fila.push("");
+											} else {
+												chk_item = '';
+												chk_item += '<label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="m2_1_chk_disponibilidad_usuario_' + param.usuarios.datos[j].id_usuario + '">';
+												chk_item += '<input type="checkbox" data-usuario="' + param.usuarios.datos[j].usuario + '" data-id_usuario="' + param.usuarios.datos[j].id_usuario + '" id="m2_1_chk_disponibilidad_usuario_' + param.usuarios.datos[j].id_usuario + '" name="m2_1_chk_disponibilidad_usuario_' + param.usuarios.datos[j].id_usuario + '" class="mdl-switch__input" data-id_usuario="' + param.usuarios.datos[j].id_usuario + '" data-usuario="' + param.usuarios.datos[j].usuario + '" checked >';
+												chk_item += '</label>';
+												fila.push(chk_item);
+												txt_item = '';
+												txt_item += '<div class="mdl-textfield mdl-js-textfield">';
+												txt_item += '<textarea class="mdl-textfield__input" rows="2" id="m2_1_txt_novedad_usuario_' + id_usuario + '" name="m2_1_txt_novedad_usuario_' + id_usuario + '" >' + param.novedades.datos[0].novedad + ' de ' + fecha_texto(param.novedades.datos[0].fecha_inicio_novedad, "HORA_MINUTOS") + ' a ' + fecha_texto(param.novedades.datos[0].fecha_fin_novedad, "HORA_MINUTOS") + ' (' + param.novedades.datos[0].detalle.replace(/<[^>]*>?/g, '') + ') </textarea>';
+												txt_item += '<label class="mdl-textfield__label" for="m2_1_txt_novedad_usuario_' + id_usuario + '" >Novedad...</label>';
+												txt_item += '<span class="mdl-textfield__error">No puede dejar este campo vacío</span>';
+												txt_item += '</div>';
+												fila.push(txt_item);
+												if (m0_js_verificar_acceso("3_4")) {
+													if (param.usuarios.datos[j].cargo === "AGENTE DE SERVICIO EN MISIÓN" || param.usuarios.datos[j].cargo === "GESTOR DE SERVICIO EN MISIÓN") {
+														fila.push('<a href="#" id="m2_1_a_incapacidad_usuario_' + param.usuarios.datos[j].id_usuario + '" data-nombre_usuario="' + param.usuarios.datos[j].nombre + '" class="mdl-button mdl-js-button mdl-button--icon mdl-button--colored" onclick=m2_1_js_a_p_abrir_frm_incapacidad(' + param.usuarios.datos[j].id_usuario + ')><i class="material-icons">local_hospital</i></a>');
+													} else {
+														fila.push("");
+													}
+												} else {
+													fila.push("")
+												}
+											}
+										} else {
+											chk_item = '';
+											chk_item += '<label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="m2_1_chk_disponibilidad_usuario_' + param.usuarios.datos[j].id_usuario + '">';
+											chk_item += '<input type="checkbox" data-usuario="' + param.usuarios.datos[j].usuario + '"  data-id_usuario="' + param.usuarios.datos[j].id_usuario + '" id="m2_1_chk_disponibilidad_usuario_' + param.usuarios.datos[j].id_usuario + '" name="m2_1_chk_disponibilidad_usuario_' + param.usuarios.datos[j].id_usuario + '" class="mdl-switch__input" data-id_usuario="' + param.usuarios.datos[j].id_usuario + '" data-usuario="' + param.usuarios.datos[j].usuario + '" checked >';
+											chk_item += '</label>';
+											fila.push(chk_item);
+											txt_item = '';
+											txt_item += '<div class="mdl-textfield mdl-js-textfield">';
+											txt_item += '<textarea class="mdl-textfield__input" rows="2" id="m2_1_txt_novedad_usuario_' + id_usuario + '" name="m2_1_txt_novedad_usuario_' + id_usuario + '" ></textarea>';
+											txt_item += '<label class="mdl-textfield__label" for="m2_1_txt_novedad_usuario_' + id_usuario + '" >Novedad...</label>';
+											txt_item += '<span class="mdl-textfield__error">No puede dejar este campo vacío</span>';
+											txt_item += '</div>';
+											fila.push(txt_item);
+											if (m0_js_verificar_acceso("3_4")) {
+												if (param.usuarios.datos[j].cargo === "AGENTE DE SERVICIO COLPENSIONES" || param.usuarios.datos[j].cargo === "GESTOR DE SERVICIO COLPENSIONES") {
+													fila.push('<a href="#" id="m2_1_a_incapacidad_usuario_' + param.usuarios.datos[j].id_usuario + '" data-nombre_usuario="' + param.usuarios.datos[j].nombre + '" class="mdl-button mdl-js-button mdl-button--icon mdl-button--colored" onclick=m2_1_js_a_p_abrir_frm_incapacidad(' + param.usuarios.datos[j].id_usuario + ')><i class="material-icons">local_hospital</i></a>');
+												} else {
+													fila.push("");
+												}
+											} else {
+												fila.push("")
+											}
+										}
+										param.datos.push(fila);
+									}
+								}
+								m0_js_crear_tabla(param)
+								$("#m2_1_btn_registrar_acta").prop("disabled", false);
+							})
+							.m2_1_gs_cargar_disponibilidad_funcionarios(param_tabla);
+					}
+				})
+				.m3_5_gs_registro_incapacidad(frm);
+			m0_js_aviso("modal_box", "Por favor espere mientras se almacenan los datos");
+			event.preventDefault();
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m2_1_js_registro_incapacidad",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Muestra el formulario para subir la socializacion
+	 *
+	 * @param   {number}	id_documento	id del documento sobre el cual se subira la socializacion 
+	 *
+	 * @return  {null}
+	 */
+	function m2_1_js_a_p_subir_socializacion(id_documento) {
+		try {
+
+			var documento = $("#m2_1_a_apertura_cierre_subir_socializacion_" + id_documento).attr("data-documento")
+			var socializado = $("#m2_1_a_apertura_cierre_subir_socializacion_" + id_documento).attr("data-socializado")
+			var requiere_soporte = $("#m2_1_a_apertura_cierre_subir_socializacion_" + id_documento).attr("data-requiere_soporte")
+
+			var contenido = '<div class="div_panel mdl-shadow--3dp">';
+			contenido += '<h4>CARGAR SOCIALIZACIÓN</h4>';
+			contenido += '<p>Cargar el acta de socialización para el documento:"' + documento + '" </p>';
+
+			if (requiere_soporte == 1) {
+				var param_formulario = {
+					formulario: "m2_1_frm_a_p_socializacion",
+					campos: [{
+						id_campo: "m2_1_hid_a_p_id_documento",
+						tipo_campo: "hidden",
+						value: id_documento
+					}, {
+						tipo_campo: "checkbox",
+						id_campo: "m2_1_chk_a_p_marcar_socializado",
+						nombre_campo: "Marcar como socializado",
+						checked: "",
+						value: "SI"
+					}, {
+						id_campo: "m2_1_txt_a_p_observaciones_socializacion",
+						nombre_campo: "Observaciones relacionadas con la socialización realizada",
+						pattern: "",
+						error: "",
+						required: "",
+						tipo_campo: "textarea",
+					}, {
+						id_campo: "m2_1_file_a_p_socializacion",
+						nombre_campo: "Evidencia de socialización...",
+						tipo_campo: "file",
+					}, {
+						id_campo: "m2_1_hid_a_p_requiere_soporte",
+						tipo_campo: "hidden",
+						value: "SI"
+					}]
+				};
+			} else {
+				var param_formulario = {
+					formulario: "m2_1_frm_a_p_socializacion",
+					campos: [{
+						id_campo: "m2_1_hid_a_p_id_documento",
+						tipo_campo: "hidden",
+						value: id_documento
+					}, {
+						tipo_campo: "checkbox",
+						id_campo: "m2_1_chk_a_p_marcar_socializado",
+						nombre_campo: "Marcar como socializado",
+						checked: "",
+						value: "SI"
+					}, {
+						id_campo: "m2_1_txt_a_p_observaciones_socializacion",
+						nombre_campo: "Observaciones relacionadas con la socialización realizada",
+						pattern: "",
+						error: "",
+						required: "",
+						tipo_campo: "textarea",
+					}, {
+						id_campo: "m2_1_hid_a_p_requiere_soporte",
+						tipo_campo: "hidden",
+						value: "NO"
+					}]
+				};
+			}
+			contenido += m0_js_crear_formulario(param_formulario);
+			contenido += '<hr />';
+			contenido += '<button id="m2_1_btn_a_c_salir" class="mdl-button mdl-js-button mdl-button--accent" >CERRAR VENTANA<i class="material-icons">meeting_room</i></button>';
+			contenido += '<br/>';
+			contenido += '</div>';
+			m0_js_aviso("modal_box", contenido);
+
+			if (socializado == "SI") {
+				$("#m2_1_chk_a_p_marcar_socializado").prop("disabled", true);
+				$("#m2_1_txt_a_p_observaciones_socializacion").prop("disabled", true);
+			}
+			componentHandler.upgradeDom();
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m2_1_js_a_p_subir_socializacion",
+				error: e,
+				parametros: {
+					"id_documento": id_documento
+				}
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Carga nuevamente la base documental del acta de apertura
+	 *
+	 * @return  {null}
+	 */
+	function m2_1_js_a_p_mostrar_base_documental() {
+		try {
+
+			$("#m2_1_btn_registrar_acta").prop("disabled", true);
+			var u = USUARIO;
+			m0_js_loading({
+				tipo: "SIMPLE",
+				contenedor: "m2_1_div_reporte_socializacion"
+			});
+
+			google.script.run
+				.withFailureHandler(function (e) {
+					m0_js_registrar_error({
+						gs: "m2_1_gs_cargar_base_documental",
+						funcion: "m2_1_js_a_p_mostrar_base_documental",
+						error: { message: e.name + " : " + e.message, name: "AJAX" },
+						parametros: {
+							id_regional: u.id_regional
+						}
+					});
+				})
+				.withSuccessHandler(function (param) {
+					param.contenedor = "m2_1_div_reporte_socializacion"
+					param.titulos = ["ID_DOCUMENTO", "FECHA DE CARGA", "DOCUMENTO", "FUENTE", "DESCRIPCION", "DESCARGA", "REQUIERE SOPORTE SOCIALIZACIÓN", "SOCIALIZADO", ""];
+					param.datos = [];
+					for (var j = 0; j < param.base_documental.registros; j++) {
+						var soporte_documento = "";
+						var fecha_documento = "";
+						for (var i = 0; i < param.upload.registros; i++) {
+							if (param.base_documental.datos[j].id_upload == param.upload.datos[i].id_upload) {
+								soporte_documento = param.upload.datos[i].ruta;
+								fecha_documento = param.upload.datos[i].fecha
+							}
+						}
+						if (soporte_documento !== "") {
+							var fila = [];
+							fila.push(param.base_documental.datos[j].id_documento);
+							fila.push(fecha_documento);
+							fila.push(param.base_documental.datos[j].documento);
+							fila.push(param.base_documental.datos[j].fuente);
+							fila.push(param.base_documental.datos[j].descripcion);
+							fila.push('<a href="' + soporte_documento + '" target="_blank" ><i class="material-icons">cloud_download</i></a>')
+							if (param.base_documental.datos[j].requiere_soporte == 0) {
+								fila.push("NO")
+							} else {
+								fila.push("SI")
+							}
+							var soporte_socializacion = "";
+							var id_upload = -1;
+							for (i = 0; i < param.socializaciones.registros; i++) {
+								if (param.socializaciones.datos[i].id_documento == param.base_documental.datos[j].id_documento && param.socializaciones.datos[i].id_oficina == u.id_oficina) {
+									id_upload = param.socializaciones.datos[i].id_upload;
+								}
+							}
+							var socializado;
+							if (id_upload == -1) {
+								fila.push('NO')
+								socializado = "NO"
+							} else {
+								if (param.base_documental.datos[j].requiere_soporte == 0) {
+									fila.push("SI")
+								} else {
+									for (i = 0; i < param.upload.registros; i++) {
+										if (param.upload.datos[i].id_upload == id_upload) {
+											soporte_socializacion = param.upload.datos[i].ruta;
+										}
+									}
+									fila.push('<a href="' + soporte_socializacion + '" target="_blank" >SI</a>')
+								}
+								socializado = "SI"
+							}
+							if (param.base_documental.datos[j].requiere_soporte == 0 && socializado === "SI") {
+								fila.push("")
+							} else {
+								fila.push('<a href="#" id="m2_1_a_apertura_cierre_subir_socializacion_' + param.base_documental.datos[j].id_documento + '" data-socializado="' + socializado + '" data-id_documento="' + param.base_documental.datos[j].id_documento + '"  data-requiere_soporte="' + param.base_documental.datos[j].requiere_soporte + '"  data-documento="' + param.base_documental.datos[j].documento + '"  data-documento="' + param.base_documental.datos[j].id_documento + '"  class="mdl-button mdl-js-button mdl-button--icon mdl-button--colored" onclick=m2_1_js_a_p_subir_socializacion("' + param.base_documental.datos[j].id_documento + '")><i class="material-icons">cloud_upload</i></a>');
+							}
+							param.datos.push(fila);
+						}
+					}
+					m0_js_crear_tabla(param);
+					$("#m2_1_btn_registrar_acta").prop("disabled", false);
+				})
+				.m2_1_gs_cargar_base_documental({
+					id_regional: u.id_regional
+				});
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m2_1_js_a_p_mostrar_base_documental",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Envia el formulario de socializacion al back
+	 *
+	 * @param   {object}  frm  [descripcion objeto]
+	 *
+	 * @return  {null}
+	 */
+	function m2_1_js_a_p_socializacion(frm) {
+		try {
+
+			if ($("#m2_1_chk_a_p_marcar_socializado").prop('checked')) {
+				if ($("#m2_1_hid_a_p_requiere_soporte").val() === "SI") {
+					if ($("#FILE_TEXT_ID").val() !== "") {
+						m0_js_aviso("modal_box", "Espere mientras se guardan los datos")
+						google.script.run
+							.withFailureHandler(function (e) {
+								m0_js_registrar_error({
+									gs: "m2_1_gs_a_p_socializacion",
+									funcion: "m2_1_js_a_p_socializacion",
+									error: { message: e.name + " : " + e.message, name: "AJAX" },
+									parametros: frm
+								});
+							})
+							.withSuccessHandler(function (r) {
+								if (m0_js_resultado_operacion(r)) {
+									m0_js_aviso("cierre_modal_box", "");
+									m2_1_js_a_p_mostrar_base_documental()
+								}
+							})
+							.m2_1_gs_a_p_socializacion(frm);
+					} else {
+						$("#FILE_TEXT_ID").parent().addClass('is-invalid');
+						m0_js_aviso("snackbar", "Por favor cargue el documento en formato PDF");
+					}
+				} else {
+					m0_js_aviso("modal_box", "Espere mientras se guardan los datos")
+					google.script.run
+						.withFailureHandler(function (e) {
+							m0_js_registrar_error({
+								gs: "m2_1_gs_a_p_socializacion",
+								funcion: "m2_1_js_a_p_socializacion",
+								error: { message: e.name + " : " + e.message, name: "AJAX" },
+								parametros: frm
+							});
+						})
+						.withSuccessHandler(function (r) {
+							if (m0_js_resultado_operacion(r)) {
+								m0_js_aviso("cierre_modal_box", "");
+								m2_1_js_a_p_mostrar_base_documental()
+							}
+						})
+						.m2_1_gs_a_p_socializacion(frm);
+				}
+			} else {
+				m0_js_aviso("cierre_modal_box", "");
+			}
+
+			event.preventDefault();
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m2_1_js_a_p_socializacion",
+				error: e,
+				parametros: frm
+			});
+		}
+	}
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * crea la lista de novedades de mtto en el acta
+	 *
+	 * @return  {null}
+	 */
+	function m2_1_js_registrar_novedad_mtto() {
+		try {
+
+			if ($("#m2_1_txt_reporte_mtto").val() !== "") {
+				var contenido = '';
+				contenido += '<li class="mdl-list__item mdl-list__item--three-line">';
+				contenido += '<span class="mdl-list__item-primary-content">';
+				contenido += '<i class="material-icons mdl-list__item-avatar">build</i>';
+				contenido += '<span id="m2_1_span_reporte_mtto_categoria" >' + $("#m2_1_sel_reporte_mtto").val() + '</span>';
+				contenido += '<span id="m2_1_span_reporte_mtto_descripcion" class = "mdl-list__item-text-body">' + $("#m2_1_txt_reporte_mtto").val() + '</span>';
+				contenido += '</span>';
+				contenido += '<span class = "mdl-list__item-secondary-content" >';
+				contenido += '<a class = "mdl-list__item-secondary-action" id="m2_1_a_eliminar_novedad_mtto" href="#"><i class="material-icons" >delete</i></a >';
+				contenido += '</span>';
+				contenido += '</li>'
+				$("#m2_1_ul_consolidado_novedades_mtto").append(contenido);
+				$("#m2_1_txt_reporte_mtto").val("");
+			} else {
+				m0_js_aviso("snackbar", "Si se va a reportar una novedad se debe llenar el campo <<Descripción de la novedad>>")
+				$("#m2_1_txt_reporte_mtto").parent().addClass('is-invalid');
+			}
+
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m2_1_js_registrar_novedad_mtto",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * funcion encargada de registrar la informacion del acta
+	 *
+	 * @return  {null}
+	 */
+	function m2_1_js_registrar_acta() {
+		try {
+
+			var u = USUARIO;
+			var acta = {
+				usuarios: [],
+				fallas_categoria: [],
+				fallas_descripcion: [],
+				socializaciones: [],
+				reunion_apertura: "",
+				caso_bizagi: "",
+				observaciones_personal: $("#m2_1_txt_descripcion").val(),
+				observaciones_reunion: $("#m2_1_txt_reunion").val(),
+			};
+			var sw = true;
+			$("[id*='m2_1_chk_disponibilidad_usuario_']").each(function () {
+				var rango_usuario = {
+					id_usuario: $(this).attr("data-id_usuario")
+				};
+				rango_usuario.usuario = $(this).attr("data-usuario");
+				rango_usuario.novedad = "";
+				rango_usuario.novedad = $("#m2_1_txt_novedad_usuario_" + rango_usuario.id_usuario.replace(".", "_")).val();
+				if ($(this).is(":checked")) {
+					rango_usuario.disponibilidad = true;
+				} else {
+					rango_usuario.disponibilidad = false;
+					if ($("#m2_1_txt_novedad_usuario_" + rango_usuario.id_usuario).val() === "") {
+						m0_js_aviso("snackbar", "Si marco alguno de los funcionarios como NO disponible, debe llenar el campo <<Novedad>> (Usuario: " + $(this).attr("data-usuario") + ")");
+						sw = false;
+						$("#m2_1_txt_novedad_usuario_" + rango_usuario.id_usuario).parent().addClass('is-invalid');
+					}
+				}
+				acta.usuarios.push(rango_usuario);
+			});
+			$("[id*='m2_1_span_reporte_mtto_categoria']").each(function () {
+				acta.fallas_categoria.push($(this).text());
+			});
+			$("[id*='m2_1_span_reporte_mtto_descripcion']").each(function () {
+				acta.fallas_descripcion.push($(this).text());
+			});
+			$("[id*='m2_1_a_apertura_cierre_subir_socializacion']").each(function () {
+				if ($(this).attr("data-socializado") === "SI") {
+					acta.socializaciones.push($(this).attr("data-id_documento"));
+				}
+			});
+			acta.reunion_apertura = $("#m2_1_txt_reunion").val();
+			if ($("#m2_1_txt_bizagi").val() != "") {
+				acta.caso_bizagi = $("#m2_1_txt_bizagi").val();
+			} else {
+				sw = false;
+				m0_js_aviso("snackbar", "Debe llenar el campo de <<Caso bizagi>>");
+			}
+
+			if (sw) {
+				google.script.run
+					.withFailureHandler(function (e) {
+						m0_js_registrar_error({
+							gs: "m2_1_gs_registrar_acta_crear_acta",
+							funcion: "m2_1_js_registrar_acta",
+							error: { message: e.name + " : " + e.message, name: "AJAX" },
+							parametros: acta
+						});
+					})
+					.withSuccessHandler(function (r) {
+						m0_js_aviso("banner", r.mensaje)
+						m0_js_aviso("aviso_modal_box", r.mensaje)
+					})
+					.m2_1_gs_registrar_acta_crear_acta(acta);
+				m0_js_aviso("snackbar", "Se ha enviado el formulario exitosamente. En unos minutos se generará el correo de soporte del Acta")
+				router({
+					tipo_fuente: "ARCHIVO",
+					filename: "vista/m2/index_m2",
+					contenedor: "m0_div_panel_principal",
+					id_privilegio: "2_1"
+				})
+			}
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m2_1_gs_registrar_acta",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+
+	//################################################################################################################################################################################################################
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//SECCION 2 - Informe de cierre
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//################################################################################################################################################################################################################
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//listener de eventos del DOOM
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	$("#m0_div_panel_principal").on("click", "#m2_2_btn_agregar_novedad_mtto", function () {
+		m2_2_js_registrar_novedad_mtto();
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_principal").on("click", "#m2_2_a_eliminar_novedad_mtto", function () {
+		$(this).closest("li").remove();
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_principal").on("click", "#m2_2_btn_registrar_acta", function () {
+		m2_2_js_registrar_informe();
+	});
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//funciones javascript
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	/**
+	 * funcion para cargar los objetos de una seccion especifica
+	 *
+	 * @return  {null}
+	 */
+	function m2_js_inicializar_pestaña_m2_2() {
+		try {
+
+			m0_js_log_sesion({
+				id_sesion: ID_SESION,
+				log: "M2 - Informe de Cierre",
+				tipo_log: "ACCESO A SECCION"
+			});
+
+			var u = USUARIO;
+			var pos;
+			for (var mod = 0; mod < u.modulos.length; mod++) {
+				if (2 == u.modulos[mod].id_modulo) {
+					pos = mod;
+				}
+			}
+			var param_modulos = {
+				icono: u.modulos[pos].icono,
+				id_modulo: 2,
+				texto_1: u.modulos[pos].modulo,
+				texto_2: "Informe de Cierre"
+			};
+			m0_js_menu_arbol(param_modulos);
+
+			if (u.tipo_oficina === "ADMINISTRATIVA REGIONAL" || u.tipo_oficina === "ADMINISTRATIVA NIVEL CENTRAL") {
+				m0_js_aviso("banner", "Para este tipo de oficina no se esta habilitado realizar Control de Apertura o Informe de Cierre");
+				m0_js_aviso("snackbar", "Para este tipo de oficina no se esta habilitado realizar Control de Apertura o Informe de Cierre");
+				m0_js_cargar_inicio_modulo(2)
+			} else {
+				google.script.run
+					.withFailureHandler(function (e) {
+						m0_js_registrar_error({
+							gs: "m2_2_gs_verificar_informe_cierre",
+							funcion: "m2_js_inicializar_pestaña_m2_2",
+							error: { message: e.name + " : " + e.message, name: "AJAX" },
+							parametros: u.id_oficina
+						});
+					})
+					.withSuccessHandler(function (r) {
+						if (r.exito) m0_js_aviso("banner", r.mensaje);
+					})
+					.m2_2_gs_verificar_informe_cierre(u.id_oficina);
+				google.script.run
+					.withFailureHandler(function (e) {
+						m0_js_registrar_error({
+							gs: "m2_gs_cargar_acta_apertura_informe_cierre",
+							funcion: "m2_js_inicializar_pestaña_m2_2",
+							error: { message: e.name + " : " + e.message, name: "AJAX" },
+							parametros: u.id_oficina
+						});
+					})
+					.withSuccessHandler(m2_js_cargar_acta_apertura_informe_cierre)
+					.m2_gs_cargar_acta_apertura_informe_cierre(u.id_oficina);
+				$("#m2_2_div_accordion").accordion({
+					heightStyle: "content"
+				});
+				m0_js_poblar_menu({
+					campo: "Seleccione un tipo de novedad",
+					criterio: "",
+					select: "m2_2_sel_reporte_mtto",
+					datos: NOVEDADES_APERTURA_Y_CIERRE
+				});
+			}
+			$("#m2_2_txt_reporte_mtto_inicio").parent().addClass('is-dirty');
+			$("#m2_2_txt_reporte_mtto_fin").parent().addClass('is-dirty');
+
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m2_js_inicializar_pestaña_m2_2",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Carga el acta de apertura
+	 *
+	 * @param   {object}  param  objecto com el acta de aperturay el id_operacion
+	 *
+	 * @return  {null}
+	 */
+	function m2_js_cargar_acta_apertura_informe_cierre(r) {
+		try {
+
+			router({
+				tipo_fuente: "VARIABLE",
+				contenido: r.contenido,
+				contenedor: "m2_2_div_consolidado_apertura",
+				id_privilegio: "2_2"
+			});
+			$("#m2_2_div_consolidado_apertura").html();
+			$("#m2_2_hid_informe_cierre_id_operacion").val(r.id_operacion);
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m2_js_cargar_acta_apertura_informe_cierre",
+				error: e,
+				parametros: r
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * crea la lista de novedades de mtto en el acta
+	 *
+	 * @return  {null}
+	 */
+	function m2_2_js_registrar_novedad_mtto() {
+		try {
+
+			if ($("#m2_2_txt_reporte_mtto").val() !== "") {
+
+				hora_inicio = $("#m2_2_txt_reporte_mtto_inicio").val().split(":");
+				hora_fin = $("#m2_2_txt_reporte_mtto_fin").val().split(":");
+				var f_inicio = new Date(0, 0, 0, hora_inicio[0], hora_inicio[1]);
+				var f_fin = new Date(0, 0, 0, hora_fin[0], hora_fin[1]);
+				if (f_fin > f_inicio) {
+					var dif_horas = Math.abs((f_inicio - f_fin) / 36e5);
+					var contenido = '';
+					contenido += '<li class="mdl-list__item mdl-list__item--three-line">';
+					contenido += '<span class="mdl-list__item-primary-content">';
+					contenido += '<i class="material-icons mdl-list__item-avatar">build</i>';
+					contenido += '<span id="m2_2_span_reporte_mtto_categoria" >' + $("#m2_2_sel_reporte_mtto").val() + '</span>';
+					contenido += '<span id="m2_2_span_reporte_mtto_descripcion" class = "mdl-list__item-text-body">' + $("#m2_2_txt_reporte_mtto").val() + '<br />- Duración de la novedad: <b>' + dif_horas + ' horas</b>' + '</span>';
+					contenido += '<input type="hidden" id="m2_2_hid_reporte_mtto_inicio" name="m2_2_hid_reporte_mtto_inicio" value="' + $("#m2_2_txt_reporte_mtto_inicio").val() + '">';
+					contenido += '<input type="hidden" id="m2_2_hid_reporte_mtto_fin" name="m2_2_hid_reporte_mtto_fin" value="' + $("#m2_2_txt_reporte_mtto_fin").val() + '">';
+					contenido += '</span>';
+					contenido += '<span class = "mdl-list__item-secondary-content" >';
+					contenido += '<a class = "mdl-list__item-secondary-action" id="m2_2_a_eliminar_novedad_mtto" href="#"><i class="material-icons" >delete</i></a >';
+					contenido += '</span>';
+					contenido += '</li>'
+					$("#m2_2_ul_consolidado_novedades_mtto").append(contenido);
+					$("#m2_2_txt_reporte_mtto").val("");
+					$("#m2_2_txt_reporte_mtto_inicio").val("");
+					$("#m2_2_txt_reporte_mtto_fin").val("");
+				} else {
+					m0_js_aviso("snackbar", "La hora de inicio de la novedad es mayor a la hora de finalización")
+					$("#m2_2_txt_reporte_mtto_inicio").parent().addClass('is-invalid');
+					$("#m2_2_txt_reporte_mtto_fin").parent().addClass('is-invalid');
+				}
+			} else {
+				m0_js_aviso("snackbar", "Si se va a reportar una novedad se debe llenar el campo <<Descripción de la novedad>>")
+				$("#m2_2_txt_reporte_mtto").parent().addClass('is-invalid');
+			}
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m2_2_js_registrar_novedad_mtto",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * funcion encargada de registrar la informacion del acta
+	 *
+	 * @return  {null}
+	 */
+	function m2_2_js_registrar_informe() {
+		try {
+
+			if ($("#m2_2_hid_informe_cierre_id_operacion").val() !== "") {
+				var u = USUARIO;
+				var informe = {
+					fallas_categoria: [],
+					fallas_descripcion: [],
+					hora_inicio_novedad: [],
+					hora_fin_novedad: [],
+					id_pac: u.id_oficina,
+					id_usuario: u.id_usuario,
+					id_operacion: $("#m2_2_hid_informe_cierre_id_operacion").val()
+				};
+				$("[id*='m2_2_span_reporte_mtto_categoria']").each(function () {
+					informe.fallas_categoria.push($(this).text());
+				});
+				$("[id*='m2_2_span_reporte_mtto_descripcion']").each(function () {
+					informe.fallas_descripcion.push($(this).text());
+				});
+				$("[id*='m2_2_hid_reporte_mtto_inicio']").each(function () {
+					informe.hora_inicio_novedad.push($(this).val());
+				});
+				$("[id*='m2_2_hid_reporte_mtto_fin']").each(function () {
+					informe.hora_fin_novedad.push($(this).val());
+				});
+				google.script.run
+					.withFailureHandler(function (e) {
+						m0_js_registrar_error({
+							gs: "m2_2_gs_registrar_informe",
+							funcion: "m2_2_js_registrar_informe",
+							error: { message: e.name + " : " + e.message, name: "AJAX" },
+							parametros: informe
+						});
+					})
+					.withSuccessHandler(function (mensaje) {
+						m0_js_aviso("aviso_modal_box", mensaje);
+					})
+					.m2_2_gs_registrar_informe(informe);
+				m0_js_aviso("modal_box", "Espere mientras se almacenan los datos");
+			} else {
+				m0_js_aviso("snackbar", "Debe crear 1ero diligenciar el formulario de Apertura de la oficina, para poder diligenciar el Informe de Cierre");
+			}
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m2_2_js_registrar_informe",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+	//################################################################################################################################################################################################################
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//SECCION 3 - CONSULTA ESTADO DE OPERACION PAC
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//################################################################################################################################################################################################################
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//listener de eventos del DOOM
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	$("#m0_div_panel_principal").on("submit", "#m2_3_frm_consulta_operacion", function () {
+		m2_3_js_consultar_operacion_oficinas(this);
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_principal").on("click", "#m2_3_a_consultar_operacion_oficina", function () {
+		m2_3_js_consultar_operacion_oficina_detalle($(this).attr("data-id_operacion"));
+	});
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//funciones javascript
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	/**
+	 * funcion para cargar los objetos de una seccion especifica
+	 *
+	 * @return  {null}  
+	 */
+	function m2_js_inicializar_pestaña_m2_3() {
+		try {
+
+			m0_js_log_sesion({
+				id_sesion: ID_SESION,
+				log: "M2 - Consulta operación oficinas",
+				tipo_log: "ACCESO A SECCION"
+			});
+
+			var u = USUARIO;
+			var pos;
+			for (var mod = 0; mod < u.modulos.length; mod++) {
+				if (2 == u.modulos[mod].id_modulo) {
+					pos = mod;
+				}
+			}
+			var param_modulos = {
+				icono: u.modulos[pos].icono,
+				id_modulo: 2,
+				texto_1: u.modulos[pos].modulo,
+				texto_2: "Consulta operación oficinas"
+			};
+			m0_js_menu_arbol(param_modulos);
+			var param_formulario = {
+				formulario: "m2_3_frm_consulta_operacion",
+				campos: [{
+					id_campo: "m2_3_txt_consulta_fecha_inicial",
+					nombre_campo: "Fecha inicial...",
+					pattern: "",
+					error: "",
+					required: "required",
+					tipo_campo: "date",
+				}, {
+					id_campo: "m2_3_txt_consulta_fecha_final",
+					nombre_campo: "Fecha final...",
+					pattern: "",
+					required: "required",
+					error: "",
+					tipo_campo: "date"
+				}]
+			};
+			router({
+				tipo_fuente: "VARIABLE",
+				contenido: m0_js_crear_formulario(param_formulario),
+				contenedor: "m2_3_div_formulario_consulta_operacion",
+				id_privilegio: "2_0"
+			});
+			$("#m2_3_txt_consulta_fecha_inicial").parent().addClass('is-dirty');
+			$("#m2_3_txt_consulta_fecha_final").parent().addClass('is-dirty');
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m2_js_inicializar_pestaña_m2_3",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * realiza la busqueda de la operacion de una oficina de acuerdo a un rango de fecha
+	 *
+	 * @param   {object}  frm  frm con los criterios de busqueda
+	 *
+	 * @return  {object}					objecto con la tabla de resultados de la busqueda
+	 */
+	function m2_3_js_consultar_operacion_oficinas() {
+		try {
+
+			var u = USUARIO;
+			var param_tabla = {
+				criterio: {
+					fecha_inicial: $("#m2_3_txt_consulta_fecha_inicial").val(),
+					fecha_final: $("#m2_3_txt_consulta_fecha_final").val(),
+					id_oficina: u.id_oficina,
+					id_regional: u.id_regional
+				},
+				contenedor: "m2_3_div_consolidado_consulta_operacion"
+			};
+			google.script.run
+				.withFailureHandler(function (e) {
+					m0_js_registrar_error({
+						gs: "m2_3_gs_consultar_operacion_oficinas",
+						funcion: "m2_3_js_consultar_operacion_oficinas",
+						error: { message: e.name + " : " + e.message, name: "AJAX" },
+						parametros: param_tabla
+					});
+				})
+				.withSuccessHandler(m0_js_crear_tabla)
+				.m2_3_gs_consultar_operacion_oficinas(param_tabla);
+			$("#m2_3_div_consolidado_consulta_operacion").html('<div class="mdl-spinner mdl-spinner--single-color mdl-js-spinner is-active carga_spinner"></div>');
+			componentHandler.upgradeDom();
+			event.preventDefault();
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m2_3_js_consultar_operacion_oficinas",
+				error: e,
+				parametros: frm
+			});
+		}
+	}
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Muestra la operacion completa de la oficina en un dia determinado
+	 *
+	 * @param   {number}  id_operacion  id operacion
+	 *
+	 * @return  {null}
+	 */
+	function m2_3_js_consultar_operacion_oficina_detalle(id_operacion) {
+		try {
+
+			google.script.run
+				.withFailureHandler(function (e) {
+					m0_js_registrar_error({
+						gs: "m2_3_gs_consultar_operacion_oficina_detalle",
+						funcion: "m2_3_js_consultar_operacion_oficina_detalle",
+						error: { message: e.name + " : " + e.message, name: "AJAX" },
+						parametros: id_operacion
+					});
+				})
+				.withSuccessHandler(function (contenido) {
+					router({
+						tipo_fuente: "VARIABLE",
+						contenido: contenido,
+						contenedor: "m0_div_panel_secundario",
+						id_privilegio: "2_0"
+					});
+				})
+				.m2_3_gs_consultar_operacion_oficina_detalle(id_operacion);
+			$("#m0_div_panel_secundario").html('<div class="mdl-spinner mdl-spinner--single-color mdl-js-spinner is-active carga_spinner"></div>');
+			componentHandler.upgradeDom();
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m2_3_js_consultar_operacion_oficina_detalle",
+				error: e,
+				parametros: {
+					"id_operacion": id_operacion
+				}
+			});
+		}
+	}
+
+
+
+	//################################################################################################################################################################################################################
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//SECCION 4 - REPORTES MODULO APERTURA Y CIERRE
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//################################################################################################################################################################################################################
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//listener de eventos del DOOM
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//funciones javascript
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	/**
+	 * funcion para cargar los objetos de una seccion especifica
+	 *
+	 * @return  {null}
+	 */
+	function m2_js_inicializar_pestaña_m2_4() {
+		try {
+
+			m0_js_log_sesion({
+				id_sesion: ID_SESION,
+				log: "M2 - Reportes modulo apertura y cierre",
+				tipo_log: "ACCESO A SECCION"
+			});
+
+			var u = USUARIO;
+			var pos;
+			for (var mod = 0; mod < u.modulos.length; mod++) {
+				if (2 == u.modulos[mod].id_modulo) {
+					pos = mod;
+				}
+			}
+			var param_modulos = {
+				icono: u.modulos[pos].icono,
+				id_modulo: 2,
+				texto_1: u.modulos[pos].modulo,
+				texto_2: "Reportes modulo apertura y cierre"
+			};
+			m0_js_menu_arbol(param_modulos);
+
+			google.script.run
+				.withFailureHandler(function (e) {
+					m0_js_registrar_error({
+						gs: "m2_4_gs_cargar_reportes",
+						funcion: "m2_js_inicializar_pestaña_m2_4",
+						error: { message: e.name + " : " + e.message, name: "AJAX" },
+						parametros: u.id_regional
+					});
+				})
+				.withSuccessHandler(function (r) {
+					m0_js_aviso("snackbar", r.mensaje);
+					if (r.exito) {
+						$("#m2_4_div_consolidado_apertura_cierre").html(r.contenido_a_c)
+						$("#m2_4_div_consolidado_novedades_operacion").html(r.contenido_n_o)
+						$("#m2_4_div_condolidado_novedades_personal").html(r.contenido_n_p)
+						$("#m2_4_div_consolidado_base_documental").html(r.contenido_b_d)
+						$("#m2_4_div_consolidado_socializaciones").html(r.contenido_s)
+						componentHandler.upgradeDom();
+					} else {
+						$("#m2_4_div_consolidado_apertura_cierre").html("")
+						$("#m2_4_div_consolidado_novedades_operacion").html("")
+						$("#m2_4_div_condolidado_novedades_personal").html("")
+						$("#m2_4_div_consolidado_base_documental").html("")
+						$("#m2_4_div_consolidado_socializaciones").html("")
+						m0_js_aviso("banner", r.mensaje);
+					}
+				})
+				.m2_4_gs_cargar_reportes(u.id_regional);
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m2_js_inicializar_pestaña_m2_4",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Carga el reporte seleccionado
+	 *
+	 * @param   {object}  param  Objeto con la informacion necesaria para la carga del reporte
+	 *
+	 * @return  {null}
+	 */
+	function m2_4_js_actualizar_reporte(reporte) {
+		try {
+
+			var u = USUARIO;
+
+			google.script.run
+				.withFailureHandler(function (e) {
+					m0_js_registrar_error({
+						gs: "m2_4_gs_actualizar_reporte_paso_1",
+						funcion: "m2_4_js_actualizar_reporte",
+						error: { message: e.name + " : " + e.message, name: "AJAX" },
+						parametros: {
+							reporte: reporte,
+							id_regional: u.id_regional
+						}
+					});
+				})
+				.withSuccessHandler(m2_4_procesar_reporte)
+				.m2_4_gs_actualizar_reporte_paso_1({
+					reporte: reporte,
+					id_regional: u.id_regional
+				});
+
+			m0_js_loading({
+				tipo: "COMPUESTO_CREACION",
+				titulo: "ACTUALIZACIÓN INFORME APERTURA",
+				texto: "Por favor espere mientras se descargan los datos del servidor",
+				valor: false
+			})
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m2_4_js_actualizar_reporte",
+				error: e,
+				parametros: {
+					"reporte": reporte
+				}
+			});
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Funcion que proceso la info de las tablas que se mando desde el back
+	 *
+	 * @param   {object}  param  Objeto con la informacion necesaria para la carga del reporte
+	 *
+	 * @return  {null}
+	 */
+	function m2_4_procesar_reporte(param) {
+		try {
+
+			if (param.exito) {
+				m0_js_loading({
+					tipo: "COMPUESTO_ACTUALIZACION",
+					texto: param.mensaje,
+					valor: 0
+				})
+				var u = USUARIO;
+				var r = {
+					data: [],
+					reporte: param.reporte
+				}
+				var fila = [];
+				switch (param.reporte) {
+					case "M2_APERTURA_CIERRE":
+
+						var oficina;
+						for (var j = 0; j < param.apertura_cierre.registros; j++) {
+							oficina = "";
+							for (var l = 0; l < param.oficinas.registros; l++) {
+								if (param.apertura_cierre.datos[j].id_pac === param.oficinas.datos[l].id_oficina && param.oficinas.datos[l].id_regional == u.id_regional) {
+									oficina = param.oficinas.datos[l].oficina;
+								}
+							}
+							if (oficina !== "") {
+								var fila = [];
+								fila.push(param.apertura_cierre.datos[j].id_operacion); 																		//ID_OPERACION
+								fila.push(oficina);																																					//OFICINA
+								var fecha = param.apertura_cierre.datos[j].fecha;
+								fila.push(fecha.substring(0, fecha.indexOf(" ")));																					//FECHA
+								var hora = param.apertura_cierre.datos[j].hora;
+								fila.push(hora.substring(hora.indexOf(" ") + 1, hora.length));															//HORA
+								var usuario_apertura = "";
+								for (l = 0; l < param.usuarios.registros; l++) {
+									if (param.apertura_cierre.datos[j].id_usuario == param.usuarios.datos[l].id_usuario) {
+										usuario_apertura = param.usuarios.datos[l].nombre;
+									}
+								}
+								fila.push(usuario_apertura)																																	//USUARIO
+								fila.push(param.apertura_cierre.datos[j].bzg_apertura);																			//BIZAGI_APERTURA
+								fila.push(param.apertura_cierre.datos[j].observaciones_personal);														//OBSERVACIONES_PERSONAL
+								fila.push(param.apertura_cierre.datos[j].observaciones_reunion);														//OBSERVACIONES_REUNION
+								r.data.push(fila);
+							}
+							m0_js_loading({
+								tipo: "COMPUESTO_ACTUALIZACION",
+								texto: "",
+								valor: ((j / param.apertura_cierre.registros) * 100)
+							})
+						}
+
+						break;
+					case "M2_APERTURA_CIERRE_OPERACION":
+						var oficina;
+						for (var j = 0; j < param.operacion.registros; j++) {
+							for (var i = 0; i < param.apertura_cierre.registros; i++) {
+								if (param.operacion.datos[j].id_operacion == param.apertura_cierre.datos[i].id_operacion) {
+									oficina = "";
+									for (var l = 0; l < param.oficinas.registros; l++) {
+										if (param.apertura_cierre.datos[i].id_pac === param.oficinas.datos[l].id_oficina && param.oficinas.datos[l].id_regional == u.id_regional) {
+											oficina = param.oficinas.datos[l].oficina;
+										}
+									}
+									if (oficina !== "") {
+										var fila = [];
+										fila.push(param.apertura_cierre.datos[i].id_operacion);
+										fila.push(oficina);
+										fila.push(param.apertura_cierre.datos[i].fecha);
+										fila.push(param.operacion.datos[j].momento);
+										fila.push(param.operacion.datos[j].tipo_novedad);
+										fila.push(param.operacion.datos[j].novedad);
+										fila.push(param.operacion.datos[j].inicio_novedad);
+										fila.push(param.operacion.datos[j].fin_novedad);
+										r.data.push(fila);
+									}
+									m0_js_loading({
+										tipo: "COMPUESTO_ACTUALIZACION",
+										texto: "",
+										valor: ((j / param.operacion.registros) * 100)
+									})
+								}
+							}
+						}
+
+						break;
+					case "M2_APERTURA_CIERRE_PERSONAL":
+						console.log(param)
+						var oficina;
+						var usuario;
+						for (var j = 0; j < param.personal.registros; j++) {
+							for (var i = 0; i < param.apertura_cierre.registros; i++) {
+								if (param.personal.datos[j].id_operacion == param.apertura_cierre.datos[i].id_operacion) {
+									oficina = "";
+									for (var l = 0; l < param.oficinas.registros; l++) {
+										if (param.apertura_cierre.datos[i].id_pac === param.oficinas.datos[l].id_oficina && param.oficinas.datos[l].id_regional == u.id_regional) {
+											oficina = param.oficinas.datos[l].oficina;
+										}
+									}
+									if (oficina !== "") {
+										var fila = [];
+										fila.push(param.apertura_cierre.datos[i].id_operacion);
+										fila.push(oficina);
+										fila.push(param.apertura_cierre.datos[i].fecha);
+										usuario = "";
+										for (l = 0; l < param.usuarios.registros; l++) {
+											if (param.usuarios.datos[l].id_usuario == param.personal.datos[j].id_usuario) {
+												usuario = param.usuarios.datos[l].nombre;
+											}
+										}
+										fila.push(usuario);
+										fila.push(param.personal.datos[j].disponibilidad);
+										fila.push(param.personal.datos[j].novedad);
+										r.data.push(fila);
+									}
+									m0_js_loading({
+										tipo: "COMPUESTO_ACTUALIZACION",
+										texto: "",
+										valor: ((j / param.personal.registros) * 100)
+									})
+								}
+							}
+						}
+
+						break;
+					case "M2_APERTURA_CIERRE_BASE_DOCUMENTAL":
+						var oficina;
+
+						for (var j = 0; j < param.base_documental.registros; j++) {
+							for (var i = 0; i < param.upload.registros; i++) {
+								if (param.upload.datos[i].id_upload == param.base_documental.datos[j].id_upload) {
+									oficina = "";
+									for (var l = 0; l < param.oficinas.registros; l++) {
+										if (param.upload.datos[i].id_oficina === param.oficinas.datos[l].id_oficina && param.oficinas.datos[l].id_regional == u.id_regional) {
+											oficina = param.oficinas.datos[l].oficina;
+										}
+									}
+									if (oficina != "") {
+										var fila = [];
+										fila.push(param.base_documental.datos[j].id_documento);
+										fila.push(param.upload.datos[i].fecha);
+										fila.push(param.base_documental.datos[j].documento);
+										fila.push(param.base_documental.datos[j].descripcion);
+										fila.push(param.base_documental.datos[j].fuente);
+										for (var k = 0; k < param.usuarios.registros; k++) {
+											if (param.upload.datos[i].id_usuario == param.usuarios.datos[k].id_usuario) {
+												fila.push(param.usuarios.datos[k].nombre)
+											}
+										}
+										fila.push(param.base_documental.datos[j].activo);
+										fila.push(param.upload.datos[i].ruta);
+										r.data.push(fila);
+									}
+									m0_js_loading({
+										tipo: "COMPUESTO_ACTUALIZACION",
+										texto: "",
+										valor: ((j / param.base_documental.registros) * 100)
+									})
+								}
+							}
+						}
+						break;
+					case "M2_APERTURA_CIERRE_SOCIALIZACIONES":
+						var id_documento;
+						var id_upload;
+						var observaciones;
+						var documento;
+						var fecha;
+						var ruta;
+						var sw_socializacion;
+						var requiere_soporte;
+						for (var j = 0; j < param.oficinas.registros; j++) {
+							for (var i = 0; i < param.base_documental.registros; i++) {
+								id_documento = -1;
+								documento = "";
+								id_upload = "";
+								fecha = "";
+								ruta = "";
+								requiere_soporte = "";
+								observaciones = "";
+								sw_socializacion = false;
+								for (var k = 0; k < param.upload.registros; k++) {
+									if (param.base_documental.datos[i].id_upload == param.upload.datos[k].id_upload && param.upload.datos[k].id_regional == u.id_regional) {
+										id_documento = param.base_documental.datos[i].id_documento;
+										documento = param.base_documental.datos[i].documento;
+										requiere_soporte = param.base_documental.datos[i].requiere_soporte;
+									}
+								}
+								if (id_documento != -1) {
+									var fila = [];
+									fila.push(param.oficinas.datos[j].oficina)
+									fila.push(id_documento);
+									fila.push(documento);
+									for (var l = 0; l < param.socializaciones.registros; l++) {
+										if (param.oficinas.datos[j].id_oficina == param.socializaciones.datos[l].id_oficina && param.socializaciones.datos[l].id_documento == id_documento && param.socializaciones.datos[l].activo == 1) {
+											sw_socializacion = true
+											id_upload = param.socializaciones.datos[l].id_upload;
+											observaciones = param.socializaciones.datos[l].observacion;
+										}
+									}
+									if (sw_socializacion) {
+										for (k = 0; k < param.upload.registros; k++) {
+											if (id_upload == param.upload.datos[k].id_upload) {
+												fecha = param.upload.datos[k].fecha;
+												ruta = param.upload.datos[k].ruta;
+											}
+										}
+										fila.push("SI");
+										fila.push(fecha);
+										fila.push(observaciones);
+										if (requiere_soporte == 1) {
+											fila.push(ruta);
+										} else {
+											fila.push("No requiere planilla de asistencia")
+										}
+									} else {
+										fila.push("NO");
+										fila.push("");
+										fila.push("");
+										fila.push("");
+									}
+									r.data.push(fila)
+								}
+							}
+						}
+
+						m0_js_loading({
+							tipo: "COMPUESTO_ACTUALIZACION",
+							texto: "",
+							valor: ((j / param.socializaciones.registros) * 100)
+						})
+
+						break;
+
+				}
+				google.script.run
+					.withFailureHandler(function (e) {
+						m0_js_registrar_error({
+							gs: "m2_4_gs_actualizar_reporte_paso_2",
+							funcion: "m2_4_procesar_reporte",
+							error: { message: e.name + " : " + e.message, name: "AJAX" },
+							parametros: r
+						});
+					})
+					.withSuccessHandler(m0_js_resultado_operacion)
+					.m2_4_gs_actualizar_reporte_paso_2(r);
+
+				m0_js_loading({
+					tipo: "COMPUESTO_ACTUALIZACION",
+					texto: "Por favor espere mientras se sube al servidor la base de datos actualizada",
+					valor: false
+				})
+			}
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m2_4_procesar_reporte",
+				error: e,
+				parametros: param
+			});
+		}
+	}
+
+
+
+	//################################################################################################################################################################################################################
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//SECCION 5 - ADMINISTRACION BANCO DE CONOCIMIENTOS
+	//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//################################################################################################################################################################################################################
+
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//listener de eventos del DOOM
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	$("#m0_div_panel_principal").on("submit", "#m2_5_frm_b_d_consulta", function () {
+		m2_5_js_b_d_consulta(this);
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_principal").on("click", "#m2_5_btn_b_d_nuevo", function () {
+		m2_5_js_b_d_nuevo();
+	});
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	$("#m0_div_panel_secundario").on("submit", "#m2_5_frm_b_d_documento", function () {
+		m2_5_js_b_d_documento(this);
+	});
+
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+	//funciones javascript
+	//*******************************************************************************************************************************************************
+	//*******************************************************************************************************************************************************
+
+	/**
+	 * funcion para cargar los objetos de una seccion especifica
+	 *
+	 * @return  {null}
+	 */
+	function m2_js_inicializar_pestaña_m2_5() {
+		try {
+
+			m0_js_log_sesion({
+				id_sesion: ID_SESION,
+				log: "M2 - base documental",
+				tipo_log: "ACCESO A SECCION"
+			});
+
+			var u = USUARIO;
+			var pos;
+			for (var mod = 0; mod < u.modulos.length; mod++) {
+				if (2 == u.modulos[mod].id_modulo) {
+					pos = mod;
+				}
+			}
+			$("#m0_div_panel_secundario").html("");
+			var param_modulos = {
+				icono: u.modulos[pos].icono,
+				id_modulo: 2,
+				texto_1: u.modulos[pos].modulo,
+				texto_2: "base documental"
+			};
+			m0_js_menu_arbol(param_modulos);
+			var param_formulario = {
+				formulario: "m2_5_frm_b_d_consulta",
+				campos: [{
+					id_campo: "m2_5_txt_b_d_consulta_fecha_inicial",
+					nombre_campo: "Fecha inicial...",
+					pattern: "",
+					error: "",
+					required: "required",
+					tipo_campo: "date"
+				}, {
+					id_campo: "m2_5_txt_b_d_consulta_fecha_final",
+					nombre_campo: "Fecha final...",
+					pattern: "",
+					required: "required",
+					error: "",
+					tipo_campo: "date"
+				}]
+			};
+			router({
+				tipo_fuente: "VARIABLE",
+				contenido: m0_js_crear_formulario(param_formulario),
+				contenedor: "m2_5_div_b_d_formulario_consulta",
+				id_privilegio: "2_8"
+			});
+			$("#m2_5_txt_b_d_consulta_fecha_inicial").parent().addClass('is-dirty');
+			$("#m2_5_txt_b_d_consulta_fecha_final").parent().addClass('is-dirty');
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m2_js_inicializar_pestaña_m2_5",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * realiza la busqueda de los documentos de acuerdo a un rango de fecha
+	 *
+	 * @param   {object}  frm  frm con los criterios de busqueda
+	 *
+	 * @return  {object}					objecto con la tabla de resultados de la busqueda
+	 */
+	function m2_5_js_b_d_consulta(param_tabla) {
+		try {
+
+			var u = USUARIO;
+			var param_tabla = {
+				criterio: {
+					fecha_inicial: $("#m2_5_txt_b_d_consulta_fecha_inicial").val(),
+					fecha_final: $("#m2_5_txt_b_d_consulta_fecha_final").val(),
+					id_regional: u.id_regional,
+				},
+				contenedor: "m2_5_div_b_d_consolidado_consulta"
+			};
+			m0_js_loading({
+				tipo: "SIMPLE",
+				contenedor: "m2_5_div_b_d_consolidado_consulta"
+			})
+			google.script.run
+				.withFailureHandler(function (e) {
+					m0_js_registrar_error({
+						gs: "m2_5_gs_b_d_consulta",
+						funcion: "m2_5_js_b_d_consulta",
+						error: { message: e.name + " : " + e.message, name: "AJAX" },
+						parametros: param_tabla
+					});
+				})
+				.withSuccessHandler(m0_js_crear_tabla)
+				.m2_5_gs_b_d_consulta(param_tabla);
+
+			event.preventDefault();
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m2_5_js_b_d_consulta",
+				error: e,
+				parametros: frm
+			});
+		}
+	}
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	* gestiona la adicion, edicion e inactivacion de usuarios de la app
+	*
+	* @return  {Object}              objecto con la informacion para la generacion del formulario
+	*/
+	function m2_5_js_b_d_nuevo() {
+		try {
+
+			var u = USUARIO;
+
+			var contenido = '<div class="div_panel mdl-shadow--3dp">';
+			contenido += "<h4>ADICIONAR DOCUMENTO</h4>";
+			contenido += "<p>Ingresar informacion del nuevo documento y subir a la APP</p>";
+			var param_formulario = {
+				formulario: "m2_5_frm_b_d_documento",
+				campos: [{
+					id_campo: "m2_5_txt_b_d_documento",
+					nombre_campo: "Documento...",
+					pattern: "",
+					error: "",
+					required: "required",
+					tipo_campo: "text",
+				}, {
+					tipo_campo: "select",
+					id_campo: "m2_5_txt_b_d_documento_fuente",
+					nombre_campo: "Fuente del documento...",
+					required: "required"
+				}, {
+					id_campo: "m2_5_txt_b_d_documento_descripcion",
+					nombre_campo: "Descripción documento...",
+					required: "required",
+					tipo_campo: "textarea",
+				}, {
+					id_campo: "m2_5_file_b_d_documento_carga",
+					nombre_campo: "Por favor cargue el documento...",
+					tipo_campo: "file",
+					required: "required"
+				}, {
+					tipo_campo: "checkbox",
+					id_campo: "m2_5_chk_documento_requerido",
+					nombre_campo: "Requiere diligenciamiento de planilla de asistencia",
+					checked: "checked",
+					value: "SI"
+				}]
+			};
+			contenido += m0_js_crear_formulario(param_formulario);
+			contenido += '</div>';
+			router({
+				tipo_fuente: "VARIABLE",
+				contenido: contenido,
+				contenedor: "m0_div_panel_secundario",
+				id_privilegio: "2_8"
+			});
+			m0_js_poblar_menu({
+				campo: "Fuente del documento...",
+				criterio: "",
+				select: "m2_5_txt_b_d_documento_fuente",
+				datos: [{
+					texto: "",
+					valor: "",
+					selected: "selected"
+				}, {
+					texto: "NIVEL CENTRAL",
+					valor: "NIVEL CENTRAL",
+					selected: ""
+				}, {
+					texto: "DIRECCIÓN REGIONAL",
+					valor: "DIRECCIÓN REGIONAL",
+					selected: ""
+				}, {
+					texto: "EXTERNO A COLPENSIONES",
+					valor: "EXTERNO A COLPENSIONES",
+					selected: ""
+				}]
+			});
+
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m2_5_js_b_d_nuevo",
+				error: e,
+				parametros: {}
+			});
+		}
+	}
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Envio del formulario al back para almacenar la informacion del documento
+	 *
+	 * @param   {object}  frm  objecto con los datos del formulario
+	 *
+	 * @return  {null}
+	 */
+	function m2_5_js_b_d_documento(frm) {
+		try {
+
+			if ($("#FILE_TEXT_ID").val() !== "") {
+				google.script.run
+					.withFailureHandler(function (e) {
+						m0_js_registrar_error({
+							gs: "m2_5_gs_b_d_documento",
+							funcion: "m2_5_js_b_d_documento",
+							error: { message: e.name + " : " + e.message, name: "AJAX" },
+							parametros: frm
+						});
+					})
+					.withSuccessHandler(function (r) {
+						if (m0_js_resultado_operacion(r)) {
+							m2_js_inicializar_pestaña_m2_5();
+						}
+					})
+					.m2_5_gs_b_d_documento(frm);
+			} else {
+				$("#FILE_TEXT_ID").parent().addClass('is-invalid');
+				m0_js_aviso("snackbar", "Por favor cargue el documento en formato PDF");
+			}
+			m0_js_aviso("modal_box", "Por favor espere mientras se carga el documento")
+
+			event.preventDefault();
+
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m2_5_js_b_d_documento",
+				error: e,
+				parametros: frm
+			});
+		}
+	}
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+	/**
+	 * Funcion para inactivar documentos
+	 *
+	 * @param   {object}  id_documento  id del documento
+	 *
+	 * @return  {null}
+	 */
+	function m2_5_js_b_d_archivar_documento(id_documento) {
+		try {
+
+			google.script.run
+				.withFailureHandler(function (e) {
+					m0_js_registrar_error({
+						gs: "m2_5_gs_b_d_archivar_documento",
+						funcion: "m2_5_js_b_d_archivar_documento",
+						error: { message: e.name + " : " + e.message, name: "AJAX" },
+						parametros: id_documento
+					});
+				})
+				.withSuccessHandler(function (r) {
+					if (m0_js_resultado_operacion(r)) {
+						var u = USUARIO;
+						m0_js_loading({
+							tipo: "SIMPLE",
+							contenedor: "m2_5_div_b_d_consolidado_consulta"
+						})
+						google.script.run
+							.withFailureHandler(function (e) {
+								m0_js_registrar_error({
+									gs: "m2_5_gs_b_d_consulta",
+									funcion: "m2_5_js_b_d_archivar_documento",
+									error: { message: e.name + " : " + e.message, name: "AJAX" },
+									parametros: {
+										criterio: {
+											fecha_inicial: $("#m2_5_txt_b_d_consulta_fecha_inicial").val(),
+											fecha_final: $("#m2_5_txt_b_d_consulta_fecha_final").val(),
+											id_regional: u.id_regional,
+										},
+										contenedor: "m2_5_div_b_d_consolidado_consulta"
+									}
+								});
+							})
+							.withSuccessHandler(m0_js_crear_tabla)
+							.m2_5_gs_b_d_consulta({
+								criterio: {
+									fecha_inicial: $("#m2_5_txt_b_d_consulta_fecha_inicial").val(),
+									fecha_final: $("#m2_5_txt_b_d_consulta_fecha_final").val(),
+									id_regional: u.id_regional,
+								},
+								contenedor: "m2_5_div_b_d_consolidado_consulta"
+							});
+					}
+				})
+				.m2_5_gs_b_d_archivar_documento(id_documento);
+			m0_js_aviso("modal_box", "Por favor espere mientras se actualiza el estado del documento")
+
+
+		} catch (e) {
+			m0_js_registrar_error({
+				funcion: "m2_5_js_b_d_archivar_documento",
+				error: e,
+				parametros: {
+					"id_documento": id_documento
+				}
+			});
+		}
+	}
+
+</script>

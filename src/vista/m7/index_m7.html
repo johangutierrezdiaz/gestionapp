@@ -1,0 +1,54 @@
+<script>
+	/**---------------------------------------MODULO VISITAS DE ASEGURAMIENTO----------------------------------------------------------------------------------- */
+	m0_js_log_sesion({
+		id_sesion: ID_SESION,
+		log: "M7",
+		tipo_log: "ACCESO A MODULO"
+	});
+
+	var param = {
+		id_modulo: 7,
+		secciones: [{
+			nombre_seccion: "Programar visita de aseguramiento",
+			fuente: "vista/m7/index_m7_1",
+			privilegio: "7_1",
+			descripcion: "Asistente para la programación de oficinas, listas de verificación, usuarios y fecha de realización de una visita de aseguramiento"
+		}, {
+			nombre_seccion: "Realizar visita de aseguramiento",
+			fuente: "vista/m7/index_m7_2",
+			privilegio: "7_2",
+			descripcion: "Acceso al formulario de diligenciamiento de visitas de aseguramiento"
+		}, {
+			nombre_seccion: "Calendario visitas de aseguramiento",
+			fuente: "vista/m7/index_m7_3",
+			privilegio: "7_6",
+			descripcion: "Relación en vista calendario de todas las visitas de aseguramiento programadas hasta la fecha."
+		}, {
+			nombre_seccion: "Cancelación visitas de aseguramiento",
+			fuente: "vista/m7/index_m7_4",
+			privilegio: "7_7",
+			descripcion: "Cancelación de Visitas de Aseguramiento que aún no hayan sido realizadas"
+		}, {
+			nombre_seccion: "Gestión acciones correctivas",
+			fuente: "vista/m7/index_m7_5",
+			privilegio: "7_3",
+			descripcion: "Consolidado No Conformidades con sus respectivas Acciones Correctivas"
+		}, {
+			nombre_seccion: "Gestión checklist",
+			fuente: "vista/m7/index_m7_6",
+			privilegio: "7_4",
+			descripcion: "Gestión de los ítems de revisión asociados a las listas de verificación que se evaluaran durante las visitas de aseguramiento."
+		}, {
+			nombre_seccion: "Gestión categorías checklist",
+			fuente: "vista/m7/index_m7_7",
+			privilegio: "7_5",
+			descripcion: "Gestión de las listas de verificación que se evaluaran durante las visitas de aseguramiento."
+		}, {
+			nombre_seccion: "Reporte visitas de aseguramiento",
+			fuente: "vista/m7/index_m7_8",
+			privilegio: "7_8",
+			descripcion: "Reporte en formato tabular de la información registrada a través de la APP."
+		}]
+	}
+	m0_js_inicializar_modulo(param);
+</script>

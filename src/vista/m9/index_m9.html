@@ -1,0 +1,71 @@
+<script>
+	/**---------------------------------------MODULO PLAN ESTRATEGICO----------------------------------------------------------------------------------- */
+	m0_js_log_sesion({
+		id_sesion: ID_SESION,
+		log: "M9",
+		tipo_log: "ACCESO A MODULO"
+	});
+
+	if (BD_PE.SINCRONIZADO) {
+		var param = {
+			id_modulo: 9,
+			secciones: [{
+				nombre_seccion: "Creación Plan Estratégico",
+				fuente: "vista/m9/index_m9_1",
+				privilegio: "9_1",
+				descripcion: "Registrar información"
+			}, {
+				nombre_seccion: "Reportes Modulo Plan Estratégico",
+				fuente: "vista/m9/index_m9_2",
+				privilegio: "9_2",
+				descripcion: "Reporte en formato tabular de la información registrada a través de la APP."
+			}]
+		}
+		m0_js_inicializar_modulo(param);
+
+	} else {
+
+		m0_js_loading({
+			tipo: "COMPUESTO_CREACION",
+			titulo: "CARGANDO MODULO",
+			valor: false,
+			texto: ""
+		})
+		google.script.run
+			.withFailureHandler(function (e) {
+				BD_PE.SINCRONIZADO = false;
+				BD.SINCRONIZADO = false;
+				BD.ULTIMA_SINCRONIZACION = new Date()
+				m0_js_actualizacion_panel_bd()
+				m0_js_registrar_error({
+					gs: "index_m9",
+					funcion: "index_m9",
+					error: { message: e.name + " : " + e.message + " / Error en sincronización forzada de BD (M9)", name: "AJAX" },
+					parametros: {}
+				});
+			})
+			.withSuccessHandler(function (r) {
+				var param = {
+					id_modulo: 9,
+					secciones: [{
+						nombre_seccion: "Creación Plan Estratégico",
+						fuente: "vista/m9/index_m9_1",
+						privilegio: "9_1",
+						descripcion: "Registrar información"
+					}, {
+						nombre_seccion: "Reportes Modulo Plan Estratégico",
+						fuente: "vista/m9/index_m9_2",
+						privilegio: "9_2",
+						descripcion: "Reporte en formato tabular de la información registrada a través de la APP."
+					}]
+				}
+				m0_js_inicializar_modulo(param);
+				m9_js_inicializacion_bd_crear_BD_PE(r)
+				m0_js_aviso("cierre_modal_box", "")
+
+			})
+			.m9_gs_inicializacion_bd();
+
+	}
+
+</script>

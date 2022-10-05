@@ -1,0 +1,70 @@
+<h4>INFORME DE CIERRE</h4>
+<p>Antes de diligenciar el informe de cierre, por favor revisar el Registro de Apertura de la oficina y confirmar el estado
+	de las novedades reportadas en ella (En el caso de que se hubiera reportado alguna novedad).</p>
+<hr />
+<hr />
+<div id="m2_2_div_accordion">
+	<h3><b>APERTURA</b></h3>
+	<div>
+		<div id="m2_2_div_consolidado_apertura" class="div_panel mdl-shadow--3dp">
+			<div class="mdl-spinner mdl-spinner--single-color mdl-js-spinner is-active carga_spinner"></div>
+		</div>
+	</div>
+	<h3><b>CIERRE</b></h3>
+	<div>
+		<br />
+		<br />
+		<h5>Observaciones relacionadas con infraestructura, conectividad y equipos </h5>
+		<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+			<input type="hidden" id="m2_2_hid_informe_cierre_id_operacion" value="">
+			<select class="mdl-textfield__input" id="m2_2_sel_reporte_mtto" name="m2_2_sel_reporte_mtto">
+				<option></option>
+			</select>
+			<label class="mdl-textfield__label" for="m2_2_sel_reporte_mtto">Seleccione un tipo de novedad...</label>
+		</div>
+		<br />
+		<div class="mdl-textfield mdl-js-textfield">
+			<textarea class="mdl-textfield__input" type="text" rows="3" id="m2_2_txt_reporte_mtto"
+				name="m2_2_txt_reporte_mtto"></textarea>
+			<label class="mdl-textfield__label" for="m2_2_txt_reporte_mtto">Descripción de la novedad...</label>
+		</div>
+		<br />
+		<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+			<input class="mdl-textfield__input" type="time" id="m2_2_txt_reporte_mtto_inicio"
+				name="m2_2_txt_reporte_mtto_inicio" max="18:00:00" min="06:00:00" />
+			<label class="mdl-textfield__label" for="m2_2_txt_reporte_mtto_inicio">Por favor coloque la hora de inicio de la
+				novedad</label>
+			<span class="mdl-textfield__error">Por favor colocar una hora válida y dentro del rango de las 6:00 AM a 6:00
+				PM</span>
+		</div>
+		<br />
+		<br />
+		<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+			<input class="mdl-textfield__input" type="time" id="m2_2_txt_reporte_mtto_fin" name="m2_2_txt_reporte_mtto_fin"
+				max="18:00:00" min="06:00:00" />
+			<label class="mdl-textfield__label" for="m2_2_txt_reporte_mtto_fin">Por favor coloque la hora de finalización de
+				la novedad</label>
+			<span class="mdl-textfield__error">Por favor colocar una hora válida y dentro del rango de las 6:00 AM a 6:00
+				PM</span>
+		</div>
+		<br />
+		<br />
+		<button id="m2_2_btn_agregar_novedad_mtto"
+			class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">AGREGAR NOVEDAD
+			>></button>
+		<br />
+		<br />
+		<hr />
+		<ul id="m2_2_ul_consolidado_novedades_mtto" class="demo-list-three mdl-list"></ul>
+		<hr />
+		<br />
+		<br />
+		<button id="m2_2_btn_registrar_acta"
+			class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
+			REGISTRAR INFORME
+		</button>
+	</div>
+</div>
+<script>
+	m2_js_inicializar_pestaña_m2_2();
+</script>

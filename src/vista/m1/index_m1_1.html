@@ -1,0 +1,49 @@
+<h4>BASE CONSOLIDADA DE USUARIOS - Gestión.APP</h4>
+<p>Por favor mantener esta base consolidada actualizada con cada movimiento que se haga sobre la planta de funcionarios
+	de la Regional</p>
+<hr />
+<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+	<select class="mdl-textfield__input" id="m1_sel_criterio_oficina" name="m1_sel_criterio_oficina">
+	</select>
+	<label class="mdl-textfield__label" for="m1_sel_criterio_oficina">Seleccione una oficina...</label>
+</div>
+<br />
+<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+	<select class="mdl-textfield__input" id="m1_1_sel_criterio_cargo" name="m1_1_sel_criterio_cargo">
+	</select>
+	<label class="mdl-textfield__label" for="m1_1_sel_criterio_cargo">Seleccione un cargo...</label>
+</div>
+<br />
+<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+	<select class="mdl-textfield__input" id="m1_1_sel_criterio_rol" name="m1_1_sel_criterio_rol">
+	</select>
+	<label class="mdl-textfield__label" for="m1_1_sel_criterio_rol">Seleccione un rol...</label>
+</div>
+<br />
+<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+	<select class="mdl-textfield__input" id="m1_1_sel_criterio_area" name="m1_1_sel_criterio_area">
+	</select>
+	<label class="mdl-textfield__label" for="m1_1_sel_criterio_area">Seleccione un área...</label>
+</div>
+<br />
+<button id="m1_btn_buscar"
+	class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">CONSULTAR USUARIOS
+	>></button>
+<hr />
+<br />
+<div id="m1_div_consolidado_panel"></div>
+<br />
+<div class="alineado_derecha">
+	<a href="#m0_div_panel_secundario" id="m1_btn_nuevo_usuario"
+		class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored">
+		<i class="material-icons">person_add</i>
+	</a>
+</div>
+<div class="mdl-tooltip" for="m1_btn_nuevo_usuario">Por favor haga clic aquí si desea registrar un nuevo funcionario
+</div>
+<br />
+<br />
+
+<script>
+	m1_js_inicializar_pestaña_m1_1();
+</script>
