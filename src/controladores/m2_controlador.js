@@ -3329,4 +3329,278 @@ function m2_1_gs_actualizar_reporte_novedades_operativas() {
 }
 
 
+//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+/**
+* Genera el reporte nacional de novedades operativas
+*
+*/
+function m2_1_gs_actualizar_reporte_novedades_personal() {
+
+	var oficinas_digiturno = [
+		"PAA Envigado",
+		"PAA Medellín Centroccidental",
+		"PAA Medellín Norte",
+		"PAA Medellín Sur",
+		"PAB Quibdó",
+		"PAB Rionegro",
+		"PAC Apartadó",
+		"PAA Bogotá Sur",
+		"PAA Calle 94",
+		"PAA Chapinero",
+		"PAA Prado",
+		"PAA Salitre",
+		"PAA Teusaquillo",
+		"PAA Barranquilla Centro",
+		"PAA Barranquilla Norte",
+		"PAA Cartagena",
+		"PAB Montería",
+		"PAB Riohacha",
+		"PAB San Andres",
+		"PAB Santa Marta",
+		"PAB Sincelejo",
+		"PAB Valledupar",
+		"PAE CIS Cartagena",
+		"PAA Tunja",
+		"PAA Villavicencio",
+		"PAB Duitama",
+		"PAB Facatativá",
+		"PAB Florencia",
+		"PAB Soacha",
+		"PAB Sogamoso",
+		"PAB Yopal",
+		"PAB Zipaquirá",
+		"PAC Arauca",
+		"PAC Leticia",
+		"PAC Mocoa",
+		"PAE Mitú",
+		"PAE Puerto Carreño",
+		"PAE Puerto Inírida",
+		"PAE San José Del Guaviare",
+		"Regional Centro",
+		"PAA Armenia",
+		"PAA Manizales",
+		"PAA Pereira",
+		"Regional Eje Cafetero",
+		"PAA Cali Centro",
+		"PAA Cali Norte",
+		"PAA Cali Sur",
+		"PAA Pasto",
+		"PAB Buenaventura",
+		"PAB Palmira",
+		"PAB Popayán",
+		"PAB Tuluá",
+		"PAC Buga",
+		"PAC Ipiales",
+		"PAC Tumaco",
+		"PAE Emcali (Cali)",
+		"PAP Rotonda Jurídica Cali",
+		"PAA Bucaramanga",
+		"PAA Cúcuta",
+		"PAB Barrancabermeja",
+		"PAC Aguachica",
+		"PAC Ocaña",
+		"PAC Pamplona",
+		"PAC San Gil",
+		"PAA Ibagué",
+		"PAA Neiva",
+		"PAB Girardot",
+		"PAC Fusagasugá",
+		"PAC La Dorada",
+		"PAC Pitalito",
+		"Regional Sur"
+	]
+
+	var regionales_digiturno = [
+		"Antioquia",
+		"Bogotá",
+		"Caribe",
+		"Centro",
+		"Eje Cafetero",
+		"Occidente",
+		"Santanderes",
+		"Sur"
+	]
+
+
+	var id_oficinas_gestionapp = [
+		29,
+		23,
+		24,
+		25,
+		26,
+		27,
+		28,
+		58,
+		54,
+		55,
+		56,
+		57,
+		59,
+		0,
+		9,
+		1,
+		2,
+		3,
+		4,
+		5,
+		6,
+		7,
+		11,
+		67,
+		68,
+		69,
+		70,
+		71,
+		78,
+		72,
+		73,
+		74,
+		75,
+		76,
+		77,
+		79,
+		81,
+		80,
+		82,
+		66,
+		31,
+		32,
+		30,
+		33,
+		85,
+		42,
+		43,
+		50,
+		53,
+		47,
+		49,
+		48,
+		51,
+		52,
+		45,
+		44,
+		34,
+		40,
+		35,
+		37,
+		38,
+		39,
+		36,
+		17,
+		18,
+		21,
+		22,
+		20,
+		19,
+		"B022597365"
+	]
+
+	var id_regionales_digiturno = [
+		4,
+		5,
+		0,
+		6,
+		7,
+		8,
+		9,
+		10
+	]
+
+	var apertura_cierre = query({
+		tabla: "OPERACION_PAC",
+		campo: ["ID_OPERACION", "ID_PAC", "ID_USUARIO", "FECHA", "HORA", "BZG_APERTURA", "OBSERVACIONES_PERSONAL", "OBSERVACIONES_REUNION"],
+		condicion: {
+			condicion: true,
+			campo: ["ACTIVO"],
+			criterio: [1],
+			comparador: ["IGUAL"],
+			operador: []
+		},
+	});
+
+	var usuarios = query({
+		tabla: "USUARIO",
+		campo: ["ID_USUARIO", "NOMBRE", "CARGO"],
+		condicion: {
+			condicion: false
+		}
+	});
+
+	var oficinas = query({
+		tabla: "OFICINA",
+		campo: ["ID_OFICINA", "OFICINA", "ID_REGIONAL"],
+		condicion: {
+			condicion: false
+		}
+	});
+
+	var personal = query({
+		tabla: "NOVEDADES_PERSONAL",
+		campo: ["ID_OPERACION", "ID_USUARIO", "DISPONIBILIDAD"],
+		condicion: {
+			condicion: false
+		},
+	});
+
+	var regional = query({
+		tabla: "REGIONAL",
+		campo: ["ID_REGIONAL", "REGIONAL"],
+		condicion: {
+			condicion: false
+		}
+	});
+
+	var id_oficina;
+	var oficina;
+	var id_regional;
+	var nombre_usuario;
+	var cargo_usuario;
+	var nombre_regional;
+	var data = [];
+
+	for (let k = 0; k < personal.registros; k++) {
+		for (var j = 0; j < apertura_cierre.registros; j++) {
+			if (personal.datos[k].id_operacion === apertura_cierre.datos[j].id_operacion) {
+				var fila = [];
+				id_oficina = ""
+				id_regional = 0
+				for (var l = 0; l < oficinas.registros; l++) {
+					if (apertura_cierre.datos[j].id_pac == oficinas.datos[l].id_oficina) {
+						id_regional = oficinas.datos[l].id_regional;
+						id_oficina = oficinas.datos[l].id_oficina;
+						oficina = oficinas.datos[l].oficina
+					}
+				}
+				nombre_regional = ""
+				for (l = 0; l < regional.registros; l++) {
+					if (id_regional == regional.datos[l].id_regional) {
+						nombre_regional = regional.datos[l].regional;
+						id_regional = regional.datos[l].id_regional
+					}
+				}
+				fila.push(apertura_cierre.datos[j].id_operacion)
+				fila.push(id_regionales_digiturno.includes(id_regional) ? regionales_digiturno[id_regionales_digiturno.indexOf(id_regional)] : nombre_regional);
+				fila.push(id_oficinas_gestionapp.includes(id_oficina) ? oficinas_digiturno[id_oficinas_gestionapp.indexOf(id_oficina)] : oficina);
+				fila.push(apertura_cierre.datos[j].fecha);
+				nombre_usuario = "";
+				for (l = 0; l < usuarios.registros; l++) {
+					if (usuarios.datos[l].id_usuario == personal.datos[k].id_usuario) {
+						nombre_usuario = usuarios.datos[l].nombre;
+						cargo_usuario = usuarios.datos[l].cargo
+					}
+				}
+				fila.push(nombre_usuario)
+				fila.push(cargo_usuario)
+				fila.push(personal.datos[k].disponibilidad);
+				data.push(fila);
+			}
+		}
+	}
+	var hoja_informe = SpreadsheetApp.openById("1ojsZgq2O6d8_LyuNpk4ZG0qNrdTwaMZoVTMOWITzm6A").getSheetByName("AC_NOVEDADES_PERSONAL");
+	hoja_informe.getRange(2, 1, hoja_informe.getLastRow(), hoja_informe.getLastColumn()).clear({ formatOnly: false, contentsOnly: true });
+	hoja_informe.getRange(2, 1, data.length, data[0].length).setValues(data);
+
+}
+
 
