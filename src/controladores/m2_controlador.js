@@ -3411,18 +3411,6 @@ function m2_1_gs_actualizar_reporte_novedades_personal() {
 		"Regional Sur"
 	]
 
-	var regionales_digiturno = [
-		"Antioquia",
-		"Bogotá",
-		"Caribe",
-		"Centro",
-		"Eje Cafetero",
-		"Occidente",
-		"Santanderes",
-		"Sur"
-	]
-
-
 	var id_oficinas_gestionapp = [
 		29,
 		23,
@@ -3496,17 +3484,6 @@ function m2_1_gs_actualizar_reporte_novedades_personal() {
 		"B022597365"
 	]
 
-	var id_regionales_digiturno = [
-		4,
-		5,
-		0,
-		6,
-		7,
-		8,
-		9,
-		10
-	]
-
 	var apertura_cierre = query({
 		tabla: "OPERACION_PAC",
 		campo: ["ID_OPERACION", "ID_PAC", "ID_USUARIO", "FECHA", "HORA", "BZG_APERTURA", "OBSERVACIONES_PERSONAL", "OBSERVACIONES_REUNION"],
@@ -3531,8 +3508,12 @@ function m2_1_gs_actualizar_reporte_novedades_personal() {
 		tabla: "OFICINA",
 		campo: ["ID_OFICINA", "OFICINA", "ID_REGIONAL"],
 		condicion: {
-			condicion: false
-		}
+			condicion: true,
+			campo: ["ID_REGIONAL"],
+			criterio: [0],
+			comparador: ["IGUAL"],
+			operador: []
+		},
 	});
 
 	var personal = query({
@@ -3543,20 +3524,10 @@ function m2_1_gs_actualizar_reporte_novedades_personal() {
 		},
 	});
 
-	var regional = query({
-		tabla: "REGIONAL",
-		campo: ["ID_REGIONAL", "REGIONAL"],
-		condicion: {
-			condicion: false
-		}
-	});
-
 	var id_oficina;
 	var oficina;
-	var id_regional;
 	var nombre_usuario;
 	var cargo_usuario;
-	var nombre_regional;
 	var data = [];
 
 	for (let k = 0; k < personal.registros; k++) {
@@ -3564,23 +3535,13 @@ function m2_1_gs_actualizar_reporte_novedades_personal() {
 			if (personal.datos[k].id_operacion === apertura_cierre.datos[j].id_operacion) {
 				var fila = [];
 				id_oficina = ""
-				id_regional = 0
 				for (var l = 0; l < oficinas.registros; l++) {
 					if (apertura_cierre.datos[j].id_pac == oficinas.datos[l].id_oficina) {
-						id_regional = oficinas.datos[l].id_regional;
 						id_oficina = oficinas.datos[l].id_oficina;
 						oficina = oficinas.datos[l].oficina
 					}
 				}
-				nombre_regional = ""
-				for (l = 0; l < regional.registros; l++) {
-					if (id_regional == regional.datos[l].id_regional) {
-						nombre_regional = regional.datos[l].regional;
-						id_regional = regional.datos[l].id_regional
-					}
-				}
 				fila.push(apertura_cierre.datos[j].id_operacion)
-				fila.push(id_regionales_digiturno.includes(id_regional) ? regionales_digiturno[id_regionales_digiturno.indexOf(id_regional)] : nombre_regional);
 				fila.push(id_oficinas_gestionapp.includes(id_oficina) ? oficinas_digiturno[id_oficinas_gestionapp.indexOf(id_oficina)] : oficina);
 				fila.push(apertura_cierre.datos[j].fecha);
 				nombre_usuario = "";
