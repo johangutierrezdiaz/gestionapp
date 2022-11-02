@@ -3498,7 +3498,7 @@ function m2_1_gs_actualizar_reporte_novedades_personal() {
 
 	var usuarios = query({
 		tabla: "USUARIO",
-		campo: ["ID_USUARIO", "NOMBRE", "CARGO"],
+		campo: ["ID_USUARIO", "NOMBRE", "CARGO", "ID_OFICINA"],
 		condicion: {
 			condicion: false
 		}
@@ -3506,7 +3506,7 @@ function m2_1_gs_actualizar_reporte_novedades_personal() {
 
 	var oficinas = query({
 		tabla: "OFICINA",
-		campo: ["ID_OFICINA", "OFICINA", "ID_REGIONAL"],
+		campo: ["ID_OFICINA", "OFICINA"],
 		condicion: {
 			condicion: true,
 			campo: ["ID_REGIONAL"],
@@ -3516,53 +3516,53 @@ function m2_1_gs_actualizar_reporte_novedades_personal() {
 		},
 	});
 
-	var personal = query({
+	var novedades_personal = query({
 		tabla: "NOVEDADES_PERSONAL",
 		campo: ["ID_OPERACION", "ID_USUARIO", "DISPONIBILIDAD"],
 		condicion: {
 			condicion: false
 		},
 	});
-
 	var id_oficina;
-	var oficina;
+	var nombre_oficina;
 	var nombre_usuario;
 	var cargo_usuario;
 	var data = [];
+	var sw;
 
-	for (let k = 0; k < personal.registros; k++) {
-    console.log(k)
-		for (var j = 0; j < apertura_cierre.registros; j++) {
-			if (personal.datos[k].id_operacion === apertura_cierre.datos[j].id_operacion) {
-				var fila = [];
-				id_oficina = ""
-				for (var l = 0; l < oficinas.registros; l++) {
-					if (apertura_cierre.datos[j].id_pac == oficinas.datos[l].id_oficina) {
-						id_oficina = oficinas.datos[l].id_oficina;
-						oficina = oficinas.datos[l].oficina
-					}
+	for (var k = 0; k < novedades_personal.registros; k++) {
+		var sw = false;
+		for (var l = 0; l < usuarios.registros; l++) {
+			if (novedades_personal.datos[k].id_usuario == usuarios.datos[l].id_usuario) {
+				id_oficina = usuarios.datos[l].id_oficina
+				nombre_usuario = usuarios.datos[l].nombre
+				cargo_usuario = usuarios.datos[l].cargo
+			}
+		}
+		for (var j = 0; j < oficinas.registros; j++) {
+			if (oficinas.datos[j].id_oficina == id_oficina) {
+				nombre_oficina = oficinas.datos[j].oficina
+				sw = true
+			}
+		}
+		if (sw) {
+			for (let m = 0; m < apertura_cierre.registros; m++) {
+				if (apertura_cierre.datos[m].id_operacion == novedades_personal.datos[k].id_operacion) {
+					var fila = []
+					fila.push(apertura_cierre.datos[m].id_operacion)
+					fila.push(id_oficinas_gestionapp.includes(id_oficina) ? oficinas_digiturno[id_oficinas_gestionapp.indexOf(id_oficina)] : nombre_oficina);
+					fila.push(apertura_cierre.datos[m].fecha);
+					fila.push(nombre_usuario)
+					fila.push(cargo_usuario)
+					fila.push(novedades_personal.datos[k].disponibilidad);
+					data.push(fila);
 				}
-				fila.push(apertura_cierre.datos[j].id_operacion)
-				fila.push(id_oficinas_gestionapp.includes(id_oficina) ? oficinas_digiturno[id_oficinas_gestionapp.indexOf(id_oficina)] : oficina);
-				fila.push(apertura_cierre.datos[j].fecha);
-				nombre_usuario = "";
-				for (l = 0; l < usuarios.registros; l++) {
-					if (usuarios.datos[l].id_usuario == personal.datos[k].id_usuario) {
-						nombre_usuario = usuarios.datos[l].nombre;
-						cargo_usuario = usuarios.datos[l].cargo
-					}
-				}
-				fila.push(nombre_usuario)
-				fila.push(cargo_usuario)
-				fila.push(personal.datos[k].disponibilidad);
-				data.push(fila);
 			}
 		}
 	}
 	var hoja_informe = SpreadsheetApp.openById("1ojsZgq2O6d8_LyuNpk4ZG0qNrdTwaMZoVTMOWITzm6A").getSheetByName("AC_NOVEDADES_PERSONAL");
 	hoja_informe.getRange(2, 1, hoja_informe.getLastRow(), hoja_informe.getLastColumn()).clear({ formatOnly: false, contentsOnly: true });
 	hoja_informe.getRange(2, 1, data.length, data[0].length).setValues(data);
-
 }
 
 

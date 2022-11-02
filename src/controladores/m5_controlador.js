@@ -309,7 +309,7 @@ function m5_2_gs_registro_ispv(frm) {
 			if (frm.m5_2_sel_registro_ispv_tramite === "Traslado") {
 				if (frm.m5_2_sel_registro_ispv_gestion_realizada === "Se logro un traslado de fondos de una indemnización.") {
 					ispv.insercion({
-						campo: ["ID_GESTION", "FECHA", "ID_USUARIO", "ID_PAC", "RADICADO",  "GESTION", "OBSERVACION", "PSAP_TERCEROS", "TRAMITE_BEPS","SEMANAS" ],
+						campo: ["ID_GESTION", "FECHA", "ID_USUARIO", "ID_PAC", "RADICADO", "GESTION", "OBSERVACION", "PSAP_TERCEROS", "TRAMITE_BEPS", "SEMANAS"],
 						valor: ["", fecha_texto(0, "FECHA"), u.id_usuario, u.id_oficina, frm.m5_2_txt_registro_ispv_bizagi, frm.m5_2_sel_registro_ispv_gestion_realizada, frm.m5_2_txt_registro_ispv_observaciones, frm.m5_2_sel_registro_ispv_psap_terceros, frm.m5_2_sel_registro_ispv_tramite, frm.m5_2_sel_registro_ispv_numero_semanas],
 						index: true
 					})
@@ -1972,7 +1972,7 @@ function m5_10_gs_cargar_info_ciudadano(documento) {
 			contenido += '<ul>';
 			contenido += '<li><strong>Gestión: </strong> <span style="color: #ff0000;"><strong>' + anualidad.datos[0].gestion + '</strong></span></li>';
 			contenido += '<li><strong>Genero: </strong>' + anualidad.datos[0].sexo + '</li>';
-			contenido += '<li><strong>Telefonos: </strong>' + anualidad.datos[0].telefono_1 + ', ' + anualidad.datos[0].telefono_2  + '</li>';
+			contenido += '<li><strong>Telefonos: </strong>' + anualidad.datos[0].telefono_1 + ', ' + anualidad.datos[0].telefono_2 + '</li>';
 			contenido += '<li><strong>Fecha vinculación: </strong>' + fecha_texto(anualidad.datos[0].fecha_vinculacion, "FECHA") + '</li>';
 			contenido += '<li><strong>Afiliación RPM: </strong>' + anualidad.datos[0].afiliacion_rpm + '</li>';
 			contenido += '<li><strong>Semanas cotizadas abril: </strong>' + anualidad.datos[0].semanas_cotizadas_abril + '</li>';
@@ -2155,7 +2155,7 @@ function m5_10_gs_guardar_nueva_gestion(frm) {
 		Logger.log(anualidad)
 		if (anualidad.registros == 1) {
 			anualidad.edicion({
-				campo: ["GESTION", "ULTIMA GESTION OFICINA",	"ULTIMA GESTION USUARIO"],
+				campo: ["GESTION", "ULTIMA GESTION OFICINA", "ULTIMA GESTION USUARIO"],
 				valor: [frm.m5_10_sel_anualidad_gestion, u.oficina, u.usuario]
 			})
 			var anualidad_gestion = query({
@@ -2190,4 +2190,84 @@ function m5_10_gs_guardar_nueva_gestion(frm) {
 		log_error("m5_10_gs_guardar_nueva_gestion", param, e);
 	}
 	//***************************CAPTURA DE ERRORES***********************************************************************
+}
+
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+/**
+* Actualiza el reporte de traslados ISPV Automaticamente 
+*
+*
+*/
+function m5_8_gs_actualizar_reporte_traslados_ispv() {
+
+	var usuario = query({
+		tabla: "USUARIO",
+		campo: ["ID_USUARIO", "NOMBRE"],
+		condicion: {
+			condicion: false
+		},
+	});
+
+	var oficina = query({
+		tabla: "OFICINA",
+		campo: ["OFICINA", "ID_OFICINA"],
+		condicion: {
+			condicion: false
+		},
+	});
+
+	var ispv = query({
+		tabla: "ISPV_BEPS",
+		campo: [],
+		condicion: {
+			condicion: false
+		},
+	});
+
+	var data = [];
+	for (var j = 0; j < ispv.registros; j++) {
+		var fila = []
+		fila.push(ispv.datos[j].id_gestion)
+		fila.push(ispv.datos[j].fecha)
+
+		var nombre_usuario = ""
+		for (var i = 0; i < usuario.registros; i++) {
+			if (usuario.datos[i].id_usuario == ispv.datos[j].id_usuario) {
+				nombre_usuario = usuario.datos[i].nombre
+			}
+		}
+
+		fila.push(nombre_usuario)
+
+		var nombre_oficina = ""
+		for (i = 0; i < oficina.registros; i++) {
+			if (oficina.datos[i].id_oficina === ispv.datos[j].id_pac) {
+				var nombre_oficina = oficina.datos[i].oficina
+			}
+		}
+		fila.push(nombre_oficina)
+
+		fila.push(ispv.datos[j].radicado)
+		fila.push(ispv.datos[j].tramite_beps)
+
+		if (ispv.datos[j].gestion !== "") {
+			if (ispv.datos[j].gestion === "SI") {
+				fila.push("RESULTADOS POSITIVOS")
+			} else {
+				fila.push("RESULTADOS NEGATIVOS")
+			}
+		} else {
+			fila.push("")
+		}
+
+		fila.push(ispv.datos[j].psap_terceros)
+		fila.push(ispv.datos[j].informacion_adicional_gestion)
+		fila.push(ispv.datos[j].observacion)
+		data.push(fila)
+	}
+	var hoja_informe = SpreadsheetApp.openById("1YHQA1cKoB_pz9zHmVsiAPS5iOKOUI_V-R0YH_L4W168").getSheetByName("datos");
+	hoja_informe.getRange(2, 1, hoja_informe.getLastRow(), hoja_informe.getLastColumn()).clear({ formatOnly: false, contentsOnly: true });
+	hoja_informe.getRange(2, 1, data.length, data[0].length).setValues(data);
 }

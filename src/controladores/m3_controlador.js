@@ -1367,6 +1367,7 @@ function m3_3_gs_guardar_autorizacion_permiso(frm) {
 				param_mail.usuarios.push(u.id_usuario);
 				param_mail.usuarios.push(th.datos[0].id_usuario);
 				param_mail.usuarios.push(802);
+				param_mail.usuarios.push("N1664394518941");
 			}
 			param_mail.sender = "USUARIO";
 
