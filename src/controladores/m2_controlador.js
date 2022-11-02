@@ -3531,6 +3531,7 @@ function m2_1_gs_actualizar_reporte_novedades_personal() {
 	var data = [];
 
 	for (let k = 0; k < personal.registros; k++) {
+    console.log(k)
 		for (var j = 0; j < apertura_cierre.registros; j++) {
 			if (personal.datos[k].id_operacion === apertura_cierre.datos[j].id_operacion) {
 				var fila = [];
