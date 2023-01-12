@@ -1648,10 +1648,10 @@ function m3_5_gs_registro_incapacidad(frm) {
 				campo: ["CORREO", "ID_OFICINA"],
 				condicion: {
 					condicion: true,
-					campo: ["AREA", "AREA", "CARGO"],
-					criterio: ["TALENTO HUMANO", "SERVICIO AL CIUDADANO", "PROFESIONAL"],
-					comparador: ["IGUAL", "IGUAL", "IGUAL"],
-					operador: ["O", "Y"]
+					campo: ["AREA", "AREA", "CARGO","ACTIVO"],
+					criterio: ["TALENTO HUMANO", "SERVICIO AL CIUDADANO", "PROFESIONAL",1],
+					comparador: ["IGUAL", "IGUAL", "IGUAL","IGUAL"],
+					operador: ["O", "Y","Y"]
 				}
 			});
 			var oficinas_mail = query({
@@ -3858,10 +3858,10 @@ function m3_15_gs_registro_permiso_sindical(frm) {
 				campo: ["CORREO", "ID_OFICINA"],
 				condicion: {
 					condicion: true,
-					campo: ["AREA", "AREA", "CARGO"],
-					criterio: ["TALENTO HUMANO", "SERVICIO AL CIUDADANO", "PROFESIONAL"],
-					comparador: ["IGUAL", "IGUAL", "IGUAL"],
-					operador: ["O", "Y"]
+					campo: ["AREA", "AREA", "CARGO","ACTIVO"],
+					criterio: ["TALENTO HUMANO", "SERVICIO AL CIUDADANO", "PROFESIONAL",1],
+					comparador: ["IGUAL", "IGUAL", "IGUAL", "IGUAL"],
+					operador: ["O", "Y", "Y"]
 				}
 			});
 			var oficinas_mail = query({
