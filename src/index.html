@@ -1,66 +1,76 @@
 <!DOCTYPE html>
 <html>
 
-	<head>
-		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0" />
-		<title>Gestión.APP</title>
-	</head>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0" />
+  <title>Gestión.APP</title>
+  <script>
+    if (window.trustedTypes && window.trustedTypes.createPolicy) {
+      window.trustedTypes.createPolicy('default', {
+        createHTML: string => string,
+        createScriptURL: string => string,
+        createScript: string => string,
+      });
+    }
 
-	<body>
-		<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
-			<!-- HEADER |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||-->
-			<header class="mdl-layout__header">
-				<div class="mdl-layout__header-row">
-					<span class="mdl-layout-title">
+  </script>
+</head>
+
+<body>
+  <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+    <!-- HEADER |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||-->
+    <header class="mdl-layout__header">
+      <div class="mdl-layout__header-row">
+        <span class="mdl-layout-title">
 						<h3>Gesti&oacute;n.APP</h3>
 					</span>
-					<div class="mdl-layout-spacer"></div>
-					<span class="mdl-chip mdl-chip--contact">
+        <div class="mdl-layout-spacer"></div>
+        <span class="mdl-chip mdl-chip--contact">
 						<span class="mdl-chip__contact mdl-color--green mdl-color-text--white"><i
 								class="material-icons">person</i></span>
-						<span class="mdl-chip__text" id="m0_span_usuario">usuario</span>
-					</span>
-					<button id="m0_btn_menu_modulos" class="mdl-button mdl-js-button mdl-button--icon"><i
+        <span class="mdl-chip__text" id="m0_span_usuario">usuario</span>
+        </span>
+        <button id="m0_btn_menu_modulos" class="mdl-button mdl-js-button mdl-button--icon"><i
 							class="material-icons">more_vert</i></button>
-					<ul id="m0_ul_menu_modulos" class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect"
-						for="m0_btn_menu_modulos">
-					</ul>
-				</div>
-			</header>
-			<!-- NAVEGADOR LATERAL |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||-->
-			<div class="mdl-layout__drawer">
-				<h3 class="mensaje_centrado">
-					<i class="material-icons">settings_applications</i>
-					<br />
+        <ul id="m0_ul_menu_modulos" class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect"
+          for="m0_btn_menu_modulos">
+        </ul>
+      </div>
+    </header>
+    <!-- NAVEGADOR LATERAL |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||-->
+    <div class="mdl-layout__drawer">
+      <h3 class="mensaje_centrado">
+        <i class="material-icons">settings_applications</i>
+        <br />
 					AJUSTES APP
-				</h3>
-				<div id="m0_div_accordion_navegador">
-					<h3>USUARIO ACTIVO:</h3>
-					<div class="menu_navegacion">
-						<span id="m0_li_usuario_nombre"></span>
-						<hr />
-						<span id="m0_li_usuario_rol"></span>
-						<hr />
-						<span id="m0_li_usuario_mail"></span>
-						<hr />
-						<span id="m0_li_usuario_oficina"></span>
-						<hr />
-					</div>
-					<h3>CONEXIÓN CON BD:</h3>
-					<div class="menu_navegacion">
-						<span id="m0_li_bd_estado"></span>
-						<hr />
-						<span id="m0_li_bd_ultima_sincronizacion"></span>
-						<hr />
-						<span id="m0_li_bd_forzar_actualizacion"></span>
-						<hr />
-					</div>
-					<h3>NAVEGACIÓN MODULO:</h3>
-					<div>
-						<ul class="mdl-list" id="m0_ul_panel_navegacion_lateral">
-							<li class="mdl-list__item" id="m0_navegacion_lateral_item">
-								<span class="mdl-list__item-primary-content">
+      </h3>
+      <div id="m0_div_accordion_navegador">
+        <h3>USUARIO ACTIVO:</h3>
+        <div class="menu_navegacion">
+          <span id="m0_li_usuario_nombre"></span>
+          <hr />
+          <span id="m0_li_usuario_rol"></span>
+          <hr />
+          <span id="m0_li_usuario_mail"></span>
+          <hr />
+          <span id="m0_li_usuario_oficina"></span>
+          <hr />
+        </div>
+        <h3>CONEXIÓN CON BD:</h3>
+        <div class="menu_navegacion">
+          <span id="m0_li_bd_estado"></span>
+          <hr />
+          <span id="m0_li_bd_ultima_sincronizacion"></span>
+          <hr />
+          <span id="m0_li_bd_forzar_actualizacion"></span>
+          <hr />
+        </div>
+        <h3>NAVEGACIÓN MODULO:</h3>
+        <div>
+          <ul class="mdl-list" id="m0_ul_panel_navegacion_lateral">
+            <li class="mdl-list__item" id="m0_navegacion_lateral_item">
+              <span class="mdl-list__item-primary-content">
 									INICIO
 									<div class="mdl-layout-spacer"></div>
 									<button id="btn_nav_inicio" class="mdl-button mdl-js-button mdl-button--icon mdl-button--colored"
@@ -68,52 +78,52 @@
 										<i class="material-icons">home</i>
 									</button>
 								</span>
-							</li>
-							<div class="mdl-tooltip" for="li_inicio">
-								Home de la aplicación
-							</div>
-						</ul>
-					</div>
-				</div>
-			</div>
-			<!-- MAIN |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||-->
-			<main class="mdl-layout__content">
-				<!-- Panel menu superior ------------------------------------------------------------------------------------------------------------------------>
-				<div class="alineado_derecha">
-					<div id="m0_div_panel_aviso_banner" class="aviso_panel_superior oculto">
-						<span id="" class="mdl-chip mdl-chip--contact">
+            </li>
+            <div class="mdl-tooltip" for="li_inicio">
+              Home de la aplicación
+            </div>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <!-- MAIN |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||-->
+    <main class="mdl-layout__content">
+      <!-- Panel menu superior ------------------------------------------------------------------------------------------------------------------------>
+      <div class="alineado_derecha">
+        <div id="m0_div_panel_aviso_banner" class="aviso_panel_superior oculto">
+          <span id="" class="mdl-chip mdl-chip--contact">
 							<span class="mdl-chip__contact mdl-color--yellow mdl-color-text--red"><i
 									class="material-icons">warning</i></span>
-							<span id="m0_span_panel_aviso_banner" class="mdl-chip__text"></span>
-						</span>
-					</div>
-					<div class="mdl-layout-spacer"></div>
-					<div id="m0_div_panel_superior_arbol">
-						<div>
-							<span class="mdl-chip mdl-chip--contact">
+          <span id="m0_span_panel_aviso_banner" class="mdl-chip__text"></span>
+          </span>
+        </div>
+        <div class="mdl-layout-spacer"></div>
+        <div id="m0_div_panel_superior_arbol">
+          <div>
+            <span class="mdl-chip mdl-chip--contact">
 								<span class="mdl-chip__contact mdl-color--accent mdl-color-text--white"><i
 										class="material-icons">home</i></span>
-								<span class="mdl-chip__text">Inicio</span>
-								<a class="mdl-chip__action" onclick=""><i class="material-icons">refresh</i></a>
-							</span>
-						</div>
-					</div>
-				</div>
-				<!------------------------ Panel principal ------------------------------------------------------------------------------------------------------------------------>
-				<div id="m0_div_panel_principal" class="div_panel"></div>
-				<!------------------------ Panel secundario ------------------------------------------------------------------------------------------------------------------------>
-				<div id="m0_div_panel_secundario" class="div_panel"></div>
-				<!------------------------ Panel avisos snackbar------------------------------------------------------------------------------------------------------------------------>
-				<div id="m0_div_panel_aviso_snackbar" aria-live="assertive" aria-atomic="true" aria-relevant="text"
-					class="mdl-snackbar mdl-js-snackbar">
-					<div class="mdl-snackbar__text"></div>
-					<button type="button" class="mdl-snackbar__action"></button>
-				</div>
-				<!------------------------ Panel de espera ------------------------------------------------------------------------------------------------------------------------>
-				<div id="m0_div_panel_aviso_modal_box" title="Gestión.APP"></div>
-			</main>
-			<!-- FOOTER |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||-->
-			<!--
+            <span class="mdl-chip__text">Inicio</span>
+            <a class="mdl-chip__action" onclick=""><i class="material-icons">refresh</i></a>
+            </span>
+          </div>
+        </div>
+      </div>
+      <!------------------------ Panel principal ------------------------------------------------------------------------------------------------------------------------>
+      <div id="m0_div_panel_principal" class="div_panel"></div>
+      <!------------------------ Panel secundario ------------------------------------------------------------------------------------------------------------------------>
+      <div id="m0_div_panel_secundario" class="div_panel"></div>
+      <!------------------------ Panel avisos snackbar------------------------------------------------------------------------------------------------------------------------>
+      <div id="m0_div_panel_aviso_snackbar" aria-live="assertive" aria-atomic="true" aria-relevant="text"
+        class="mdl-snackbar mdl-js-snackbar">
+        <div class="mdl-snackbar__text"></div>
+        <button type="button" class="mdl-snackbar__action"></button>
+      </div>
+      <!------------------------ Panel de espera ------------------------------------------------------------------------------------------------------------------------>
+      <div id="m0_div_panel_aviso_modal_box" title="Gestión.APP"></div>
+    </main>
+    <!-- FOOTER |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||-->
+    <!--
 			<footer class="mdl-mini-footer">
 				<div class="mdl-mini-footer__left-section">
 					<div class="mdl-logo">Datos Usuario:</div>
@@ -126,13 +136,13 @@
 				</div>
 			</footer>
 			-->
-		</div>
-	</body>
-	<? var contenido = carga_configuracion_inicial(); ?>
-	<?!=contenido; ?>
-	<script>
-		m0_js_carga_configuracion_adicional("<?!=tipo_carga; ?>", "<?!=param; ?>");
-	</script>
+  </div>
+</body>
+<? var contenido = carga_configuracion_inicial(); ?>
+<?!=contenido; ?>
+<script>
+  m0_js_carga_configuracion_adicional("<?!=tipo_carga; ?>", "<?!=param; ?>");
+</script>
 
 
 </html>
